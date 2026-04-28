@@ -25,13 +25,12 @@ void loadAssets(GameData& state) {
     state.texWidth = state.provincesBmp->w;
     state.texHeight = state.provincesBmp->h;
 
+    /*
     showMap(state.BmpColorToProvinceId);
     showMap(state.ProvinceIdToCountryTag);
     showMap(state.CountryTagToCountryName);
-if (state.CountryTagToCountryName.empty()) {
-    printf("CountryTagToCountryName is empty\n");
-}
     showMap(state.CountryNameToCountryColor);
+    */
 }
 
 

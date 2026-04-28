@@ -1,7 +1,7 @@
 
 # Grand Strategy Game
 
-![alt text](screenshot-2026-04-27_21-07-28.png)
+![alt text](.github/__screenshot-2026-04-27_21-07-28.png__)
 
 ## Game Requirements
 
@@ -11,11 +11,12 @@
 
 ## To Do
 
-- Add ImGui for debugging
+- optimize the rendering
 - Create a basic UI with RmlUI
 - Fix frontier initializer bug
 - Convert frontier pixels to lines
 - Add river layer
+- Convert rivers to lines
 
 ## Setup
 
@@ -29,3 +30,4 @@ assets/
 │   └── 1-UppLand.txt
 └── countries/
     └── Sweden.txt
+this will be replaced in the future with my own assets
