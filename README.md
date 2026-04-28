@@ -1,7 +1,7 @@
 
 # Grand Strategy Game
 
-![alt text](__image.png__)
+![alt text](screenshot-2026-04-27_21-07-28.png)
 
 ## Game Requirements
 
