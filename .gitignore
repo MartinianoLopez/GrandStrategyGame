@@ -1,0 +1,6 @@
+# Assets
+assets/
+
+# Build
+app
+*.o
