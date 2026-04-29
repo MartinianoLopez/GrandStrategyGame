@@ -1,7 +1,6 @@
-
 # Grand Strategy Game
 
-![screenshot](.github/screenshot-2026-04-27.png)
+![screenshot](/.github/screenshot-2026-04-27_21-07-28.png)
 
 ## Game Requirements
 
@@ -18,12 +17,11 @@
 - make a file data scraping in python to get the data from other games and use my own simplified file structure to load the game
 - Add river layer
 - Convert rivers to lines
-- add more maps
+- add more mapsMarkdown Preview Enhanced
 
 ## Setup
 
 To run this project you need the original EU4 assets. Copy the following files from your EU4 installation folder into the `assets/` directory:
-
 
 ```text
 assets/
