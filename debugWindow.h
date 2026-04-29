@@ -54,6 +54,7 @@ struct DebugWindow {
 
     // ── General ──────────────────────────────────────────────────────────────
     if (ImGui::CollapsingHeader("General")) {
+      ImGui::Text("FPS:        %.3f", data.fps);
       ImGui::Text("Scale:      %.3f", data.scale);
       ImGui::Text("Offset:     (%.1f, %.1f)", data.offsetX, data.offsetY);
       ImGui::Text("Dragging:   %s", data.dragging ? "yes" : "no");
@@ -100,17 +101,6 @@ struct DebugWindow {
           ImGui::Text("%s  ->  %u", colorToString(color).c_str(), id);
         }
         ImGui::TreePop();
-      }
-
-      // ProvinceId -> CountryTag
-      if (ImGui::CollapsingHeader("Selected Province")) {
-        uint32_t pc = data.selectedProvince;
-        ImGui::Text("Province: %d (%s)", data.id, colorToString(pc).c_str());
-
-        if (auto tag = mapFind(data.ProvinceIdToCountryTag, (uint32_t)data.id)) {
-          uint32_t cc = getCountryColorFromProvinceColor(data, pc);
-          ImGui::Text("Country: %s (%s)", tag->c_str(), colorToString(cc).c_str());
-        }
       }
 
       // CountryTag -> CountryName

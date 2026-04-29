@@ -32,4 +32,5 @@ struct GameData {
     uint32_t selectedProvince;
     std::string provinceId;
     int id;
+    float fps = 0.0f;
 };
