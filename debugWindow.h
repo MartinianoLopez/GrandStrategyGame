@@ -69,6 +69,7 @@ struct DebugWindow {
       ImGui::Text("provincesBmp:           %s", ok(data.provincesBmp));
       ImGui::Text("terrain:                %s", ok(data.terrain));
       ImGui::Text("countries:              %s", ok(data.countries));
+      ImGui::Text("frontiers               %s", ok(data.frontierTexture));
       ImGui::Separator();
       ImGui::Text("BmpColor->ProvinceId:   %zu entries", data.BmpColorToProvinceId.size());
       ImGui::Text("ProvinceId->CountryTag: %zu entries", data.ProvinceIdToCountryTag.size());

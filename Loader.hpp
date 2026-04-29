@@ -10,19 +10,29 @@
 // findFrontiers       <ProvinceColor1, ProvinceColor2>, Vector<FrontierPoints> (represents the frontier between two provinces)
 // initCountries       image with the countries painted on
 
-void loadAssets(GameData& state);
+void loadAssets(GameData& state, SDL_Renderer* renderer);
+
 SDL_Surface* 
-loadProvincesImage(const std::string& filepath);                  
+loadProvincesImage(const std::string& filepath);   
+
 std::map<uint32_t, uint32_t> 
-loadDefinitions(const std::string& filepath);                     
+loadDefinitions(const std::string& filepath);  
+
 std::map<uint32_t, std::string> 
-loadProvincesFiles(const std::string& dirpath);     
+loadProvincesFiles(const std::string& dirpath); 
+
 std::map<std::string, std::string>
 loadCountryNames(const std::string& filepath);
+
 std::map<std::string, uint32_t> 
-loadOwnerToColor(const std::string& filepath);                
+loadOwnerToColor(const std::string& filepath);              
+
 std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_Point>>
-findFrontiers(SDL_Surface* img);                                    
+findFrontiers(SDL_Surface* img);             
+
+SDL_Surface* 
+createFrontiersSurface(GameData& state);  
+
 SDL_Surface*
 initCountries(const GameData& state);
 

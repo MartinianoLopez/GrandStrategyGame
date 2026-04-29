@@ -12,19 +12,20 @@
 // LOAD ALL
 // ===============================================================================================================
 
-void loadAssets(GameData& state) {
+void loadAssets(GameData& state, SDL_Renderer* renderer) {
 
     state.provincesBmp = loadProvincesImage("assets/provinces.bmp");
-    state.terrain = IMG_Load("assets/terrain.bmp");
+    state.terrain = surfaceToTexture(renderer, IMG_Load("assets/terrain.bmp"));
     state.BmpColorToProvinceId = loadDefinitions("assets/definition.csv");
     state.ProvinceIdToCountryTag = loadProvincesFiles("assets/provinces");
     state.CountryTagToCountryName = loadCountryNames("assets/00_countries.txt");
     state.CountryNameToCountryColor = loadOwnerToColor("assets/countries");
     state.frontierList = findFrontiers(state.provincesBmp);
+    
     state.countries = initCountries(state);
     state.texWidth = state.provincesBmp->w;
     state.texHeight = state.provincesBmp->h;
-
+    state.frontierTexture = surfaceToTexture(renderer, createFrontiersSurface(state));
     /*
     showMap(state.BmpColorToProvinceId);
     showMap(state.ProvinceIdToCountryTag);
@@ -332,6 +333,19 @@ findFrontiers(SDL_Surface* img) {
     }
     
     return frontierList;
+}
+
+SDL_Surface* createFrontiersSurface(GameData& state) {
+    std::cerr << "Frontiers surface: " << state.texWidth << "x" << state.texHeight << " points: " << state.frontierList.size() << "\n";
+    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, state.texWidth, state.texHeight, 32, SDL_PIXELFORMAT_RGBA8888);
+    SDL_FillRect(surface, nullptr, SDL_MapRGBA(surface->format, 0, 0, 0, 0));
+
+    for (const auto& [colorPair, points] : state.frontierList)
+        for (const auto& point : points)
+            if (point.x >= 0 && point.x < state.texWidth && point.y >= 0 && point.y < state.texHeight)
+    ((Uint32*)surface->pixels)[point.y * state.texWidth + point.x] = SDL_MapRGBA(surface->format, 0, 0, 0, 255);
+
+    return surface;
 }
 
 

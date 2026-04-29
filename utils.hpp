@@ -27,3 +27,4 @@ void showMap(const Map& map) {
 std::string colorToString (uint32_t color);
 uint32_t getCountryColorFromProvinceColor (const GameData& state, uint32_t provinceColor);
 uint32_t getPixelColor (SDL_Surface* surface, int x, int y);
+SDL_Texture* surfaceToTexture(SDL_Renderer* renderer, SDL_Surface* surface);

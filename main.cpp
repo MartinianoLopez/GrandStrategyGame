@@ -45,7 +45,7 @@ int main() {
     // =========================================================================================
     GameData state;
     std::cerr << "LOADING...\n";
-    loadAssets(state);
+    loadAssets(state, renderer);
     std::cerr << "LOADED\n";
 
     EventManager eventManager;

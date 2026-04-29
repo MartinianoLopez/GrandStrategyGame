@@ -27,12 +27,14 @@ void render(GameData& state, SDL_Renderer* renderer, SDL_Window* window) {
     };
     
     // Renderizar mapa base (Terreno)
-    displayTerrain(renderer, state.terrain, destRect, 255);
+    displayTexture(renderer, state.terrain, destRect, 255);
     // Renderizar mapa base (países)
-    displayTerrain(renderer, state.countries, destRect, 255);
+    displaySurface(renderer, state.countries, destRect, 255);
     
     // Renderizar todas las fronteras (gris oscuro)
-    displayFrontiers(state, renderer, finalScale, SDL_Color{0, 0, 0, 100});
+   // displayFrontiers(state, renderer, finalScale, SDL_Color{0, 0, 0, 100});   // esto lleva los fps de 600 a 11 no usar
+    
+    displayTexture(renderer, state.frontierTexture, destRect, 255);
     
     // Renderizar fronteras seleccionadas (amarillo)
     HighlightProvince(state, renderer, finalScale, SDL_Color{255, 255, 0, 240}, state.selectedProvince);
@@ -41,8 +43,9 @@ void render(GameData& state, SDL_Renderer* renderer, SDL_Window* window) {
     SDL_RenderPresent(renderer);
 }
 
-void displayFrontiers(GameData& state, SDL_Renderer* renderer, float finalScale, SDL_Color color) {
-        
+/*
+void displayFrontiers(GameData& state, SDL_Renderer* renderer, float finalScale, SDL_Color color) {   // renderiza en cada frame un punto por cada punto de frontera
+                                                                                                        
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
     
     for (const auto& [colorPair, points] : state.frontierList) {
@@ -56,6 +59,8 @@ void displayFrontiers(GameData& state, SDL_Renderer* renderer, float finalScale,
         }
     }
 }
+    */
+
 void HighlightProvince(GameData& state, SDL_Renderer* renderer, float finalScale, SDL_Color color, uint32_t provinceColor) {
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 
@@ -83,7 +88,7 @@ void HighlightProvince(GameData& state, SDL_Renderer* renderer, float finalScale
     }
 }
 
-void displayTerrain(SDL_Renderer* renderer, SDL_Surface* surface, const SDL_FRect& destRect, Uint8 alpha) {
+void displaySurface(SDL_Renderer* renderer, SDL_Surface* surface, const SDL_FRect& destRect, Uint8 alpha) {
     if (!surface) return;
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     if (!texture) return;
@@ -91,4 +96,8 @@ void displayTerrain(SDL_Renderer* renderer, SDL_Surface* surface, const SDL_FRec
     SDL_RenderCopyF(renderer, texture, nullptr, &destRect);
     SDL_DestroyTexture(texture);
 }
-
+void displayTexture(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRect& destRect, Uint8 alpha) {
+    if (!texture) return;
+    SDL_SetTextureAlphaMod(texture, alpha);
+    SDL_RenderCopyF(renderer, texture, nullptr, &destRect);
+}

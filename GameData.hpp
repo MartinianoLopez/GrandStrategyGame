@@ -8,7 +8,7 @@
 struct GameData {
     GameData();
     SDL_Surface* provincesBmp;
-    SDL_Surface* terrain;
+    SDL_Texture* terrain;
     SDL_Surface* countries;
     std::map<uint32_t, uint32_t> BmpColorToProvinceId;
     std::map<uint32_t, std::string> ProvinceIdToCountryTag;
@@ -16,6 +16,7 @@ struct GameData {
     std::map<std::string, uint32_t> CountryNameToCountryColor;
 
     std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_Point>> frontierList;
+    SDL_Texture* frontierTexture;
 
     int texWidth;
     int texHeight;

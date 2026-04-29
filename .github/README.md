@@ -10,14 +10,13 @@
 
 ## To Do
 
-- optimize the rendering
 - Create a basic UI with RmlUI
 - Fix frontier initializer bug
 - Convert frontier pixels to lines
 - make a file data scraping in python to get the data from other games and use my own simplified file structure to load the game
 - Add river layer
 - Convert rivers to lines
-- add more mapsMarkdown Preview Enhanced
+- add more maps
 
 ## Setup
 

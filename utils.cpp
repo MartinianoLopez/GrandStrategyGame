@@ -31,3 +31,9 @@ uint32_t getPixelColor(SDL_Surface* surface, int x, int y) {
     uint8_t* pixel = (uint8_t*)surface->pixels + y * surface->pitch + x * surface->format->BytesPerPixel;
     return *(uint32_t*)pixel;
 }
+SDL_Texture* surfaceToTexture(SDL_Renderer* renderer, SDL_Surface* surface) {
+    if (!surface) return nullptr;
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    return texture;
+}
