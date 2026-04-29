@@ -1,7 +1,7 @@
 
 # Grand Strategy Game
 
-![alt text](.github/__screenshot-2026-04-27_21-07-28.png__)
+![screenshot](.github/screenshot-2026-04-27.png)
 
 ## Game Requirements
 
@@ -24,7 +24,8 @@
 
 To run this project you need the original EU4 assets. Copy the following files from your EU4 installation folder into the `assets/` directory:
 
-    ```
+
+```text
 assets/
 ├── provinces.bmp
 ├── terrain.bmp
@@ -34,5 +35,6 @@ assets/
 │   └── 1-UppLand.txt
 └── countries/
     └── Sweden.txt
-    ```
+```
+
 this will be replaced in the future with my own assets
