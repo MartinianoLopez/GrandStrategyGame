@@ -27,12 +27,8 @@ void loadAssets(GameData& state, SDL_Renderer* renderer) {
     state.texWidth = state.provincesBmp->w;
     state.texHeight = state.provincesBmp->h;
     state.frontierTexture = surfaceToTexture(renderer, createFrontiersSurface(state));
-    /*
-    showMap(state.BmpColorToProvinceId);
-    showMap(state.ProvinceIdToCountryTag);
-    showMap(state.CountryTagToCountryName);
-    showMap(state.CountryNameToCountryColor);
-    */
+
+    state.ProvincesCenterList = initProvincesCenters(state);
 }
 
 
@@ -399,4 +395,22 @@ SDL_Surface* initCountries(const GameData& state) {
     SDL_UnlockSurface(provinces);
     SDL_UnlockSurface(countries);
     return countries;
+}
+
+
+std::map<uint32_t, SDL_Point> initProvincesCenters(const GameData& state) {
+    struct Accum { int sumX, sumY, count; };
+    std::map<uint32_t, Accum> accum;
+
+    for (int y = 0; y < state.texHeight; y++)
+        for (int x = 0; x < state.texWidth; x++) {
+            auto& a = accum[getPixelColor(state.provincesBmp, x, y)];
+            a.sumX += x; a.sumY += y; a.count++;
+        }
+
+    std::map<uint32_t, SDL_Point> centerList;
+    for (auto& [color, a] : accum)
+        centerList[color] = {a.sumX / a.count, a.sumY / a.count};
+
+    return centerList;
 }

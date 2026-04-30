@@ -15,9 +15,13 @@ struct GameData {
     std::map<uint32_t, std::string> ProvinceIdToCountryTag;
     std::map<std::string, std::string> CountryTagToCountryName;
     std::map<std::string, uint32_t> CountryNameToCountryColor;
+    
 
     std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_Point>> frontierList;
     SDL_Texture* frontierTexture;
+
+    std::map<uint32_t, SDL_Point> ProvincesCenterList;       // provinceId, centerOfTheProvince
+    std::map<uint32_t, uint32_t> troopsList;                 // provinceId, Cuantity
 
     int texWidth;
     int texHeight;

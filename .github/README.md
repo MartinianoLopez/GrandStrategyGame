@@ -10,6 +10,7 @@
 
 ## To Do
 
+- add troops today
 - Create a basic UI with RmlUI
 - Fix frontier initializer bug
 - Convert frontier pixels to lines
@@ -26,6 +27,7 @@ To run this project you need the original EU4 assets. Copy the following files f
 assets/
 ├── provinces.bmp
 ├── terrain.bmp
+├── heigthmap.bmp
 ├── definition.csv
 ├── 00_countries.txt
 ├── provinces/

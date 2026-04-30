@@ -36,3 +36,4 @@ createFrontiersSurface(GameData& state);
 SDL_Surface*
 initCountries(const GameData& state);
 
+std::map<uint32_t, SDL_Point> initProvincesCenters(const GameData& state);

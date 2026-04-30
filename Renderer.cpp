@@ -39,6 +39,7 @@ void render(GameData& state, SDL_Renderer* renderer, SDL_Window* window) {
     // Renderizar fronteras seleccionadas (amarillo)
     HighlightProvince(state, renderer, finalScale, SDL_Color{255, 255, 0, 240}, state.selectedProvince);
     
+    displayPoints(state, renderer, finalScale, state.ProvincesCenterList, SDL_Color{255, 255, 0, 240});
     // Presentar
     SDL_RenderPresent(renderer);
 }
@@ -100,4 +101,15 @@ void displayTexture(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRec
     if (!texture) return;
     SDL_SetTextureAlphaMod(texture, alpha);
     SDL_RenderCopyF(renderer, texture, nullptr, &destRect);
+}
+
+void displayPoints(GameData& state, SDL_Renderer* renderer, float finalScale, 
+                   const std::map<uint32_t, SDL_Point>& points, SDL_Color color) {
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+    for (const auto& [id, point] : points) {
+        float sx = state.offsetX + point.x * finalScale;
+        float sy = state.offsetY + point.y * finalScale;
+        SDL_FRect dot = {sx, sy, finalScale * 3, finalScale * 3}; // 3x bigger to be visible
+        SDL_RenderFillRectF(renderer, &dot);
+    }
 }

@@ -8,3 +8,4 @@ void displayFrontiers(GameData& state, SDL_Renderer* renderer, float finalScale,
 void HighlightProvince(GameData& state, SDL_Renderer* renderer, float finalScale, SDL_Color color, uint32_t provinceColor);
 void displaySurface(SDL_Renderer* renderer, SDL_Surface* surface, const SDL_FRect& destRect, Uint8 alpha);
 void displayTexture(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRect& destRect, Uint8 alpha);
+void displayPoints(GameData& state, SDL_Renderer* renderer, float finalScale, const std::map<uint32_t, SDL_Point>& points, SDL_Color color);
