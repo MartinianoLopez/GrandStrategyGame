@@ -16,6 +16,7 @@ void loadAssets(GameData& state, SDL_Renderer* renderer) {
 
     state.provincesBmp = loadProvincesImage("assets/provinces.bmp");
     state.terrain = surfaceToTexture(renderer, IMG_Load("assets/terrain.bmp"));
+    state.height = surfaceToTexture(renderer, IMG_Load("assets/heightmap.bmp"));
     state.BmpColorToProvinceId = loadDefinitions("assets/definition.csv");
     state.ProvinceIdToCountryTag = loadProvincesFiles("assets/provinces");
     state.CountryTagToCountryName = loadCountryNames("assets/00_countries.txt");

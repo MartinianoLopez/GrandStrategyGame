@@ -25,16 +25,16 @@ void render(GameData& state, SDL_Renderer* renderer, SDL_Window* window) {
         static_cast<float>(state.texWidth) * finalScale,
         static_cast<float>(state.texHeight) * finalScale
     };
-    
+    displayTexture(renderer, state.height, destRect, 255);
     // Renderizar mapa base (Terreno)
-    displayTexture(renderer, state.terrain, destRect, 255);
+    displayTexture(renderer, state.terrain, destRect, 150);
     // Renderizar mapa base (países)
-    displaySurface(renderer, state.countries, destRect, 255);
+    displaySurface(renderer, state.countries, destRect, 240);
     
     // Renderizar todas las fronteras (gris oscuro)
-   // displayFrontiers(state, renderer, finalScale, SDL_Color{0, 0, 0, 100});   // esto lleva los fps de 600 a 11 no usar
+    // displayFrontiers(state, renderer, finalScale, SDL_Color{0, 0, 0, 100});   // esto lleva los fps de 600 a 11 no usar
     
-    displayTexture(renderer, state.frontierTexture, destRect, 255);
+    displayTexture(renderer, state.frontierTexture, destRect, 200);
     
     // Renderizar fronteras seleccionadas (amarillo)
     HighlightProvince(state, renderer, finalScale, SDL_Color{255, 255, 0, 240}, state.selectedProvince);

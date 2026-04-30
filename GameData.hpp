@@ -9,6 +9,7 @@ struct GameData {
     GameData();
     SDL_Surface* provincesBmp;
     SDL_Texture* terrain;
+    SDL_Texture* height;
     SDL_Surface* countries;
     std::map<uint32_t, uint32_t> BmpColorToProvinceId;
     std::map<uint32_t, std::string> ProvinceIdToCountryTag;
