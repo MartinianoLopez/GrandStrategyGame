@@ -57,6 +57,7 @@ struct DebugWindow {
       ImGui::Text("FPS:        %.3f", data.fps);
       ImGui::Text("Scale:      %.3f", data.scale);
       ImGui::Text("Offset:     (%.1f, %.1f)", data.offsetX, data.offsetY);
+      ImGui::Text("FinalScale: %.3f", data.finalScale);
       ImGui::Text("Dragging:   %s", data.dragging ? "yes" : "no");
       ImGui::Text("LastPos:    (%d, %d)", data.lastX, data.lastY);
       ImGui::Text("FrameDelay: %d", data.frameDelay);

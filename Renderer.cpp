@@ -12,8 +12,7 @@ void render(GameData& state, SDL_Renderer* renderer, SDL_Window* window) {
         static_cast<float>(winWidth) / state.texWidth,
         static_cast<float>(winHeight) / state.texHeight
     );
-    float finalScale = baseScale * state.scale;
-    
+    state.finalScale = baseScale * state.scale;
     // Limpiar pantalla
     SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
     SDL_RenderClear(renderer);
@@ -22,8 +21,8 @@ void render(GameData& state, SDL_Renderer* renderer, SDL_Window* window) {
     SDL_FRect destRect = {
         state.offsetX,
         state.offsetY,
-        static_cast<float>(state.texWidth) * finalScale,
-        static_cast<float>(state.texHeight) * finalScale
+        static_cast<float>(state.texWidth) * state.finalScale,
+        static_cast<float>(state.texHeight) * state.finalScale
     };
     displayTexture(renderer, state.height, destRect, 255);
     // Renderizar mapa base (Terreno)
@@ -37,10 +36,13 @@ void render(GameData& state, SDL_Renderer* renderer, SDL_Window* window) {
     displayTexture(renderer, state.frontierTexture, destRect, 200);
     
     // Renderizar fronteras seleccionadas (amarillo)
-    HighlightProvince(state, renderer, finalScale, SDL_Color{255, 255, 0, 240}, state.selectedProvince);
+    HighlightProvince(state, renderer, state.finalScale, SDL_Color{255, 255, 0, 240}, state.selectedProvince);
+
+    renderProvinceIds(renderer, state.digits, state.finalScale, state, winWidth, winHeight);
     
-    displayPoints(state, renderer, finalScale, state.ProvincesCenterList, SDL_Color{255, 255, 0, 240});
+    // displayPoints(state, renderer, state.finalScale, state.ProvincesCenterList, SDL_Color{255, 255, 0, 240});
     // Presentar
+
     SDL_RenderPresent(renderer);
 }
 
@@ -111,5 +113,44 @@ void displayPoints(GameData& state, SDL_Renderer* renderer, float finalScale,
         float sy = state.offsetY + point.y * finalScale;
         SDL_FRect dot = {sx, sy, finalScale * 3, finalScale * 3}; // 3x bigger to be visible
         SDL_RenderFillRectF(renderer, &dot);
+    }
+}
+
+void renderProvinceIds(SDL_Renderer* renderer, SDL_Texture** digits, float finalScale, const GameData& state, int screenW, int screenH) {
+    if (finalScale <= 2.5f) return;
+    for (const auto& [color, center] : state.ProvincesCenterList) {
+        float sx = state.offsetX + center.x * finalScale;
+        float sy = state.offsetY + center.y * finalScale;
+        if (sx < 0 || sy < 0 || sx > screenW || sy > screenH) continue; // fuera de pantalla
+        if (!state.BmpColorToProvinceId.count(color)) continue;
+        uint32_t id = state.BmpColorToProvinceId.at(color);
+        renderNumber(renderer, digits, (int)sx, (int)sy, id);
+    }
+}
+
+void renderText(SDL_Renderer* renderer, TTF_Font* font, int x, int y, 
+                const std::string& text, SDL_Color color) {
+    SDL_Surface* surf = TTF_RenderText_Solid(font, text.c_str(), color);
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+    SDL_Rect dst = {x, y, 0, 0};
+    SDL_QueryTexture(tex, NULL, NULL, &dst.w, &dst.h);
+    SDL_RenderCopy(renderer, tex, NULL, &dst);
+    SDL_DestroyTexture(tex);
+}
+
+
+
+// Render de cualquier número
+void renderNumber(SDL_Renderer* r, SDL_Texture** digits, int x, int y, int number) {
+    std::string s = std::to_string(number);
+    int charW = 10;
+    int totalW = s.size() * charW;
+    x -= totalW / 2;  // centrado horizontal
+    y -= 8;           // centrado vertical (mitad de 16)
+    for (char c : s) {
+        SDL_Rect dst = {x, y, charW, 16};
+        SDL_RenderCopy(r, digits[c - '0'], NULL, &dst);
+        x += charW;
     }
 }

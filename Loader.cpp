@@ -29,6 +29,13 @@ void loadAssets(GameData& state, SDL_Renderer* renderer) {
     state.frontierTexture = surfaceToTexture(renderer, createFrontiersSurface(state));
 
     state.ProvincesCenterList = initProvincesCenters(state);
+
+    // Init una vez
+    for (int i = 0; i < 10; i++) {
+        SDL_Surface* s = TTF_RenderText_Solid(state.font, std::to_string(i).c_str(), {255,255,255,255});
+        state.digits[i] = SDL_CreateTextureFromSurface(renderer, s);
+        SDL_FreeSurface(s);
+}
 }
 
 

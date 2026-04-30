@@ -7,6 +7,7 @@
 #include "Renderer.hpp"
 #include "EventManager.h"
 #include "debugWindow.h"
+#include <SDL2/SDL_ttf.h>
 
 int main() {
   // =========================================================================================
@@ -31,11 +32,14 @@ int main() {
     if (!renderer) return -1;
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
+    SDL_Init(SDL_INIT_VIDEO);
+    TTF_Init();                 
+    
 
     // =========================================================================================
     // Debug window
     // =========================================================================================
-    bool debugging = false;
+    bool debugging = true;
 
     DebugWindow debugWin;
     if (debugging) debugWin.init();
@@ -44,12 +48,12 @@ int main() {
     // Load game
     // =========================================================================================
     GameData state;
+    state.font = TTF_OpenFont("/usr/share/fonts/TTF/JetBrainsMonoNerdFontMono-Bold.ttf", 16);
     std::cerr << "LOADING...\n";
     loadAssets(state, renderer);
     std::cerr << "LOADED\n";
-
+    
     EventManager eventManager;
-
     // =========================================================================================
     // Game Loop                                                                                          
     // =========================================================================================
@@ -71,13 +75,15 @@ int main() {
         Uint32 frameTime = SDL_GetTicks() - frameStart;
         state.fps = 1000.0f / (frameTime > 0 ? frameTime : 1);
         if (frameTime < (Uint32)state.frameDelay)
-        SDL_Delay(state.frameDelay - frameTime);   
-        std::cerr << "FPS: " << (int)state.fps << "\r";              
+        SDL_Delay(state.frameDelay - frameTime);            
     }
 
     // =========================================================================================
     // Shutdown                                                                                        
     // =========================================================================================
+    TTF_CloseFont(state.font);
+    TTF_Quit();                
+    SDL_Quit();
     if (debugging) debugWin.shutdown();
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <utility>
+#include <SDL2/SDL_ttf.h>
 
 struct GameData {
     GameData();
@@ -20,7 +21,7 @@ struct GameData {
     std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_Point>> frontierList;
     SDL_Texture* frontierTexture;
 
-    std::map<uint32_t, SDL_Point> ProvincesCenterList;       // provinceId, centerOfTheProvince
+    std::map<uint32_t, SDL_Point> ProvincesCenterList;       // provinceColor, centerOfTheProvince
     std::map<uint32_t, uint32_t> troopsList;                 // provinceId, Cuantity
 
     int texWidth;
@@ -39,4 +40,7 @@ struct GameData {
     std::string provinceId;
     int id;
     float fps = 0.0f;
+    TTF_Font* font = nullptr;
+    SDL_Texture* digits[10];
+    float finalScale;
 };
