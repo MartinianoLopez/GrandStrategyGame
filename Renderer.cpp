@@ -32,13 +32,13 @@ void render(GameData& state, SDL_Renderer* renderer, SDL_Window* window) {
     
     // Renderizar todas las fronteras (gris oscuro)
     // displayFrontiers(state, renderer, finalScale, SDL_Color{0, 0, 0, 100});   // esto lleva los fps de 600 a 11 no usar
-    
+    if(state.finalScale > 1){
     displayTexture(renderer, state.frontierTexture, destRect, 200);
-    
+    }
     // Renderizar fronteras seleccionadas (amarillo)
     HighlightProvince(state, renderer, state.finalScale, SDL_Color{255, 255, 0, 240}, state.selectedProvince);
 
-    renderProvinceIds(renderer, state.digits, state.finalScale, state, winWidth, winHeight);
+    renderTroops(renderer, state.digits, state.finalScale, state, winWidth, winHeight);
     
     // displayPoints(state, renderer, state.finalScale, state.ProvincesCenterList, SDL_Color{255, 255, 0, 240});
     // Presentar
@@ -124,7 +124,7 @@ void renderProvinceIds(SDL_Renderer* renderer, SDL_Texture** digits, float final
         if (sx < 0 || sy < 0 || sx > screenW || sy > screenH) continue; // fuera de pantalla
         if (!state.BmpColorToProvinceId.count(color)) continue;
         uint32_t id = state.BmpColorToProvinceId.at(color);
-        renderNumber(renderer, digits, (int)sx, (int)sy, id);
+        renderNumber(renderer, digits, (int)sx, (int)sy, id, false);
     }
 }
 
@@ -140,17 +140,44 @@ void renderText(SDL_Renderer* renderer, TTF_Font* font, int x, int y,
 }
 
 
-
-// Render de cualquier número
-void renderNumber(SDL_Renderer* r, SDL_Texture** digits, int x, int y, int number) {
+void renderNumber(SDL_Renderer* r, SDL_Texture** digits, int x, int y, int number, bool selected) {
     std::string s = std::to_string(number);
     int charW = 10;
     int totalW = s.size() * charW;
-    x -= totalW / 2;  // centrado horizontal
-    y -= 8;           // centrado vertical (mitad de 16)
+    int padding = 3;
+    x -= totalW / 2;
+    y -= 8;
+
+    SDL_Rect bg = {x - padding, y - padding, totalW + padding*2, 16 + padding*2};
+    SDL_SetRenderDrawColor(r, 0, 0, 0, 180);
+    SDL_RenderFillRect(r, &bg);
+
+    if (selected) {
+        SDL_Rect border = {bg.x - 2, bg.y - 2, bg.w + 4, bg.h + 4};
+        SDL_SetRenderDrawColor(r, 255, 255, 0, 255);
+        SDL_RenderDrawRect(r, &border);
+    }
+
     for (char c : s) {
         SDL_Rect dst = {x, y, charW, 16};
         SDL_RenderCopy(r, digits[c - '0'], NULL, &dst);
         x += charW;
+    }
+}
+
+void renderTroops(SDL_Renderer* renderer, SDL_Texture** digits, float finalScale, const GameData& state, int screenW, int screenH) {
+    if (finalScale <= 2.0f) return;
+    for (const auto& [color, center] : state.ProvincesCenterList) {
+        float sx = state.offsetX + center.x * finalScale;
+        float sy = state.offsetY + center.y * finalScale;
+        if (sx < 0 || sy < 0 || sx > screenW || sy > screenH) continue;
+        if (!state.BmpColorToProvinceId.count(color)) continue;
+        uint32_t id = state.BmpColorToProvinceId.at(color);
+        if (!state.troopsList.count(id)) continue; // provincia sin tropas, no mostrar
+        if (state.selectedProvince == color) {
+            renderNumber(renderer, digits, (int)sx, (int)sy, state.troopsList.at(id), true);
+        } else {
+            renderNumber(renderer, digits, (int)sx, (int)sy, state.troopsList.at(id), false);
+        }
     }
 }

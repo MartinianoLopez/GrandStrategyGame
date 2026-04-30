@@ -37,3 +37,15 @@ SDL_Texture* surfaceToTexture(SDL_Renderer* renderer, SDL_Surface* surface) {
     SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
     return texture;
 }
+uint32_t searchTroops(const GameData& state, uint32_t provinceId) {
+    auto it = state.troopsList.find(provinceId);
+    if (it != state.troopsList.end()) return it->second;
+    return 0; // sin tropas
+}
+void moveTroops(GameData& state, uint32_t fromProvince, uint32_t toProvince) {
+    if (fromProvince == toProvince) return;
+    if (!state.troopsList.count(fromProvince)) return;
+    state.troopsList[toProvince] += state.troopsList[fromProvince];
+    state.troopsList.erase(fromProvince);
+    state.selectedProvince = 0;
+}

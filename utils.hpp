@@ -28,3 +28,5 @@ std::string colorToString (uint32_t color);
 uint32_t getCountryColorFromProvinceColor (const GameData& state, uint32_t provinceColor);
 uint32_t getPixelColor (SDL_Surface* surface, int x, int y);
 SDL_Texture* surfaceToTexture(SDL_Renderer* renderer, SDL_Surface* surface);
+uint32_t searchTroops(const GameData& state, uint32_t provinceId);
+void moveTroops(GameData& state, uint32_t fromProvince, uint32_t toProvince);

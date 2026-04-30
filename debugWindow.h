@@ -90,6 +90,17 @@ struct DebugWindow {
         }
       }
     }
+    if (ImGui::CollapsingHeader("RightClick Selected Province")) {
+      uint32_t pc = data.secundarySelectedProvinceId;
+      ImGui::Text("Province: %d (%s)", data.secundarySelectedProvinceId, colorToString(pc).c_str());
+
+      if (auto provinceId = mapFind(data.BmpColorToProvinceId, pc)) {
+        if (auto tag = mapFind(data.ProvinceIdToCountryTag, *provinceId)) {
+          uint32_t cc = getCountryColorFromProvinceColor(data, pc);
+          ImGui::Text("Country: %s (%s)", tag->c_str(), colorToString(cc).c_str());
+        }
+      }
+    }
 
     // ── Maps ─────────────────────────────────────────────────────────────────
     if (ImGui::CollapsingHeader("Maps")) {

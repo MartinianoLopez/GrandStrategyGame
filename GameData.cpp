@@ -13,6 +13,6 @@ GameData::GameData()
       lastY(0),
       frameDelay(1000 / 60),
       selectedProvince(0),
-      provinceId(""),
+      selectedProvinceId(0),
       id(0)
 {}

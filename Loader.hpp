@@ -37,3 +37,5 @@ SDL_Surface*
 initCountries(const GameData& state);
 
 std::map<uint32_t, SDL_Point> initProvincesCenters(const GameData& state);
+
+std::map<uint32_t, uint32_t> loadTroopsList(const std::string& filepath);

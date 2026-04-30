@@ -17,10 +17,26 @@ static void processEvent(GameData& state, SDL_Window* window, bool& running, con
       break;
     }
     case SDL_MOUSEBUTTONDOWN:
-      if (event.button.button == SDL_BUTTON_RIGHT) {
-        state.dragging = true;
-        state.lastX = event.button.x;
-        state.lastY = event.button.y;
+        if (event.button.button == SDL_BUTTON_RIGHT) {
+          state.dragging = true;
+          state.lastX = event.button.x;
+          state.lastY = event.button.y;
+
+          int winWidth, winHeight;
+          SDL_GetWindowSize(window, &winWidth, &winHeight);
+          float baseScale = std::min((float)winWidth / state.texWidth, (float)winHeight / state.texHeight);
+          float finalScale = baseScale * state.scale;
+          int imgX = static_cast<int>((event.button.x - state.offsetX) / finalScale);
+          int imgY = static_cast<int>((event.button.y - state.offsetY) / finalScale);
+          if (imgX >= 0 && imgX < state.texWidth && imgY >= 0 && imgY < state.texHeight) {
+              uint32_t targetColor = getPixelColor(state.provincesBmp, imgX, imgY);
+              auto it = state.BmpColorToProvinceId.find(targetColor);
+              if (it != state.BmpColorToProvinceId.end()) {
+                  state.secundarySelectedProvinceId = it->second;
+                  if (state.selectedProvinceId != 0 && searchTroops(state, state.selectedProvinceId) != 0)
+                moveTroops(state, state.selectedProvinceId, state.secundarySelectedProvinceId);
+            }
+        }
       }
       if (event.button.button == SDL_BUTTON_LEFT) {
         int winWidth, winHeight;
@@ -44,7 +60,7 @@ static void processEvent(GameData& state, SDL_Window* window, bool& running, con
           }
           state.selectedProvince = provinceColor;
           uint32_t provinceId = it->second;
-          state.provinceId = provinceId;
+          state.selectedProvinceId = provinceId;
           state.id = provinceId;
           auto itOwner = state.ProvinceIdToCountryTag.find(provinceId);
           std::string owner = (itOwner != state.ProvinceIdToCountryTag.end())
@@ -58,6 +74,7 @@ static void processEvent(GameData& state, SDL_Window* window, bool& running, con
         }
       }
       break;
+    
     case SDL_MOUSEBUTTONUP:
       if (event.button.button == SDL_BUTTON_RIGHT)
         state.dragging = false;

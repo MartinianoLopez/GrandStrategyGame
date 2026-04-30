@@ -37,7 +37,8 @@ struct GameData {
     int frameDelay;
 
     uint32_t selectedProvince;
-    std::string provinceId;
+    uint32_t selectedProvinceId;
+    uint32_t secundarySelectedProvinceId;
     int id;
     float fps = 0.0f;
     TTF_Font* font = nullptr;

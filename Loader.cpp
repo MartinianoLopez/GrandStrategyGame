@@ -29,13 +29,14 @@ void loadAssets(GameData& state, SDL_Renderer* renderer) {
     state.frontierTexture = surfaceToTexture(renderer, createFrontiersSurface(state));
 
     state.ProvincesCenterList = initProvincesCenters(state);
-
-    // Init una vez
+    
+    // Init digits
     for (int i = 0; i < 10; i++) {
         SDL_Surface* s = TTF_RenderText_Solid(state.font, std::to_string(i).c_str(), {255,255,255,255});
         state.digits[i] = SDL_CreateTextureFromSurface(renderer, s);
         SDL_FreeSurface(s);
-}
+    }
+    state.troopsList = loadTroopsList("assets/ProvinceIdtoTroops.txt");
 }
 
 
@@ -340,7 +341,6 @@ findFrontiers(SDL_Surface* img) {
 }
 
 SDL_Surface* createFrontiersSurface(GameData& state) {
-    std::cerr << "Frontiers surface: " << state.texWidth << "x" << state.texHeight << " points: " << state.frontierList.size() << "\n";
     SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, state.texWidth, state.texHeight, 32, SDL_PIXELFORMAT_RGBA8888);
     SDL_FillRect(surface, nullptr, SDL_MapRGBA(surface->format, 0, 0, 0, 0));
 
@@ -420,4 +420,14 @@ std::map<uint32_t, SDL_Point> initProvincesCenters(const GameData& state) {
         centerList[color] = {a.sumX / a.count, a.sumY / a.count};
 
     return centerList;
+}
+
+
+std::map<uint32_t, uint32_t> loadTroopsList(const std::string& filepath) {
+    std::map<uint32_t, uint32_t> troopsList;
+    std::ifstream file(filepath);
+    uint32_t provinceId, troops;
+    while (file >> provinceId >> troops)
+        troopsList[provinceId] = troops;
+    return troopsList;
 }

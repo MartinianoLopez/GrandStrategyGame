@@ -1,6 +1,6 @@
 # Grand Strategy Game
 
-![screenshot](/.github/screenshot-2026-04-27_21-07-28.png)
+![screenshot](/.github/screenshot-2026-04-30_17-52-16.png)
 
 ## Game Requirements
 
@@ -10,7 +10,6 @@
 
 ## To Do
 
-- add troops today
 - Create a basic UI with RmlUI
 - Fix frontier initializer bug
 - Convert frontier pixels to lines
@@ -29,6 +28,7 @@ assets/
 ├── terrain.bmp
 ├── heigthmap.bmp
 ├── definition.csv
+├── ProvinceIdtoTroops.csv
 ├── 00_countries.txt
 ├── provinces/
 │   └── 1-UppLand.txt
