@@ -1,12 +1,11 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <iostream>
-
 #include "GameData.hpp"
 #include "Loader.hpp"
 #include "Renderer.hpp"
-#include "EventManager.h"
-#include "debugWindow.h"
+#include "EventManager.hpp"
+#include "debugWindow.hpp"
 #include <SDL2/SDL_ttf.h>
 
 int main() {
