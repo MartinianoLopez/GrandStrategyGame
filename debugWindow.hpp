@@ -77,6 +77,7 @@ struct DebugWindow {
       ImGui::Text("CountryTag->Name:       %zu entries", data.CountryTagToCountryName.size());
       ImGui::Text("Name->Color:            %zu entries", data.CountryNameToCountryColor.size());
       ImGui::Text("Frontiers:              %zu entries", data.frontierList.size());
+      ImGui::Text("troopsList:             %zu entries", data.troopsList.size());
     }
     // ── SelectedProvince ─────────────────────────────────────────────────────────
     if (ImGui::CollapsingHeader("Selected Province")) {

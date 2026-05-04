@@ -11,14 +11,6 @@
 #include <SDL2/SDL_image.h>
 #include "utils.hpp"
 
-// loadProvincesImage  Province.bmp ( Image where each province has an especific distintive color )
-// loadDefinitions     ProvinceColor ---> provinceId                                                                 Definition.csv     1(id) ;128;34;64(color)
-// loadProvincesFiles                     provinceId ---> CountryTag                                                 provinces Folder   1-UppLand.txt ---> owner = SWE
-// loadCountryTagToCountryName                            CountryTag ---> CountryName                                00_countries.txt   SWE = "countries/Sweden.txt"
-// loadOwnerToColor                                                       CountryName ---> Country Color             Countries Folder   Sweden.txt ---> color = { 157  51  167 }
-// findFrontiers       <ProvinceColor1, ProvinceColor2>, Vector<FrontierPoints> (represents the frontier between two provinces)
-// initCountries       image with the countries painted on
-
 // ===============================================================================================================
 // provinces.bmp
 // ===============================================================================================================
@@ -187,6 +179,7 @@ std::map<uint32_t, std::string> loadProvincesFiles(const std::string& dirpath) {
     
     return idToOwner;
 }
+
 // ===============================================================================================================
 // 00_countries.txt        CountryTag ---> CountryName 
 // ===============================================================================================================
@@ -250,72 +243,31 @@ std::map<std::string, uint32_t> loadOwnerToColor(const std::string& dirpath) {
 // ===============================================================================================================
 // frontiers
 // ===============================================================================================================
-
-    // Frontier ordering issues:
-    //
-    // Main problem: frontier points are NOT ordered.
-    // Current extraction gives scattered pixels instead of a continuous border.
-    //
-    // Example (unordered points):
-    //
-    //        1  2  3  4  5  6        ---------> line by line reading
-    //   7  8                   9 10  --------->
-    //
-    // Desired (ordered path):
-    //
-    //        3  4  5  6  7  8
-    //   1  2                  9 10
-    //
-    // Possible solutions:
-    // - Sort points into a continuous path (costly one time only)
-    // - Use a diferent boundry finder (better but complex)
-
-std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_Point>>
-findFrontiers(SDL_Surface* img) {
+std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFrontiers(SDL_Surface* img) {   
+    std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> frontierList;
     int imgW = img->w;
     int imgH = img->h;
-    
-    std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_Point>> frontierList;
-    
-    for (int y = 0; y < imgH; y++) {
-        for (int x = 0; x < imgW; x++) {
-            uint32_t current = getPixelColor(img, x, y);
-            bool isFrontier = false;
-            uint32_t neighborColor = current;
-            
-            // Derecha
-            if (x + 1 < imgW) {
-                uint32_t right = getPixelColor(img, x + 1, y);
-                if (right != current) {
-                    isFrontier = true;
-                    neighborColor = right;
-                }
-            }
-            
-            // Abajo
-            if (!isFrontier && y + 1 < imgH) {
-                uint32_t below = getPixelColor(img, x, y + 1);
-                if (below != current) {
-                    isFrontier = true;
-                    neighborColor = below;
-                }
-            }
-            
-            // Diagonal
-            if (!isFrontier && x + 1 < imgW && y + 1 < imgH) {
-                uint32_t diag = getPixelColor(img, x + 1, y + 1);
-                if (diag != current) {
-                    isFrontier = true;
-                    neighborColor = diag;
-                }
-            }
-            
-            if (isFrontier) {
-                frontierList[{current, neighborColor}].push_back({x, y});
-            }
+
+    // Left to right
+    for (int y = 0; y < imgH; y++)
+    for (int x = 0; x < imgW; x++) {
+        uint32_t current = getPixelColor(img, x, y);
+        if (x + 1 < imgW) { 
+            uint32_t next = getPixelColor(img, x + 1, y);
+            if (next != current) frontierList[{current, next}].push_back({x + 0.5f, (float)y});
         }
     }
-    
+
+    // Up to bottom
+    for (int y = 0; y < imgH; y++) 
+    for (int x = 0; x < imgW; x++) {  
+        uint32_t current = getPixelColor(img, x, y);
+        if (y + 1 < imgH) {  
+            uint32_t next = getPixelColor(img, x, y + 1);
+            if (next != current) frontierList[{current, next}].push_back({(float)x, y + 0.5f});
+        }
+    }
+
     return frontierList;
 }
 
@@ -324,9 +276,12 @@ SDL_Surface* createFrontiersSurface(GameData& state) {
     SDL_FillRect(surface, nullptr, SDL_MapRGBA(surface->format, 0, 0, 0, 0));
 
     for (const auto& [colorPair, points] : state.frontierList)
-        for (const auto& point : points)
-            if (point.x >= 0 && point.x < state.texWidth && point.y >= 0 && point.y < state.texHeight)
-    ((Uint32*)surface->pixels)[point.y * state.texWidth + point.x] = SDL_MapRGBA(surface->format, 0, 0, 0, 255);
+    for (const auto& point : points) {
+        int px = (int)point.x;
+        int py = (int)point.y;
+        if (px >= 0 && px < state.texWidth && py >= 0 && py < state.texHeight)
+            ((Uint32*)surface->pixels)[py * state.texWidth + px] = SDL_MapRGBA(surface->format, 0, 0, 0, 255);
+    }
 
     return surface;
 }
@@ -419,16 +374,20 @@ void loadAssets(GameData& state, SDL_Renderer* renderer) {
     state.provincesBmp = loadProvincesImage("assets/provinces.bmp");
     state.terrain = surfaceToTexture(renderer, IMG_Load("assets/terrain.bmp"));
     state.height = surfaceToTexture(renderer, IMG_Load("assets/heightmap.bmp"));
-    state.BmpColorToProvinceId = loadDefinitions("assets/definition.csv");
-    state.ProvinceIdToCountryTag = loadProvincesFiles("assets/provinces");
-    state.CountryTagToCountryName = loadCountryNames("assets/00_countries.txt");
-    state.CountryNameToCountryColor = loadOwnerToColor("assets/countries");
+
+    state.BmpColorToProvinceId =       loadDefinitions("assets/definition.csv");  // ProvinceColor -> provinceId   Definition.csv     1(id) ;128;34;64(color)
+    state.ProvinceIdToCountryTag =       loadProvincesFiles("assets/provinces");  // provinceId -> CountryTag      provinces Folder   1-UppLand.txt ---> owner = SWE
+    state.CountryTagToCountryName = loadCountryNames("assets/00_countries.txt");  // CountryTag -> CountryName     00_countries.txt   SWE = "countries/Sweden.txt"
+    state.CountryNameToCountryColor =      loadOwnerToColor("assets/countries");  // CountryName -> CountryColor   Countries Folder   Sweden.txt ---> color = { 157  51  167 }
+
     state.frontierList = findFrontiers(state.provincesBmp);
-    
+    state.frontierTexture = surfaceToTexture(renderer, createFrontiersSurface(state));    
+
     state.countries = initCountries(state);
+    state.ProvincesCenterList = initProvincesCenters(state);
+
     state.texWidth = state.provincesBmp->w;
     state.texHeight = state.provincesBmp->h;
-    state.frontierTexture = surfaceToTexture(renderer, createFrontiersSurface(state));
 
     state.ProvincesCenterList = initProvincesCenters(state);
     
@@ -438,5 +397,6 @@ void loadAssets(GameData& state, SDL_Renderer* renderer) {
         state.digits[i] = SDL_CreateTextureFromSurface(renderer, s);
         SDL_FreeSurface(s);
     }
+    
     state.troopsList = loadTroopsList("assets/ProvinceIdtoTroops.txt");
 }

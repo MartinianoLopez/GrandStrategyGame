@@ -1,22 +1,20 @@
-# Grand Strategy Game
+# Grand Strategy Game Engine
 
 ![screenshot](/.github/screenshot-2026-04-30_17-52-16.png)
 
-## Game Requirements
+## Game Engine Requirements
 
 - Full 2D
-- Reliable history realism
+- Reliable
 - Scalable
 
 ## To Do
 
 - Create a basic UI with RmlUI
-- Fix frontier initializer bug
 - Convert frontier pixels to lines
-- make a file data scraping in python to get the data from other games and use my own simplified file structure to load the game
-- Add river layer
-- Convert rivers to lines
-- add more maps
+- Improve troop sistem
+- Make a basic game dinamic
+- Make ia countries
 
 ## Setup
 
@@ -37,3 +35,8 @@ assets/
 ```
 
 this will be replaced in the future with my own assets
+
+## Second version ideas
+
+- make clases instead of list for all the game data
+- use json to load the assets.

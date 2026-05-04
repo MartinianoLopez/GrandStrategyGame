@@ -15,10 +15,11 @@ struct GameData {
     std::map<uint32_t, std::string> ProvinceIdToCountryTag;
     std::map<std::string, std::string> CountryTagToCountryName;
     std::map<std::string, uint32_t> CountryNameToCountryColor;
-    std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_Point>> frontierList;
+    std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> frontierList;
     SDL_Texture* frontierTexture = nullptr;
     std::map<uint32_t, SDL_Point> ProvincesCenterList;
     std::map<uint32_t, uint32_t> troopsList;
+    
     int texWidth = 0;
     int texHeight = 0;
     float scale = 1.f;
