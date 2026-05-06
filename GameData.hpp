@@ -19,6 +19,7 @@ struct GameData {
     SDL_Texture* frontierTexture = nullptr;
     std::map<uint32_t, SDL_Point> ProvincesCenterList;
     std::map<uint32_t, uint32_t> troopsList;
+    std::map<std::string, uint32_t> countryMoneyList;
     
     int texWidth = 0;
     int texHeight = 0;
@@ -36,4 +37,5 @@ struct GameData {
     TTF_Font* font = nullptr;
     SDL_Texture* digits[10] = {};
     float finalScale = 0.f;
+    std::string playerCountry = "GBR";
 };

@@ -10,7 +10,7 @@
 
 ## To Do
 
-- Create a basic UI with RmlUI
+- make a main menu
 - Convert frontier pixels to lines
 - Improve troop sistem
 - Make a basic game dinamic
@@ -40,3 +40,4 @@ this will be replaced in the future with my own assets
 
 - make clases instead of list for all the game data
 - use json to load the assets.
+- use CMake + SDL3 + OpenGL + RmlUi

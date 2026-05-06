@@ -134,6 +134,57 @@ void renderTroops(GameData& state, SDL_Renderer* renderer, int screenW, int scre
     }
 }
 
+void renderHUD(SDL_Renderer* renderer, GameData& state) {
+    static SDL_Texture* flagTex = nullptr;
+    static std::string lastCountry;
+
+    if (state.playerCountry != lastCountry) {
+        if (flagTex) SDL_DestroyTexture(flagTex);
+        std::string path = "assets/flags/" + state.playerCountry + ".tga";
+        flagTex = IMG_LoadTexture(renderer, path.c_str());
+        lastCountry = state.playerCountry;
+    }
+
+    const int PANEL_H = 48;  // altura justa para el contenido
+    const int FLAG_SIZE = 96; // tamanio flag
+
+    // --- Panel de fondo ---
+    SDL_Rect panel = { 0, 0, state.texWidth / 2, PANEL_H };
+    SDL_SetRenderDrawColor(renderer, 26, 26, 26, 220);
+    SDL_RenderFillRect(renderer, &panel);
+
+    // --- Bandera (cuadrada, misma altura que el panel) ---
+    SDL_Rect flagRect = { 2, 2, FLAG_SIZE - 4, FLAG_SIZE - 4 };
+    SDL_RenderCopy(renderer, flagTex, nullptr, &flagRect);
+
+    // --- Marco dorado ---
+    SDL_SetRenderDrawColor(renderer, 245, 197, 24, 255);
+    for (int i = 0; i < 3; i++) {
+        SDL_Rect border = { 2 - i, 2 - i, FLAG_SIZE - 4 + i * 2, FLAG_SIZE - 4 + i * 2 };
+        SDL_RenderDrawRect(renderer, &border);
+    }
+
+    // --- Icono oro pequeño ---
+    const int ICON_SIZE = 22;
+    const int ICON_X = FLAG_SIZE + 8;
+    const int ICON_Y = (PANEL_H - ICON_SIZE) / 2;
+    SDL_Rect iconRect = { ICON_X, ICON_Y, ICON_SIZE, ICON_SIZE };
+    SDL_SetRenderDrawColor(renderer, 245, 197, 24, 255);
+    SDL_RenderFillRect(renderer, &iconRect);
+
+    // --- Número a la derecha del ícono ---
+    SDL_Color color = { 245, 197, 24, 255 };
+    std::string moneyStr = std::to_string(mapFind(state.countryMoneyList, state.playerCountry).value_or(0));
+SDL_Surface* surf = TTF_RenderText_Blended(state.font, moneyStr.c_str(), color);
+    SDL_Texture* txt  = SDL_CreateTextureFromSurface(renderer, surf);
+    int tw, th;
+    SDL_QueryTexture(txt, nullptr, nullptr, &tw, &th);
+    SDL_Rect txtRect = { ICON_X + ICON_SIZE + 6, (PANEL_H - th) / 2, tw, th };
+    SDL_RenderCopy(renderer, txt, nullptr, &txtRect);
+    SDL_FreeSurface(surf);
+    SDL_DestroyTexture(txt);
+}
+
 void render(GameData& state, SDL_Renderer* renderer, SDL_Window* window) {
     // Obtener dimensiones de la ventana
     
@@ -158,8 +209,10 @@ void render(GameData& state, SDL_Renderer* renderer, SDL_Window* window) {
         markProvinceFrontiers(state, renderer, SDL_Color{255, 255, 0, 240}, state.selectedProvince);
 
         renderTroops(state, renderer, winWidth, winHeight);
-
+        
     }
+
+    renderHUD(renderer, state);
 
     // displayPoints(state, renderer, state.finalScale, state.ProvincesCenterList, SDL_Color{255, 255, 0, 240});
 

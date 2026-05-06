@@ -365,6 +365,17 @@ std::map<uint32_t, uint32_t> loadTroopsList(const std::string& filepath) {
         troopsList[provinceId] = troops;
     return troopsList;
 }
+
+std::map<std::string, uint32_t> initCountriesMoney(const GameData& state) {
+    std::map<std::string, uint32_t> countryMoneyList;
+
+    for (const auto& [tag, name] : state.CountryTagToCountryName) {
+        countryMoneyList[tag] = 100;
+    }
+
+    return countryMoneyList;
+}
+
 // ===============================================================================================================
 // LOAD ALL
 // ===============================================================================================================
@@ -399,4 +410,5 @@ void loadAssets(GameData& state, SDL_Renderer* renderer) {
     }
     
     state.troopsList = loadTroopsList("assets/ProvinceIdtoTroops.txt");
+    state.countryMoneyList = initCountriesMoney(state);
 }

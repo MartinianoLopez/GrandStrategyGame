@@ -14,6 +14,11 @@ auto mapFind(const Map& map, const typename Map::key_type& key)
     if (it == map.end()) return std::nullopt;
     return it->second;
 }
+std::optional<uint32_t> mapFind(const std::map<std::string, uint32_t>& map, const std::string& key) {
+    auto it = map.find(key);
+    if (it == map.end()) return std::nullopt;
+    return it->second;
+}
 
 template <typename Map>
 void showMap(const Map& map) {
