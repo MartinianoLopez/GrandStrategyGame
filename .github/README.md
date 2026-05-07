@@ -1,6 +1,6 @@
 # Grand Strategy Game Engine
 
-![screenshot](/.github/screenshot-2026-04-30_17-52-16.png)
+![screenshot](/.github/screenshot-2026-05-07_16-37-54.png)
 
 ## Game Engine Requirements
 

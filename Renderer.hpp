@@ -1,17 +1,25 @@
 #include "utils.hpp"
 #include <algorithm>
 
-void renderFrontiers(GameData& state, SDL_Renderer* renderer, SDL_Color color, int screenW, int screenH) {
-                                                                                                        
+void renderFrontiers(
+    GameData& state,
+    SDL_Renderer* renderer,
+    SDL_Color color,
+    int screenW,
+    int screenH,
+    const std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>>& frontierList,
+    float size)
+{
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-    for (const auto& [colorPair, points] : state.frontierList) {
-        const auto& [colorA, colorB] = colorPair;
-        
+
+    for (const auto& [colorPair, points] : frontierList) {
         for (const auto& point : points) {
             float sx = state.offsetX + point.x * state.finalScale;
             float sy = state.offsetY + point.y * state.finalScale;
+
             if (sx < 0 || sy < 0 || sx > screenW || sy > screenH) continue;
-            SDL_FRect dot = {sx, sy, state.finalScale, state.finalScale};
+
+            SDL_FRect dot = { sx, sy, state.finalScale * size, state.finalScale * size };
             SDL_RenderFillRectF(renderer, &dot);
         }
     }
@@ -202,15 +210,19 @@ void render(GameData& state, SDL_Renderer* renderer, SDL_Window* window) {
 
     displaySurface(renderer, state.countries, destRect, 240);
     
-     if (state.scale > 5.0f){
-
-        renderFrontiers(state, renderer,       SDL_Color{0, 0, 0, 150},        winWidth, winHeight); 
-    
+    if (state.scale > 10.0f){
+        renderFrontiers(state, renderer,       SDL_Color{0, 0, 0, 120},        winWidth, winHeight, state.frontierList, 1); 
+    }
+     if (state.scale > 5.0f ){
+        renderFrontiers(state, renderer,       SDL_Color{0, 0, 0, 220},        winWidth, winHeight, state.countryFrontierList, 1); 
         markProvinceFrontiers(state, renderer, SDL_Color{255, 255, 0, 240}, state.selectedProvince);
-
         renderTroops(state, renderer, winWidth, winHeight);
         
     }
+    if (state.scale < 5.0f){
+        renderFrontiers(state, renderer,       SDL_Color{0, 0, 0, 220},        winWidth, winHeight, state.countryFrontierList, 6/state.scale); 
+    }
+    
 
     renderHUD(renderer, state);
 

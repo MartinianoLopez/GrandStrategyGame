@@ -270,6 +270,31 @@ std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFrontiers(S
 
     return frontierList;
 }
+std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFrontiersBetweenCountries(
+    GameData& state,
+    const std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>>& frontiers)
+{
+    std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> filteredFrontiers;
+
+    for (const auto& [key, points] : frontiers) {
+        const auto provinceId1 = mapFind(state.BmpColorToProvinceId, key.first);
+        const auto provinceId2 = mapFind(state.BmpColorToProvinceId, key.second);
+
+        if (!provinceId1.has_value() || !provinceId2.has_value()) continue;
+
+        const auto tag1 = mapFind(state.ProvinceIdToCountryTag, provinceId1.value());
+        const auto tag2 = mapFind(state.ProvinceIdToCountryTag, provinceId2.value());
+
+        const bool differentCountries = tag1.has_value() && tag2.has_value() && tag1.value() != tag2.value();
+        const bool oneIsCountryOneIsNot = tag1.has_value() != tag2.has_value();
+
+        if (differentCountries || oneIsCountryOneIsNot) {
+            filteredFrontiers[key] = points;
+        }
+    }
+
+    return filteredFrontiers;
+}
 
 SDL_Surface* createFrontiersSurface(GameData& state) {
     SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, state.texWidth, state.texHeight, 32, SDL_PIXELFORMAT_RGBA8888);
@@ -411,4 +436,5 @@ void loadAssets(GameData& state, SDL_Renderer* renderer) {
     
     state.troopsList = loadTroopsList("assets/ProvinceIdtoTroops.txt");
     state.countryMoneyList = initCountriesMoney(state);
+    state.countryFrontierList = findFrontiersBetweenCountries(state, state.frontierList);
 }
