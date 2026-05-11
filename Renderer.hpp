@@ -1,8 +1,12 @@
 #include "utils.hpp"
+#include "World.hpp"
 #include <algorithm>
 
+// ===============================================================================================================
+// frontiers
+// ===============================================================================================================
 void renderFrontiers(
-    GameData& state,
+    World& world,
     SDL_Renderer* renderer,
     SDL_Color color,
     int screenW,
@@ -11,43 +15,38 @@ void renderFrontiers(
     float size)
 {
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-
     for (const auto& [colorPair, points] : frontierList) {
         for (const auto& point : points) {
-            float sx = state.offsetX + point.x * state.finalScale;
-            float sy = state.offsetY + point.y * state.finalScale;
-
+            float sx = world.offsetX + point.x * world.finalScale;
+            float sy = world.offsetY + point.y * world.finalScale;
             if (sx < 0 || sy < 0 || sx > screenW || sy > screenH) continue;
-
-            SDL_FRect dot = { sx, sy, state.finalScale * size, state.finalScale * size };
+            SDL_FRect dot = { sx, sy, world.finalScale * size, world.finalScale * size };
             SDL_RenderFillRectF(renderer, &dot);
         }
     }
 }
 
-void markProvinceFrontiers(GameData& state, SDL_Renderer* renderer, SDL_Color remarkColor, uint32_t provinceColor) {
-    SDL_SetRenderDrawColor(renderer, remarkColor.r, remarkColor.g, remarkColor.b, remarkColor.a);
+void markProvinceFrontiers(World& world, SDL_Color color, int provinceId) {
+    Province* p = provinceFindById(world.provinces, provinceId);
+    if (!p) return;
 
-    std::vector<const std::vector<SDL_FPoint>*> matchingLines;
-    //Search
-    for (const auto& [colorPair, points] : state.frontierList) {
-        const auto& [colorA, colorB] = colorPair;
+    SDL_SetRenderDrawColor(world.renderer, color.r, color.g, color.b, color.a);
 
-        if (colorA == provinceColor || colorB == provinceColor) {
-            matchingLines.push_back(&points);
-        }
-    }
-    //Render
-    for (const auto* points : matchingLines) {
-        for (const auto& point : *points) {
-            float sx = state.offsetX + point.x * state.finalScale;
-            float sy = state.offsetY + point.y * state.finalScale;
-            SDL_FRect dot = {sx, sy, state.finalScale, state.finalScale};
-            SDL_RenderFillRectF(renderer, &dot);
+    for (const auto& [colorPair, points] : world.provinceFrontiers) {
+        uint32_t pColor = ((uint32_t)p->color.r << 16) | ((uint32_t)p->color.g << 8) | (uint32_t)p->color.b;
+        if (colorPair.first != pColor && colorPair.second != pColor) continue;
+        for (const auto& point : points) {
+            float sx = world.offsetX + point.x * world.finalScale;
+            float sy = world.offsetY + point.y * world.finalScale;
+            SDL_FRect dot = { sx, sy, world.finalScale, world.finalScale };
+            SDL_RenderFillRectF(world.renderer, &dot);
         }
     }
 }
 
+// ===============================================================================================================
+// display
+// ===============================================================================================================
 void displaySurface(SDL_Renderer* renderer, SDL_Surface* surface, const SDL_FRect& destRect, Uint8 alpha) {
     if (!surface) return;
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -63,175 +62,148 @@ void displayTexture(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRec
     SDL_RenderCopyF(renderer, texture, nullptr, &destRect);
 }
 
-void displayPoints(GameData& state, SDL_Renderer* renderer, float finalScale, 
-                   const std::map<uint32_t, SDL_Point>& points, SDL_Color color) {
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-    for (const auto& [id, point] : points) {
-        float sx = state.offsetX + point.x * finalScale;
-        float sy = state.offsetY + point.y * finalScale;
-        SDL_FRect dot = {sx, sy, finalScale * 3, finalScale * 3}; // 3x bigger to be visible
-        SDL_RenderFillRectF(renderer, &dot);
-    }
+// ===============================================================================================================
+// text & numbers
+// ===============================================================================================================
+void renderText(SDL_Renderer* renderer, TTF_Font* font, int x, int y,
+                const std::string& text, SDL_Color color) {
+    SDL_Surface* surf = TTF_RenderText_Solid(font, text.c_str(), color);
+    if (!surf) return;
+    SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
+    SDL_FreeSurface(surf);
+    if (!tex) return;
+    SDL_Rect dst = { x, y, 0, 0 };
+    SDL_QueryTexture(tex, nullptr, nullptr, &dst.w, &dst.h);
+    SDL_RenderCopy(renderer, tex, nullptr, &dst);
+    SDL_DestroyTexture(tex);
 }
 
-void renderNumber(SDL_Renderer* r, GameData& state, int x, int y, int number, bool selected) {
+void renderNumber(SDL_Renderer* renderer, World& world, int x, int y, int number, bool selected) {
     std::string s = std::to_string(number);
-    int charW = 10;
+    const int charW   = 10;
+    const int charH   = 16;
+    const int padding = 3;
     int totalW = s.size() * charW;
-    int padding = 3;
     x -= totalW / 2;
-    y -= 8;
+    y -= charH / 2;
 
-    SDL_Rect bg = {x - padding, y - padding, totalW + padding*2, 16 + padding*2};
-    SDL_SetRenderDrawColor(r, 0, 0, 0, 180);
-    SDL_RenderFillRect(r, &bg);
+    SDL_Rect bg = { x - padding, y - padding, totalW + padding * 2, charH + padding * 2 };
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 180);
+    SDL_RenderFillRect(renderer, &bg);
 
     if (selected) {
-        SDL_Rect border = {bg.x - 2, bg.y - 2, bg.w + 4, bg.h + 4};
-        SDL_SetRenderDrawColor(r, 255, 255, 0, 255);
-        SDL_RenderDrawRect(r, &border);
+        SDL_Rect border = { bg.x - 2, bg.y - 2, bg.w + 4, bg.h + 4 };
+        SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+        SDL_RenderDrawRect(renderer, &border);
     }
 
     for (char c : s) {
-        SDL_Rect dst = {x, y, charW, 16};
-        SDL_RenderCopy(r, state.digits[c - '0'], NULL, &dst);
+        SDL_Rect dst = { x, y, charW, charH };
+        SDL_RenderCopy(renderer, world.digits[c - '0'], nullptr, &dst);
         x += charW;
     }
 }
 
-void renderProvinceIds(SDL_Renderer* renderer, float finalScale, GameData& state, int screenW, int screenH) {
-    if (finalScale <= 2.5f) return;
-    for (const auto& [color, center] : state.ProvincesCenterList) {
-        float sx = state.offsetX + center.x * finalScale;
-        float sy = state.offsetY + center.y * finalScale;
-        if (sx < 0 || sy < 0 || sx > screenW || sy > screenH) continue; // fuera de pantalla
-        if (!state.BmpColorToProvinceId.count(color)) continue;
-        uint32_t id = state.BmpColorToProvinceId.at(color);
-        renderNumber(renderer, state, (int)sx, (int)sy, id, false);
-    }
-}
+// ===============================================================================================================
+// armies
+// ===============================================================================================================
+void renderArmies(World& world, SDL_Renderer* renderer, int screenW, int screenH) {
+    for (const auto& army : world.armies) {
+        Province* p = provinceFindById(world.provinces, army.position);
+        if (!p) continue;
 
-void renderText(SDL_Renderer* renderer, TTF_Font* font, int x, int y, 
-                const std::string& text, SDL_Color color) {
-    SDL_Surface* surf = TTF_RenderText_Solid(font, text.c_str(), color);
-    SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
-    SDL_FreeSurface(surf);
-    SDL_Rect dst = {x, y, 0, 0};
-    SDL_QueryTexture(tex, NULL, NULL, &dst.w, &dst.h);
-    SDL_RenderCopy(renderer, tex, NULL, &dst);
-    SDL_DestroyTexture(tex);
-}
-
-
-
-
-void renderTroops(GameData& state, SDL_Renderer* renderer, int screenW, int screenH) {
-
-    for (const auto& [color, center] : state.ProvincesCenterList) {
-        float sx = state.offsetX + center.x * state.finalScale;
-        float sy = state.offsetY + center.y * state.finalScale;
+        float sx = world.offsetX + p->center.x * world.finalScale;
+        float sy = world.offsetY + p->center.y * world.finalScale;
         if (sx < 0 || sy < 0 || sx > screenW || sy > screenH) continue;
-        if (!state.BmpColorToProvinceId.count(color)) continue;
-        uint32_t id = state.BmpColorToProvinceId.at(color);
-        if (!state.troopsList.count(id)) continue; // provincia sin tropas, no mostrar
-        if (state.selectedProvince == color) {
-            renderNumber(renderer, state, (int)sx, (int)sy, state.troopsList.at(id), true);
-        } else {
-            renderNumber(renderer, state, (int)sx, (int)sy, state.troopsList.at(id), false);
-        }
+
+        bool selected = (world.selectedProvince == army.position);
+        renderNumber(renderer, world, (int)sx, (int)sy, army.power, selected);
     }
 }
 
-void renderHUD(SDL_Renderer* renderer, GameData& state) {
-    static SDL_Texture* flagTex = nullptr;
+// ===============================================================================================================
+// HUD
+// ===============================================================================================================
+void renderHUD(SDL_Renderer* renderer, World& world) {
+    static SDL_Texture* flagTex  = nullptr;
     static std::string lastCountry;
 
-    if (state.playerCountry != lastCountry) {
+    if (world.playerCountry != lastCountry) {
         if (flagTex) SDL_DestroyTexture(flagTex);
-        std::string path = "assets/flags/" + state.playerCountry + ".tga";
+        std::string path = "assets/flags/" + world.playerCountry + ".tga";
         flagTex = IMG_LoadTexture(renderer, path.c_str());
-        lastCountry = state.playerCountry;
+        lastCountry = world.playerCountry;
     }
 
-    const int PANEL_H = 48;  // altura justa para el contenido
-    const int FLAG_SIZE = 96; // tamanio flag
+    Country* player = countryTagFind(world.countries, world.playerCountry);
 
-    // --- Panel de fondo ---
-    SDL_Rect panel = { 0, 0, state.texWidth / 2, PANEL_H };
+    const int PANEL_H  = 48;
+    const int FLAG_SIZE = 96;
+
+    SDL_Rect panel = { 0, 0, 400, PANEL_H };
     SDL_SetRenderDrawColor(renderer, 26, 26, 26, 220);
     SDL_RenderFillRect(renderer, &panel);
 
-    // --- Bandera (cuadrada, misma altura que el panel) ---
     SDL_Rect flagRect = { 2, 2, FLAG_SIZE - 4, FLAG_SIZE - 4 };
     SDL_RenderCopy(renderer, flagTex, nullptr, &flagRect);
 
-    // --- Marco dorado ---
     SDL_SetRenderDrawColor(renderer, 245, 197, 24, 255);
     for (int i = 0; i < 3; i++) {
         SDL_Rect border = { 2 - i, 2 - i, FLAG_SIZE - 4 + i * 2, FLAG_SIZE - 4 + i * 2 };
         SDL_RenderDrawRect(renderer, &border);
     }
 
-    // --- Icono oro pequeño ---
     const int ICON_SIZE = 22;
-    const int ICON_X = FLAG_SIZE + 8;
-    const int ICON_Y = (PANEL_H - ICON_SIZE) / 2;
+    const int ICON_X    = FLAG_SIZE + 8;
+    const int ICON_Y    = (PANEL_H - ICON_SIZE) / 2;
     SDL_Rect iconRect = { ICON_X, ICON_Y, ICON_SIZE, ICON_SIZE };
     SDL_SetRenderDrawColor(renderer, 245, 197, 24, 255);
     SDL_RenderFillRect(renderer, &iconRect);
 
-    // --- Número a la derecha del ícono ---
-    SDL_Color color = { 245, 197, 24, 255 };
-    std::string moneyStr = std::to_string(mapFind(state.countryMoneyList, state.playerCountry).value_or(0));
-SDL_Surface* surf = TTF_RenderText_Blended(state.font, moneyStr.c_str(), color);
-    SDL_Texture* txt  = SDL_CreateTextureFromSurface(renderer, surf);
-    int tw, th;
-    SDL_QueryTexture(txt, nullptr, nullptr, &tw, &th);
-    SDL_Rect txtRect = { ICON_X + ICON_SIZE + 6, (PANEL_H - th) / 2, tw, th };
-    SDL_RenderCopy(renderer, txt, nullptr, &txtRect);
-    SDL_FreeSurface(surf);
-    SDL_DestroyTexture(txt);
+    int money = player ? player->money : 0;
+    SDL_Color goldColor = { 245, 197, 24, 255 };
+    renderText(renderer, world.font, ICON_X + ICON_SIZE + 6, (PANEL_H - 16) / 2,
+               std::to_string(money), goldColor);
 }
 
-void render(GameData& state, SDL_Renderer* renderer, SDL_Window* window) {
-    // Obtener dimensiones de la ventana
-    
+// ===============================================================================================================
+// render
+// ===============================================================================================================
+void render(World& world, SDL_Renderer* renderer, SDL_Window* window) {
     int winWidth, winHeight;
     SDL_GetWindowSize(window, &winWidth, &winHeight);
-    state.finalScale = std::min((float)winWidth / state.texWidth, (float)winHeight / state.texHeight) * state.scale;
+    world.finalScale = std::min(
+        (float)winWidth  / world.texWidth,
+        (float)winHeight / world.texHeight
+    ) * world.scale;
+
     SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
     SDL_RenderClear(renderer);
-    SDL_FRect destRect = {state.offsetX, state.offsetY, state.texWidth * state.finalScale, state.texHeight * state.finalScale};
 
+    SDL_FRect destRect = {
+        world.offsetX,
+        world.offsetY,
+        world.texWidth  * world.finalScale,
+        world.texHeight * world.finalScale
+    };
 
-    displayTexture(renderer, state.height,    destRect, 255);
+    displayTexture(renderer, world.height,  destRect, 255);
+    displayTexture(renderer, world.terrain, destRect, 150);
+    displaySurface(renderer, world.countriesImg, destRect, 240);
 
-    displayTexture(renderer, state.terrain,   destRect, 150);
+    if (world.scale > 10.0f)
+        renderFrontiers(world, renderer, {0, 0, 0, 120}, winWidth, winHeight, world.provinceFrontiers, 1);
 
-    displaySurface(renderer, state.countries, destRect, 240);
-    
-    if (state.scale > 10.0f){
-        renderFrontiers(state, renderer,       SDL_Color{0, 0, 0, 120},        winWidth, winHeight, state.frontierList, 1); 
+    if (world.scale > 5.0f) {
+        renderFrontiers(world, renderer, {0, 0, 0, 220}, winWidth, winHeight, world.countryFrontiers, 1);
+        markProvinceFrontiers(world, {255, 255, 0, 240}, world.selectedProvince);
+        renderArmies(world, renderer, winWidth, winHeight);
     }
-     if (state.scale > 5.0f ){
-        renderFrontiers(state, renderer,       SDL_Color{0, 0, 0, 220},        winWidth, winHeight, state.countryFrontierList, 1); 
-        markProvinceFrontiers(state, renderer, SDL_Color{255, 255, 0, 240}, state.selectedProvince);
-        renderTroops(state, renderer, winWidth, winHeight);
-        
-    }
-    if (state.scale < 5.0f){
-        renderFrontiers(state, renderer,       SDL_Color{0, 0, 0, 220},        winWidth, winHeight, state.countryFrontierList, 6/state.scale); 
-    }
-    
 
-    renderHUD(renderer, state);
+    if (world.scale < 5.0f)
+        renderFrontiers(world, renderer, {0, 0, 0, 220}, winWidth, winHeight, world.countryFrontiers, 6 / world.scale);
 
-    // displayPoints(state, renderer, state.finalScale, state.ProvincesCenterList, SDL_Color{255, 255, 0, 240});
-
-    // if(state.finalScale > 1){
-    //   displayTexture(renderer, state.frontierTexture, destRect, 100);
-    // }
-
+    renderHUD(renderer, world);
 
     SDL_RenderPresent(renderer);
 }

@@ -1,8 +1,6 @@
 #pragma once
 #include <string>
-#include "GameData.hpp"
-
-
+#include "World.hpp"
 #include <fstream>
 #include <sstream>
 #include <filesystem>
@@ -10,235 +8,7 @@
 #include <iostream>
 #include <SDL2/SDL_image.h>
 #include "utils.hpp"
-
-// ===============================================================================================================
-// provinces.bmp
-// ===============================================================================================================
-
-SDL_Surface* loadProvincesImage(const std::string& filepath) {
-
-    SDL_Surface* raw = IMG_Load(filepath.c_str());
-    if (!raw) {
-        std::cerr << "IMG_Load error: " << IMG_GetError() << "\n";
-        return nullptr;
-    }
-
-    SDL_Surface* converted =
-        SDL_ConvertSurfaceFormat(raw, SDL_PIXELFORMAT_RGBA32, 0);
-
-    SDL_FreeSurface(raw);
-
-    if (!converted) {
-        std::cerr << "ConvertSurface error: " << SDL_GetError() << "\n";
-        return nullptr;
-    }
-
-    return converted;
-}
-
-
-// ===============================================================================================================
-// definitions.csv RGBColorFromProvinces.bmp ----> ProvinceID
-// ===============================================================================================================
-
-std::map<uint32_t, uint32_t>
-loadDefinitions(const std::string& filepath) {
-    std::map<uint32_t, uint32_t> colorMap;
-
-    std::ifstream file(filepath);
-    if (!file.is_open()) return colorMap;
-
-    std::string line;
-    std::getline(file, line); // skip header
-
-    while (std::getline(file, line)) {
-        if (line.empty()) continue;
-
-        std::stringstream ss(line);
-        std::string id, r, g, b, name, x;
-
-        std::getline(ss, id, ';');
-        std::getline(ss, r, ';');
-        std::getline(ss, g, ';');
-        std::getline(ss, b, ';');
-        std::getline(ss, name, ';');
-        std::getline(ss, x, ';');
-
-        if (id.empty() || r.empty() || g.empty() || b.empty()) continue;
-
-        uint32_t R = std::stoul(r);
-        uint32_t G = std::stoul(g);
-        uint32_t B = std::stoul(b);
-
-        // formato RGBA32 (igual a getPixel con surface convertida)
-        uint32_t color =
-            (255u << 24) |  // A
-            (B << 16)   |  // B
-            (G << 8)    |  // G
-            (R);           // R
-
-        uint32_t provinceId = std::stoul(id);
-        colorMap[color] = provinceId;
-    }
-
-    return colorMap;
-}
-
-
-// ===============================================================================================================
-// provinces id-provinceName.txt    ProvinceID -----> CountryTag
-// ===============================================================================================================
-
-std::string extractOwnerFromLine(const std::string& line) {
-    size_t eq = line.find('=');
-    if (eq == std::string::npos) return "";
-    
-    std::string value = line.substr(eq + 1);
-    
-    // Limpiar espacios al inicio
-    size_t start = value.find_first_not_of(" \t");
-    if (start == std::string::npos) return "";
-    
-    value = value.substr(start);
-    
-    // Retornar solo los primeros 3 caracteres
-    return value.substr(0, 3);
-}
-
-uint32_t extractProvinceId(const std::string& filename) {
-    std::string idStr;
-    for (char c : filename) {
-        if (std::isdigit(c)) {
-            idStr += c;
-        } else {
-            break;
-        }
-    }
-    
-    if (idStr.empty()) return 0;
-    
-    try {
-        return static_cast<uint32_t>(std::stoul(idStr));
-    } catch (...) {
-        return 0;
-    }
-}
-
-std::map<uint32_t, std::string> loadProvincesFiles(const std::string& dirpath) {
-    std::map<uint32_t, std::string> idToOwner;
-    namespace fs = std::filesystem;
-    
-    if (!fs::exists(dirpath)) {
-        return idToOwner;
-    }
-    
-    for (const auto& entry : fs::directory_iterator(dirpath)) {
-        if (!entry.is_regular_file()) {
-            continue;
-        }
-        
-        std::string filename = entry.path().filename().string();
-        uint32_t id = extractProvinceId(filename);
-        
-        if (id == 0) {
-            continue;
-        }
-        
-        std::ifstream file(entry.path());
-        if (!file.is_open()) {
-            continue;
-        }
-        
-        std::string line;
-        bool found = false;
-        
-        while (std::getline(file, line) && !found) {
-            // Si encontramos una fecha (ej: 1487.1.1 =), paramos
-            // Las fechas tienen formato: YYYY.M.D =
-            if (line.find_first_of("0123456789") == 0 && line.find('=') != std::string::npos) {
-                // Es una fecha, no seguimos buscando
-                break;
-            }
-            
-            // Ignorar tribal_owner
-            if (line.find("tribal_owner") != std::string::npos) {
-                continue;
-            }
-            
-            // Buscar "owner =" (sin espacios antes)
-            size_t ownerPos = line.find("owner =");
-            if (ownerPos != std::string::npos) {
-                std::string owner = extractOwnerFromLine(line);
-                if (!owner.empty()) {
-                    idToOwner[id] = owner;
-                    found = true; // Encontró, no seguir buscando
-                }
-            }
-        }
-    }
-    
-    return idToOwner;
-}
-
-// ===============================================================================================================
-// 00_countries.txt        CountryTag ---> CountryName 
-// ===============================================================================================================
-std::map<std::string, std::string> loadCountryNames(const std::string& filepath) {
-    std::map<std::string, std::string> tagToName;
-    std::ifstream file(filepath);
-    std::string line;
-
-    while (std::getline(file, line)) {
-        if (line.empty())                continue;
-        if (line[0] == '#')              continue;  // ignorar comentarios
-        
-        auto eq = line.find('=');
-        if (eq == std::string::npos)     continue;
-
-        std::string tag  = line.substr(0, eq);
-        std::string path = line.substr(eq + 1);
-
-        tag.erase(0, tag.find_first_not_of(" \t"));
-        tag.erase(tag.find_last_not_of(" \t") + 1);
-        path.erase(0, path.find_first_not_of(" \t\""));
-        path.erase(path.find_last_not_of(" \t\"") + 1);
-
-        // "countries/Sweden.txt" ---> "Sweden"
-        auto slash = path.find_last_of('/');
-        auto dot   = path.find_last_of('.');
-        std::string name = path.substr(slash + 1, dot - slash - 1);
-
-        tagToName[tag] = name;  // SWE -> Sweden
-    }
-    return tagToName;
-}
-
-// ===============================================================================================================
-// countries/country.txt   CountryName ---> ColorRGB 
-// ===============================================================================================================
-std::map<std::string, uint32_t> loadOwnerToColor(const std::string& dirpath) {
-    std::map<std::string, uint32_t> nameToColor;
-
-    for (const auto& entry : std::filesystem::directory_iterator(dirpath)) {
-        std::ifstream file(entry.path());
-        std::string line;
-        std::string filename = entry.path().stem().string();
-
-        while (std::getline(file, line)) {
-            if (line.find("color") == std::string::npos) continue;
-            if (line.find('{')    == std::string::npos) continue;
-
-            std::istringstream iss(line.substr(line.find('{') + 1));
-            uint32_t r, g, b;
-            iss >> r >> g >> b;
-
-            nameToColor[filename] = (r << 16) | (g << 8) | b;
-            break;
-        }
-    }
-    return nameToColor;
-}
-
+#include <chrono>
 
 // ===============================================================================================================
 // frontiers
@@ -248,7 +18,6 @@ std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFrontiers(S
     int imgW = img->w;
     int imgH = img->h;
 
-    // Left to right
     for (int y = 0; y < imgH; y++)
     for (int x = 0; x < imgW; x++) {
         uint32_t current = getPixelColor(img, x, y);
@@ -258,7 +27,6 @@ std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFrontiers(S
         }
     }
 
-    // Up to bottom
     for (int y = 0; y < imgH; y++) 
     for (int x = 0; x < imgW; x++) {  
         uint32_t current = getPixelColor(img, x, y);
@@ -270,23 +38,24 @@ std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFrontiers(S
 
     return frontierList;
 }
+
 std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFrontiersBetweenCountries(
-    GameData& state,
+    World& world,
     const std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>>& frontiers)
 {
     std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> filteredFrontiers;
 
     for (const auto& [key, points] : frontiers) {
-        const auto provinceId1 = mapFind(state.BmpColorToProvinceId, key.first);
-        const auto provinceId2 = mapFind(state.BmpColorToProvinceId, key.second);
+        const Province* province1 = provinceFindByColor(world.provinces, key.first);
+        const Province* province2 = provinceFindByColor(world.provinces, key.second);
 
-        if (!provinceId1.has_value() || !provinceId2.has_value()) continue;
+        if (province1 == nullptr || province2 == nullptr) continue;
 
-        const auto tag1 = mapFind(state.ProvinceIdToCountryTag, provinceId1.value());
-        const auto tag2 = mapFind(state.ProvinceIdToCountryTag, provinceId2.value());
+        const bool differentCountries = province1->owner != province2->owner
+                                     && !province1->owner.empty()
+                                     && !province2->owner.empty();
 
-        const bool differentCountries = tag1.has_value() && tag2.has_value() && tag1.value() != tag2.value();
-        const bool oneIsCountryOneIsNot = tag1.has_value() != tag2.has_value();
+        const bool oneIsCountryOneIsNot = province1->owner.empty() != province2->owner.empty();
 
         if (differentCountries || oneIsCountryOneIsNot) {
             filteredFrontiers[key] = points;
@@ -296,145 +65,349 @@ std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFrontiersBe
     return filteredFrontiers;
 }
 
-SDL_Surface* createFrontiersSurface(GameData& state) {
-    SDL_Surface* surface = SDL_CreateRGBSurfaceWithFormat(0, state.texWidth, state.texHeight, 32, SDL_PIXELFORMAT_RGBA8888);
-    SDL_FillRect(surface, nullptr, SDL_MapRGBA(surface->format, 0, 0, 0, 0));
 
-    for (const auto& [colorPair, points] : state.frontierList)
-    for (const auto& point : points) {
-        int px = (int)point.x;
-        int py = (int)point.y;
-        if (px >= 0 && px < state.texWidth && py >= 0 && py < state.texHeight)
-            ((Uint32*)surface->pixels)[py * state.texWidth + px] = SDL_MapRGBA(surface->format, 0, 0, 0, 255);
+
+std::map<uint32_t, SDL_Point> initProvincesCenters(const World& world) {
+
+    struct Accum {
+        int sumX = 0;
+        int sumY = 0;
+        int count = 0;
+    };
+
+    std::map<uint32_t, Accum> accum;
+
+    for (int y = 0; y < world.texHeight; y++) {
+
+        for (int x = 0; x < world.texWidth; x++) {
+
+            uint32_t color =
+                getPixelColor(world.provincesBmp, x, y);
+
+            auto& a = accum[color];
+
+            a.sumX += x;
+            a.sumY += y;
+            a.count++;
+        }
     }
 
-    return surface;
+    std::map<uint32_t, SDL_Point> centerList;
+
+    for (auto& [color, a] : accum) {
+
+        if (a.count > 0) {
+
+            centerList[color] = {
+                a.sumX / a.count,
+                a.sumY / a.count
+            };
+        }
+    }
+
+    return centerList;
 }
 
-
 // ===============================================================================================================
-// Utils
+// helpers
 // ===============================================================================================================
-void setPixel(SDL_Surface* surface, int x, int y, uint32_t color) {
-    uint8_t r = color & 0xFF;
-    uint8_t g = (color >> 8) & 0xFF;
-    uint8_t b = (color >> 16) & 0xFF;
-    uint8_t a = (255);
-    Uint32 pixel = SDL_MapRGBA(
-        surface->format,
-        b, g, r, a
-    );
-
-    Uint8* p = (Uint8*)surface->pixels + y * surface->pitch + x * 4;
-    *(Uint32*)p = pixel;
+std::string extractValue(const std::string& line, const std::string& key) {
+    // busca "key": "value" o "key": number
+    size_t pos = line.find("\"" + key + "\"");
+    if (pos == std::string::npos) return "";
+    pos = line.find(":", pos);
+    if (pos == std::string::npos) return "";
+    pos++;
+    while (pos < line.size() && (line[pos] == ' ' || line[pos] == '\t')) pos++;
+    if (line[pos] == '"') {
+        pos++;
+        size_t end = line.find('"', pos);
+        return line.substr(pos, end - pos);
+    } else {
+        size_t end = pos;
+        while (end < line.size() && line[end] != ',' && line[end] != '}') end++;
+        std::string val = line.substr(pos, end - pos);
+        val.erase(val.find_last_not_of(" \t\r\n") + 1);
+        return val;
+    }
 }
 
-SDL_Surface* initCountries(const GameData& state) {
-    SDL_Surface* provinces = state.provincesBmp;
+// ===============================================================================================================
+// loaders
+// ===============================================================================================================
+
+std::list<Province> loadProvinces(
+    const std::map<uint32_t, SDL_Point>& centerList
+) {
+
+    std::list<Province> provinces;
+
+    std::ifstream file("assets/provinces.txt");
+
+    if (!file.is_open()) {
+        std::cerr << "Error: could not open provinces.txt\n";
+        return provinces;
+    }
+
+    // format:
+    // id;r;g;b;name;owner
+
+    std::string line;
+
+    // skip header
+    std::getline(file, line);
+
+    while (std::getline(file, line)) {
+
+        std::stringstream ss(line);
+
+        std::string token;
+
+        std::vector<std::string> parts;
+
+        while (std::getline(ss, token, ';')) {
+            parts.push_back(token);
+        }
+
+        if (parts.size() < 6)
+            continue;
+
+        int id = std::stoi(parts[0]);
+
+        int r = std::stoi(parts[1]);
+        int g = std::stoi(parts[2]);
+        int b = std::stoi(parts[3]);
+
+        std::string name = parts[4];
+        std::string owner = parts[5];
+
+        Province p(
+            id,
+            name,
+            owner,
+            Color(r, g, b)
+        );
+
+        uint32_t colorKey =
+            ((uint32_t)r << 16) |
+            ((uint32_t)g << 8) |
+            (uint32_t)b;
+
+        auto it = centerList.find(colorKey);
+
+        if (it != centerList.end()) {
+            p.center = it->second;
+        }
+
+        provinces.push_back(std::move(p));
+    }
+
+    return provinces;
+}
+
+// ===============================================================================================================
+
+std::list<Country> loadCountries() {
+
+    std::list<Country> countries;
+
+    std::ifstream file("assets/countries.txt");
+
+    if (!file.is_open()) {
+        std::cerr << "Error: could not open countries.txt\n";
+        return countries;
+    }
+
+    // format:
+    // tag;name;r;g;b;money
+
+    std::string line;
+
+    // skip header
+    std::getline(file, line);
+
+    while (std::getline(file, line)) {
+
+        std::stringstream ss(line);
+
+        std::string token;
+
+        std::vector<std::string> parts;
+
+        while (std::getline(ss, token, ';')) {
+            parts.push_back(token);
+        }
+
+        if (parts.size() < 6)
+            continue;
+
+        std::string tag = parts[0];
+        std::string name = parts[1];
+
+        int r = std::stoi(parts[2]);
+        int g = std::stoi(parts[3]);
+        int b = std::stoi(parts[4]);
+
+        int money = std::stoi(parts[5]);
+
+        countries.emplace_back(
+            tag,
+            name,
+            Color(r, g, b),
+            money
+        );
+    }
+
+    return countries;
+}
+
+// ===============================================================================================================
+
+std::list<Army> loadArmies() {
+
+    std::list<Army> armies;
+
+    std::ifstream file("assets/armies.txt");
+
+    if (!file.is_open()) {
+        std::cerr << "Error: could not open armies.txt\n";
+        return armies;
+    }
+
+    // format:
+    // id;name;owner;power
+
+    std::string line;
+
+    // skip header
+    std::getline(file, line);
+
+    while (std::getline(file, line)) {
+
+        std::stringstream ss(line);
+
+        std::string token;
+
+        std::vector<std::string> parts;
+
+        while (std::getline(ss, token, ';')) {
+            parts.push_back(token);
+        }
+
+        if (parts.size() < 4)
+            continue;
+
+        int provinceId = std::stoi(parts[0]);
+
+        std::string name = parts[1];
+
+        std::string owner = parts[2];
+
+        int power = std::stoi(parts[3]);
+
+        armies.emplace_back(
+            provinceId,
+            name,
+            owner,
+            power
+        );
+    }
+
+    return armies;
+}
+
+SDL_Surface* prepareCountries(const World& world) {
+    auto start = std::chrono::high_resolution_clock::now();
+
+    SDL_Surface* provinces = world.provincesBmp;
     if (!provinces) return nullptr;
 
-    SDL_Surface* countries = SDL_CreateRGBSurfaceWithFormat(
-        0,
-        provinces->w,
-        provinces->h,
-        32,
-        provinces->format->format
+    SDL_Surface* result = SDL_CreateRGBSurfaceWithFormat(
+        0, provinces->w, provinces->h, 32, provinces->format->format
     );
-    if (!countries) return nullptr;
+    if (!result) return nullptr;
+
+    std::map<uint32_t, uint32_t> colorToCountryColor;
 
     SDL_LockSurface(provinces);
-    SDL_LockSurface(countries);
+    SDL_LockSurface(result);
 
     int imgW = provinces->w;
     int imgH = provinces->h;
 
     for (int y = 0; y < imgH; y++) {
         for (int x = 0; x < imgW; x++) {
-            uint32_t pixel = getPixelColor(provinces, x, y);
-            uint32_t country = getCountryColorFromProvinceColor(state, pixel);
-            if (country != 0) {
-                setPixel(countries, x, y, country);
+            uint32_t pixelColor = getPixelColor(provinces, x, y);
+
+            auto it = colorToCountryColor.find(pixelColor);
+            if (it != colorToCountryColor.end()) {
+                if (it->second != 0) setPixel(result, x, y, it->second);
+                continue;
             }
+
+            Province* p = provinceFindByColor(world.provinces, pixelColor);
+            if (!p || p->owner.empty()) {
+                colorToCountryColor[pixelColor] = 0;
+                continue;
+            }
+
+            Country* c = countryTagFind(world.countries, p->owner);
+            if (!c) {
+                colorToCountryColor[pixelColor] = 0;
+                continue;
+            }
+
+            uint32_t countryColor = ((uint32_t)c->color.r << 16) |
+                                    ((uint32_t)c->color.g << 8)  |
+                                     (uint32_t)c->color.b;
+
+            colorToCountryColor[pixelColor] = countryColor;
+            setPixel(result, x, y, countryColor);
         }
     }
 
     SDL_UnlockSurface(provinces);
-    SDL_UnlockSurface(countries);
-    return countries;
-}
+    SDL_UnlockSurface(result);
 
+    auto end = std::chrono::high_resolution_clock::now();
+    float ms = std::chrono::duration<float, std::milli>(end - start).count();
+    std::cerr << "prepareCountries: " << ms << " ms\n";
 
-std::map<uint32_t, SDL_Point> initProvincesCenters(const GameData& state) {
-    struct Accum { int sumX, sumY, count; };
-    std::map<uint32_t, Accum> accum;
-
-    for (int y = 0; y < state.texHeight; y++)
-        for (int x = 0; x < state.texWidth; x++) {
-            auto& a = accum[getPixelColor(state.provincesBmp, x, y)];
-            a.sumX += x; a.sumY += y; a.count++;
-        }
-
-    std::map<uint32_t, SDL_Point> centerList;
-    for (auto& [color, a] : accum)
-        centerList[color] = {a.sumX / a.count, a.sumY / a.count};
-
-    return centerList;
-}
-
-
-std::map<uint32_t, uint32_t> loadTroopsList(const std::string& filepath) {
-    std::map<uint32_t, uint32_t> troopsList;
-    std::ifstream file(filepath);
-    uint32_t provinceId, troops;
-    while (file >> provinceId >> troops)
-        troopsList[provinceId] = troops;
-    return troopsList;
-}
-
-std::map<std::string, uint32_t> initCountriesMoney(const GameData& state) {
-    std::map<std::string, uint32_t> countryMoneyList;
-
-    for (const auto& [tag, name] : state.CountryTagToCountryName) {
-        countryMoneyList[tag] = 100;
-    }
-
-    return countryMoneyList;
+    return result;
 }
 
 // ===============================================================================================================
 // LOAD ALL
 // ===============================================================================================================
+void loadAssets(World& world) {
+    world.provincesBmp = IMG_Load("assets/terrain/provinces.bmp");
+    if (!world.provincesBmp) {
+        std::cerr << "Error loading provinces.bmp: " << IMG_GetError() << "\n";
+        return;
+    }
 
-void loadAssets(GameData& state, SDL_Renderer* renderer) {
+    world.terrain = surfaceToTexture(world.renderer, IMG_Load("assets/terrain/terrain.bmp"));
+    world.height  = surfaceToTexture(world.renderer, IMG_Load("assets/terrain/heightmap.bmp"));
 
-    state.provincesBmp = loadProvincesImage("assets/provinces.bmp");
-    state.terrain = surfaceToTexture(renderer, IMG_Load("assets/terrain.bmp"));
-    state.height = surfaceToTexture(renderer, IMG_Load("assets/heightmap.bmp"));
+    world.texWidth  = world.provincesBmp->w;
+    world.texHeight = world.provincesBmp->h;
 
-    state.BmpColorToProvinceId =       loadDefinitions("assets/definition.csv");  // ProvinceColor -> provinceId   Definition.csv     1(id) ;128;34;64(color)
-    state.ProvinceIdToCountryTag =       loadProvincesFiles("assets/provinces");  // provinceId -> CountryTag      provinces Folder   1-UppLand.txt ---> owner = SWE
-    state.CountryTagToCountryName = loadCountryNames("assets/00_countries.txt");  // CountryTag -> CountryName     00_countries.txt   SWE = "countries/Sweden.txt"
-    state.CountryNameToCountryColor =      loadOwnerToColor("assets/countries");  // CountryName -> CountryColor   Countries Folder   Sweden.txt ---> color = { 157  51  167 }
+    std::map<uint32_t, SDL_Point> centerList = initProvincesCenters(world);
 
-    state.frontierList = findFrontiers(state.provincesBmp);
-    state.frontierTexture = surfaceToTexture(renderer, createFrontiersSurface(state));    
+    world.provinces = loadProvinces(centerList);
+    world.countries = loadCountries();
+    world.armies    = loadArmies();
 
-    state.countries = initCountries(state);
-    state.ProvincesCenterList = initProvincesCenters(state);
+    world.countriesImg = prepareCountries(world);
 
-    state.texWidth = state.provincesBmp->w;
-    state.texHeight = state.provincesBmp->h;
+    world.provinceFrontiers = findFrontiers(world.provincesBmp);
+    world.countryFrontiers  = findFrontiersBetweenCountries(world, world.provinceFrontiers);
 
-    state.ProvincesCenterList = initProvincesCenters(state);
-    
-    // Init digits
     for (int i = 0; i < 10; i++) {
-        SDL_Surface* s = TTF_RenderText_Solid(state.font, std::to_string(i).c_str(), {255,255,255,255});
-        state.digits[i] = SDL_CreateTextureFromSurface(renderer, s);
+        SDL_Surface* s = TTF_RenderText_Solid(world.font, std::to_string(i).c_str(), {255, 255, 255, 255});
+        world.digits[i] = SDL_CreateTextureFromSurface(world.renderer, s);
         SDL_FreeSurface(s);
     }
-    
-    state.troopsList = loadTroopsList("assets/ProvinceIdtoTroops.txt");
-    state.countryMoneyList = initCountriesMoney(state);
-    state.countryFrontierList = findFrontiersBetweenCountries(state, state.frontierList);
+
+    world.playerCountry = "GBR";
 }

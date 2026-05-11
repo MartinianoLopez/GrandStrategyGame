@@ -1,8 +1,8 @@
-# Grand Strategy Game Engine
+# Grand Strategy Game
 
-![screenshot](/.github/screenshot-2026-05-07_16-37-54.png)
+![screenshot](/docs/screenshot-2026-05-07_16-37-54.png)
 
-## Game Engine Requirements
+## Game Requirements
 
 - Full 2D
 - Reliable

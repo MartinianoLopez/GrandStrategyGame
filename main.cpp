@@ -1,11 +1,12 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <iostream>
-#include "GameData.hpp"
+#include "World.hpp"
 #include "Loader.hpp"
 #include "Renderer.hpp"
-#include "EventManager.hpp"
+#include "World.hpp"
 #include "debugWindow.hpp"
+#include "EventManager.hpp"
 #include <SDL2/SDL_ttf.h>
 
 int main() {
@@ -46,10 +47,11 @@ int main() {
     // =========================================================================================
     // Load game
     // =========================================================================================
-    GameData state;
+    World state;
+    state.renderer = renderer;
     state.font = TTF_OpenFont("/usr/share/fonts/TTF/JetBrainsMonoNerdFontMono-Bold.ttf", 16);
     std::cerr << "LOADING...\n";
-    loadAssets(state, renderer);
+    loadAssets(state);
     std::cerr << "LOADED\n";
     
     EventManager eventManager;
