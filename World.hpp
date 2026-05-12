@@ -69,8 +69,6 @@ struct Army {
 };
 
 struct World {
-    SDL_Renderer* renderer;
-
     SDL_Surface* provincesBmp = nullptr;
     SDL_Texture* terrain = nullptr;
     SDL_Texture* height = nullptr;
@@ -90,6 +88,7 @@ struct World {
 
     TTF_Font* font = nullptr;
     SDL_Texture* digits[10] = {}; 
+    SDL_Texture* letters[26] = {};
 
     int texWidth = 0;
     int texHeight = 0;
@@ -102,5 +101,6 @@ struct World {
     int frameDelay = 1000 / 60;
     float fps = 0.0f;
     float finalScale = 0.f;
+    bool running = true;
 };
 

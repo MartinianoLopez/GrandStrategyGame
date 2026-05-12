@@ -26,11 +26,11 @@ void renderFrontiers(
     }
 }
 
-void markProvinceFrontiers(World& world, SDL_Color color, int provinceId) {
+void markProvinceFrontiers(World& world, SDL_Renderer* renderer, SDL_Color color, int provinceId) {
     Province* p = provinceFindById(world.provinces, provinceId);
     if (!p) return;
 
-    SDL_SetRenderDrawColor(world.renderer, color.r, color.g, color.b, color.a);
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
 
     for (const auto& [colorPair, points] : world.provinceFrontiers) {
         uint32_t pColor = ((uint32_t)p->color.r << 16) | ((uint32_t)p->color.g << 8) | (uint32_t)p->color.b;
@@ -39,7 +39,7 @@ void markProvinceFrontiers(World& world, SDL_Color color, int provinceId) {
             float sx = world.offsetX + point.x * world.finalScale;
             float sy = world.offsetY + point.y * world.finalScale;
             SDL_FRect dot = { sx, sy, world.finalScale, world.finalScale };
-            SDL_RenderFillRectF(world.renderer, &dot);
+            SDL_RenderFillRectF(renderer, &dot);
         }
     }
 }
@@ -196,7 +196,7 @@ void render(World& world, SDL_Renderer* renderer, SDL_Window* window) {
 
     if (world.scale > 5.0f) {
         renderFrontiers(world, renderer, {0, 0, 0, 220}, winWidth, winHeight, world.countryFrontiers, 1);
-        markProvinceFrontiers(world, {255, 255, 0, 240}, world.selectedProvince);
+        markProvinceFrontiers(world, renderer, {255, 255, 0, 240}, world.selectedProvince);
         renderArmies(world, renderer, winWidth, winHeight);
     }
 

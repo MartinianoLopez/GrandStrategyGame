@@ -2,92 +2,66 @@
 #include <SDL2/SDL_image.h>
 #include <iostream>
 #include "World.hpp"
-#include "Loader.hpp"
 #include "Renderer.hpp"
-#include "World.hpp"
+#include "gameWindow.hpp"
 #include "debugWindow.hpp"
-#include "EventManager.hpp"
+#include "eventRouter.hpp"
 #include <SDL2/SDL_ttf.h>
+#include "Loader.hpp"
 
 int main() {
-  // =========================================================================================
-  // Init
-  // =========================================================================================
     std::cerr << "START\n";
 
-    SDL_Window*   window   = nullptr;
-    SDL_Renderer* renderer = nullptr;
-    if (SDL_Init(SDL_INIT_VIDEO) != 0)               return -1;
-    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG))    return -1;
+        GameWindow mainWin = GameWindow();
+        DebugWindow debugWin;
+        EventRouter eventManager;
 
-    window = SDL_CreateWindow(
-        "Window",
-        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        800, 600,
-        SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
-    );
+        bool debugging = true;
+        debugWin.init();
+        if (!debugging) debugWin.hide();
 
-    if (!window) return -1;
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    if (!renderer) return -1;
-    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-    SDL_Init(SDL_INIT_VIDEO);
-    TTF_Init();                 
-    
-
-    // =========================================================================================
-    // Debug window
-    // =========================================================================================
-    bool debugging = true;
-
-    DebugWindow debugWin;
-    if (debugging) debugWin.init();
-
-    // =========================================================================================
-    // Load game
-    // =========================================================================================
-    World state;
-    state.renderer = renderer;
-    state.font = TTF_OpenFont("/usr/share/fonts/TTF/JetBrainsMonoNerdFontMono-Bold.ttf", 16);
     std::cerr << "LOADING...\n";
-    loadAssets(state);
+
+        World world;
+
+        loadAssets(world, mainWin.renderer);
+
     std::cerr << "LOADED\n";
-    
-    EventManager eventManager;
+        
+        
     // =========================================================================================
     // Game Loop                                                                                          
     // =========================================================================================
-    bool running = true;
 
-    while (running) {
+    while (world.running) {
         Uint32 frameStart = SDL_GetTicks();
 
         // Events
         SDL_Event event;
         while (SDL_PollEvent(&event))
-            eventManager.process(event, state, window, debugWin, running);
+            eventManager.route(world, event, mainWin, debugWin);
 
         // Update & render
-        render(state, renderer, window);
-        if (debugging) debugWin.render(state);
+        render(world, mainWin.renderer, mainWin.window);
+        if (debugging) debugWin.render(world);
 
         // Frame cap
         Uint32 frameTime = SDL_GetTicks() - frameStart;
-        state.fps = 1000.0f / (frameTime > 0 ? frameTime : 1);
-        if (frameTime < (Uint32)state.frameDelay)
-        SDL_Delay(state.frameDelay - frameTime);            
+        world.fps = 1000.0f / (frameTime > 0 ? frameTime : 1);
+        if (frameTime < (Uint32)world.frameDelay)
+        SDL_Delay(world.frameDelay - frameTime);            
     }
 
     // =========================================================================================
     // Shutdown                                                                                        
     // =========================================================================================
-    TTF_CloseFont(state.font);
+    TTF_CloseFont(world.font);
     TTF_Quit();                
     SDL_Quit();
     if (debugging) debugWin.shutdown();
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
+    SDL_DestroyRenderer(mainWin.renderer);
+    SDL_DestroyWindow(mainWin.window);
     IMG_Quit();
     SDL_Quit();
 

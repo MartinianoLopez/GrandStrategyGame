@@ -375,19 +375,38 @@ SDL_Surface* prepareCountries(const World& world) {
 
     return result;
 }
+void initFont(World& world, SDL_Renderer* renderer, const char *fontPath) {
+    if (TTF_Init() < 0) return;
 
+    // Cargar a doble resolución
+    world.font = TTF_OpenFont(fontPath, 64);
+    if (!world.font) return;
+
+    for (int i = 0; i < 10; i++) {
+        SDL_Surface* s = TTF_RenderText_Blended(
+            world.font,
+            std::to_string(i).c_str(),
+            {255, 255, 255, 255}
+        );
+        if (!s) continue;
+        world.digits[i] = SDL_CreateTextureFromSurface(renderer, s);
+        SDL_FreeSurface(s);
+    }
+}
 // ===============================================================================================================
 // LOAD ALL
 // ===============================================================================================================
-void loadAssets(World& world) {
+void loadAssets(World& world, SDL_Renderer* renderer) {
+    auto start = std::chrono::high_resolution_clock::now();
+    
     world.provincesBmp = IMG_Load("assets/terrain/provinces.bmp");
     if (!world.provincesBmp) {
         std::cerr << "Error loading provinces.bmp: " << IMG_GetError() << "\n";
         return;
     }
 
-    world.terrain = surfaceToTexture(world.renderer, IMG_Load("assets/terrain/terrain.bmp"));
-    world.height  = surfaceToTexture(world.renderer, IMG_Load("assets/terrain/heightmap.bmp"));
+    world.terrain = surfaceToTexture(renderer, IMG_Load("assets/terrain/terrain.bmp"));
+    world.height  = surfaceToTexture(renderer, IMG_Load("assets/terrain/heightmap.bmp"));
 
     world.texWidth  = world.provincesBmp->w;
     world.texHeight = world.provincesBmp->h;
@@ -402,12 +421,11 @@ void loadAssets(World& world) {
 
     world.provinceFrontiers = findFrontiers(world.provincesBmp);
     world.countryFrontiers  = findFrontiersBetweenCountries(world, world.provinceFrontiers);
-
-    for (int i = 0; i < 10; i++) {
-        SDL_Surface* s = TTF_RenderText_Solid(world.font, std::to_string(i).c_str(), {255, 255, 255, 255});
-        world.digits[i] = SDL_CreateTextureFromSurface(world.renderer, s);
-        SDL_FreeSurface(s);
-    }
-
+    
+    initFont(world, renderer,"assets/Cinzel_Decorative/CinzelDecorative-Regular.ttf");
     world.playerCountry = "GBR";
+
+    auto end = std::chrono::high_resolution_clock::now();
+    float ms = std::chrono::duration<float, std::milli>(end - start).count();
+    std::cerr << "time: " << ms << " ms\n";
 }
