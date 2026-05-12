@@ -65,42 +65,96 @@ void displayTexture(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRec
 // ===============================================================================================================
 // text & numbers
 // ===============================================================================================================
-void renderText(SDL_Renderer* renderer, TTF_Font* font, int x, int y,
-                const std::string& text, SDL_Color color) {
-    SDL_Surface* surf = TTF_RenderText_Solid(font, text.c_str(), color);
-    if (!surf) return;
-    SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surf);
-    SDL_FreeSurface(surf);
-    if (!tex) return;
-    SDL_Rect dst = { x, y, 0, 0 };
-    SDL_QueryTexture(tex, nullptr, nullptr, &dst.w, &dst.h);
-    SDL_RenderCopy(renderer, tex, nullptr, &dst);
-    SDL_DestroyTexture(tex);
+void renderText(
+    SDL_Renderer* renderer,
+    World& world,
+    int x,
+    int y,
+    const std::string& text
+) {
+    for (char c : text) {
+
+        if (c < 0 || c >= 128)
+            continue;
+
+        Glyph& g = world.glyphs[(int)c];
+
+        SDL_Rect dst = {
+            x,
+            y,
+            g.w,
+            g.h
+        };
+
+        SDL_RenderCopy(renderer, g.tex, nullptr, &dst);
+
+        x += g.w;
+    }
 }
 
-void renderNumber(SDL_Renderer* renderer, World& world, int x, int y, int number, bool selected) {
+void renderArmy(
+    SDL_Renderer* renderer,
+    World& world,
+    int x,
+    int y,
+    int number,
+    bool selected
+) {
     std::string s = std::to_string(number);
-    const int charW   = 10;
-    const int charH   = 16;
-    const int padding = 3;
-    int totalW = s.size() * charW;
-    x -= totalW / 2;
-    y -= charH / 2;
 
-    SDL_Rect bg = { x - padding, y - padding, totalW + padding * 2, charH + padding * 2 };
+    int totalW = 0;
+    int maxH = 0;
+
+    for (char c : s) {
+        Glyph& g = world.glyphs[(int)c];
+        totalW += g.w;
+        maxH = std::max(maxH, g.h);
+    }
+
+    x -= totalW / 2;
+    y -= maxH / 2;
+
+    x = int(x);
+    y = int(y);
+
+    const int padding = 1;
+
+    SDL_Rect bg = {
+        x - padding,
+        y - padding,
+        totalW + padding * 2,
+        maxH + padding * 2
+    };
+
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 180);
     SDL_RenderFillRect(renderer, &bg);
 
     if (selected) {
-        SDL_Rect border = { bg.x - 2, bg.y - 2, bg.w + 4, bg.h + 4 };
-        SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+        SDL_Rect border = {
+            bg.x - 2,
+            bg.y - 2,
+            bg.w + 4,
+            bg.h + 4
+        };
+
+        SDL_SetRenderDrawColor(renderer, 255,255,0,255);
         SDL_RenderDrawRect(renderer, &border);
     }
 
     for (char c : s) {
-        SDL_Rect dst = { x, y, charW, charH };
-        SDL_RenderCopy(renderer, world.digits[c - '0'], nullptr, &dst);
-        x += charW;
+
+        Glyph& g = world.glyphs[(int)c];
+
+        SDL_Rect dst = {
+            x,
+            y,
+            g.w,
+            g.h
+        };
+
+        SDL_RenderCopy(renderer, g.tex, nullptr, &dst);
+
+        x += g.w;
     }
 }
 
@@ -117,7 +171,7 @@ void renderArmies(World& world, SDL_Renderer* renderer, int screenW, int screenH
         if (sx < 0 || sy < 0 || sx > screenW || sy > screenH) continue;
 
         bool selected = (world.selectedProvince == army.position);
-        renderNumber(renderer, world, (int)sx, (int)sy, army.power, selected);
+        renderArmy(renderer, world, (int)sx, (int)sy, army.power, selected);
     }
 }
 
@@ -162,8 +216,8 @@ void renderHUD(SDL_Renderer* renderer, World& world) {
 
     int money = player ? player->money : 0;
     SDL_Color goldColor = { 245, 197, 24, 255 };
-    renderText(renderer, world.font, ICON_X + ICON_SIZE + 6, (PANEL_H - 16) / 2,
-               std::to_string(money), goldColor);
+    renderText(renderer, world, ICON_X + ICON_SIZE + 6, (PANEL_H - 16) / 2,
+               std::to_string(money));
 }
 
 // ===============================================================================================================
@@ -191,17 +245,19 @@ void render(World& world, SDL_Renderer* renderer, SDL_Window* window) {
     displayTexture(renderer, world.terrain, destRect, 150);
     displaySurface(renderer, world.countriesImg, destRect, 240);
 
-    if (world.scale > 10.0f)
+    if (world.scale > 6.0f)
         renderFrontiers(world, renderer, {0, 0, 0, 120}, winWidth, winHeight, world.provinceFrontiers, 1);
-
-    if (world.scale > 5.0f) {
-        renderFrontiers(world, renderer, {0, 0, 0, 220}, winWidth, winHeight, world.countryFrontiers, 1);
-        markProvinceFrontiers(world, renderer, {255, 255, 0, 240}, world.selectedProvince);
-        renderArmies(world, renderer, winWidth, winHeight);
-    }
 
     if (world.scale < 5.0f)
         renderFrontiers(world, renderer, {0, 0, 0, 220}, winWidth, winHeight, world.countryFrontiers, 6 / world.scale);
+        
+    if (world.scale > 4.0f) {
+        renderFrontiers(world, renderer, {0, 0, 0, 220}, winWidth, winHeight, world.countryFrontiers, 1);
+        markProvinceFrontiers(world, renderer,{255, 255, 0, 240}, world.selectedProvince);
+        renderArmies(world, renderer, winWidth, winHeight);
+    }
+
+    
 
     renderHUD(renderer, world);
 

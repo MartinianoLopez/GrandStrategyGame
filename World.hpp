@@ -67,6 +67,11 @@ struct Army {
     Army(int position, int power)
         : position(position), name("Debuging Army"), owner("no Owner"), power(power) {}
 };
+struct Glyph {
+    SDL_Texture* tex = nullptr;
+    int w = 0;
+    int h = 0;
+};
 
 struct World {
     SDL_Surface* provincesBmp = nullptr;
@@ -87,8 +92,7 @@ struct World {
     std::string playerCountry;
 
     TTF_Font* font = nullptr;
-    SDL_Texture* digits[10] = {}; 
-    SDL_Texture* letters[26] = {};
+    Glyph glyphs[128];
 
     int texWidth = 0;
     int texHeight = 0;

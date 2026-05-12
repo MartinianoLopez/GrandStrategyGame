@@ -375,21 +375,38 @@ SDL_Surface* prepareCountries(const World& world) {
 
     return result;
 }
-void initFont(World& world, SDL_Renderer* renderer, const char *fontPath) {
-    if (TTF_Init() < 0) return;
 
-    // Cargar a doble resolución
-    world.font = TTF_OpenFont(fontPath, 64);
-    if (!world.font) return;
+void initFont(World& world, SDL_Renderer* renderer, const char* fontPath) {
+    if (TTF_Init() == -1) {
+        SDL_Log("TTF init error: %s", TTF_GetError());
+        return;
+    }
+    world.font = TTF_OpenFont(fontPath, 11);
+    if (!world.font) {
+        SDL_Log("Font load error: %s", TTF_GetError());
+        return;
+    }
 
-    for (int i = 0; i < 10; i++) {
-        SDL_Surface* s = TTF_RenderText_Blended(
+    SDL_Color color = {255,255,255,255};
+
+    for (int c = 32; c < 127; c++) {
+        char text[2] = { (char)c, '\0' };
+
+        SDL_Surface* s = TTF_RenderText_Solid(
             world.font,
-            std::to_string(i).c_str(),
-            {255, 255, 255, 255}
+            text,
+            color
         );
-        if (!s) continue;
-        world.digits[i] = SDL_CreateTextureFromSurface(renderer, s);
+
+        if (!s)
+            continue;
+
+        world.glyphs[c].tex =
+            SDL_CreateTextureFromSurface(renderer, s);
+
+        world.glyphs[c].w = s->w;
+        world.glyphs[c].h = s->h;
+
         SDL_FreeSurface(s);
     }
 }
@@ -421,8 +438,8 @@ void loadAssets(World& world, SDL_Renderer* renderer) {
 
     world.provinceFrontiers = findFrontiers(world.provincesBmp);
     world.countryFrontiers  = findFrontiersBetweenCountries(world, world.provinceFrontiers);
-    
-    initFont(world, renderer,"assets/Cinzel_Decorative/CinzelDecorative-Regular.ttf");
+
+    initFont(world, renderer,"assets/Nunito/Nunito-VariableFont_wght.ttf");
     world.playerCountry = "GBR";
 
     auto end = std::chrono::high_resolution_clock::now();
