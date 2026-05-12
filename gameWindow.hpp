@@ -21,18 +21,7 @@ struct GameWindow {
                 world.running = false;
                 break;
 
-            case SDL_MOUSEWHEEL: {
-                float zoomFactor = (event.wheel.y > 0) ? 1.1f : 0.9f;
 
-                float mx = (float)event.wheel.mouseX;
-                float my = (float)event.wheel.mouseY;
-
-                world.offsetX = mx + (world.offsetX - mx) * zoomFactor;
-                world.offsetY = my + (world.offsetY - my) * zoomFactor;
-
-                world.scale *= zoomFactor;
-                break;
-            }
 
             case SDL_MOUSEBUTTONDOWN: {
 
@@ -147,18 +136,52 @@ struct GameWindow {
 
                 break;
 
-            case SDL_MOUSEMOTION:
 
-                if (world.dragging) {
+                //==================================================================================================================
+                // zoom & pan
+                //==================================================================================================================
+                
+                case SDL_MOUSEWHEEL: {
+                    float zoomFactor = (event.wheel.y > 0) ? 1.1f : 0.9f;
+                    float mx = (float)event.wheel.mouseX;
+                    float my = (float)event.wheel.mouseY;
 
-                    world.offsetX += event.motion.x - world.lastX;
-                    world.offsetY += event.motion.y - world.lastY;
+                    if (world.scale * zoomFactor >= 1.5) {
+                        world.offsetX = mx + (world.offsetX - mx) * zoomFactor;
+                        world.offsetY = my + (world.offsetY - my) * zoomFactor;
+                        world.scale *= zoomFactor;
 
-                    world.lastX = event.motion.x;
-                    world.lastY = event.motion.y;
+                        int screenW, screenH;
+                        SDL_GetWindowSize(window, &screenW, &screenH);
+
+                        float newFinalScale = std::min(
+                            (float)screenW / world.texWidth,
+                            (float)screenH / world.texHeight
+                        ) * world.scale;
+
+                        float limitAbajo = screenH - world.texHeight * newFinalScale;
+
+                        if (world.offsetY > 0) world.offsetY = 0;
+                        if (world.offsetY < limitAbajo) world.offsetY = limitAbajo;
+                    }
+                    break;
                 }
+                case SDL_MOUSEMOTION:
+                    if (world.dragging) {
+                        int screenW, screenH;
+                        SDL_GetWindowSize(window, &screenW, &screenH);
+                        float newOffsetY = world.offsetY + event.motion.y - world.lastY;
+                        float limitAbajo = screenH - world.texHeight * world.finalScale;
 
-                break;
+                        if (newOffsetY <= 0 && newOffsetY >= limitAbajo) {
+                            world.offsetY = newOffsetY;
+                        }
+
+                        world.offsetX += event.motion.x - world.lastX;
+                        world.lastX = event.motion.x;
+                        world.lastY = event.motion.y;
+                    }
+                    break;
         }
     }
 };

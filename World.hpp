@@ -97,7 +97,7 @@ struct World {
     int texWidth = 0;
     int texHeight = 0;
 
-    float scale = 1.f;
+    float scale = 2.0f;
     float offsetX = 0.f;
     float offsetY = 0.f;
     bool dragging = false;
