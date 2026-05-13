@@ -224,6 +224,7 @@ void renderHUD(SDL_Renderer* renderer, World& world) {
 // render
 // ===============================================================================================================
 void render(World& world, SDL_Renderer* renderer, SDL_Window* window) {
+    
     int winWidth, winHeight;
     SDL_GetWindowSize(window, &winWidth, &winHeight);
     world.finalScale = std::min(
@@ -234,13 +235,14 @@ void render(World& world, SDL_Renderer* renderer, SDL_Window* window) {
     SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
     SDL_RenderClear(renderer);
 
+        
+ 
     SDL_FRect destRect = {
         world.offsetX,
         world.offsetY,
         world.texWidth  * world.finalScale,
         world.texHeight * world.finalScale
     };
-
     displayTexture(renderer, world.height,  destRect, 255);
     displayTexture(renderer, world.terrain, destRect, 150);
     displaySurface(renderer, world.countriesImg, destRect, 240);

@@ -98,8 +98,8 @@ struct World {
     int texHeight = 0;
 
     float scale = 2.0f;
-    float offsetX = 0.f;
-    float offsetY = 0.f;
+    float offsetX = 100.f;
+    float offsetY = -100.f;
     bool dragging = false;
     int lastX = 0, lastY = 0;
     int frameDelay = 1000 / 60;
