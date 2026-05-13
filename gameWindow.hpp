@@ -47,58 +47,60 @@ struct GameWindow {
             //==================================================================================================================
             // zoom
             //==================================================================================================================
-                
             case SDL_MOUSEWHEEL: {
-
                 float zoomFactor = (event.wheel.y > 0) ? 1.1f : 0.9f;
                 float mx = (float)event.wheel.mouseX;
                 float my = (float)event.wheel.mouseY;
 
-                if (world.scale * zoomFactor <= 1.5) {
-                    break;
-                }
-                    world.offsetX = mx + (world.offsetX - mx) * zoomFactor; // real offset offsetX / zoomfactor
+                if (world.freecamera) {
+                    world.offsetX = mx + (world.offsetX - mx) * zoomFactor;
                     world.offsetY = my + (world.offsetY - my) * zoomFactor;
                     world.scale *= zoomFactor;
-                        
+                } else {
+                    if (world.scale * zoomFactor <= 1.5f) break;
+
+                    world.offsetX = mx + (world.offsetX - mx) * zoomFactor;
+                    world.offsetY = my + (world.offsetY - my) * zoomFactor;
+                    world.scale *= zoomFactor;
+
                     int screenW, screenH;
                     SDL_GetWindowSize(window, &screenW, &screenH);
-
                     world.finalScale = std::min(
-                        (float)screenW  / world.texWidth,
+                        (float)screenW / world.texWidth,
                         (float)screenH / world.texHeight
                     ) * world.scale;
 
-                    if (tocaLimiteSuperior(world)) world.offsetY = 0;
+                    if (tocaLimiteSuperior(world))         world.offsetY = 0;
                     if (tocaLimiteInferior(world, screenH)) world.offsetY = screenH - world.texHeight * world.finalScale;
-                    if (tocaLimiteDerecha(world, screenW)) world.offsetX =+ world.texHeight * world.finalScale;
+                    if (tocaLimiteDerecha(world, screenW))  world.offsetX = world.texWidth * world.finalScale; // ojo: tenías =+ en vez de =
                     if (tocaLimiteIzquierda(world, screenW)) world.offsetX = 0;
+                }
                 break;
             }
             //==================================================================================================================
             // pan
             //==================================================================================================================
             case SDL_MOUSEMOTION: {
-
-                if (!world.dragging) {
-                    break;
-                }
-                int screenW, screenH;
-                SDL_GetWindowSize(window, &screenW, &screenH);
+                if (!world.dragging) break;
 
                 world.offsetY += event.motion.y - world.lastY;
                 world.offsetX += event.motion.x - world.lastX;
 
-                if (tocaLimiteSuperior(world)) world.offsetY = 0;
-                if (tocaLimiteInferior(world, screenH)) world.offsetY = screenH - world.texHeight * world.finalScale;
-                if (tocaLimiteDerecha(world, screenW)) world.offsetX =+ world.texHeight * world.finalScale;
-                if (tocaLimiteIzquierda(world, screenW)) world.offsetX = 0 ;
-
                 world.lastX = event.motion.x;
                 world.lastY = event.motion.y;
-                
+
+                if (!world.freecamera) {
+                    int screenW, screenH;
+                    SDL_GetWindowSize(window, &screenW, &screenH);
+
+                    if (tocaLimiteSuperior(world))          world.offsetY = 0;
+                    if (tocaLimiteInferior(world, screenH)) world.offsetY = screenH - world.texHeight * world.finalScale;
+                    if (tocaLimiteDerecha(world, screenW))  world.offsetX = world.texWidth * world.finalScale;  // corregido
+                    if (tocaLimiteIzquierda(world, screenW)) world.offsetX = 0;
+                }
                 break;
             }
+
 
             case SDL_MOUSEBUTTONDOWN: {
 
