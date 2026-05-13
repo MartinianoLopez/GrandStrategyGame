@@ -34,7 +34,7 @@ struct GameWindow {
     }
 
     bool tocaLimiteIzquierda(World& world, int screenW) {
-        float limitIzquierda = - screenW + world.texWidth * world.finalScale;
+        float limitIzquierda = world.texWidth * world.finalScale;
         bool toca = world.offsetX >= limitIzquierda;
         if (toca) SDL_Log("LIMITE IZQUIERDA tocado | offsetX: %.2f | limitIzquierda: %.2f", world.offsetX, limitIzquierda);
         return toca;
@@ -72,7 +72,7 @@ struct GameWindow {
 
                     if (tocaLimiteSuperior(world))         world.offsetY = 0;
                     if (tocaLimiteInferior(world, screenH)) world.offsetY = screenH - world.texHeight * world.finalScale;
-                    if (tocaLimiteDerecha(world, screenW))  world.offsetX = world.texWidth * world.finalScale; // ojo: tenías =+ en vez de =
+                    if (tocaLimiteDerecha(world, screenW))  world.offsetX = 0 + screenW;
                     if (tocaLimiteIzquierda(world, screenW)) world.offsetX = 0;
                 }
                 break;
@@ -95,7 +95,7 @@ struct GameWindow {
 
                     if (tocaLimiteSuperior(world))          world.offsetY = 0;
                     if (tocaLimiteInferior(world, screenH)) world.offsetY = screenH - world.texHeight * world.finalScale;
-                    if (tocaLimiteDerecha(world, screenW))  world.offsetX = world.texWidth * world.finalScale;  // corregido
+                    if (tocaLimiteDerecha(world, screenW))  world.offsetX = 0 + screenW; 
                     if (tocaLimiteIzquierda(world, screenW)) world.offsetX = 0;
                 }
                 break;

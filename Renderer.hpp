@@ -8,6 +8,7 @@
 void renderFrontiers(
     World& world,
     SDL_Renderer* renderer,
+    SDL_FRect destRect,
     SDL_Color color,
     int screenW,
     int screenH,
@@ -17,8 +18,8 @@ void renderFrontiers(
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
     for (const auto& [colorPair, points] : frontierList) {
         for (const auto& point : points) {
-            float sx = world.offsetX + point.x * world.finalScale;
-            float sy = world.offsetY + point.y * world.finalScale;
+            float sx = destRect.x + point.x * world.finalScale;
+            float sy = destRect.y + point.y * world.finalScale;
             if (sx < 0 || sy < 0 || sx > screenW || sy > screenH) continue;
             SDL_FRect dot = { sx, sy, world.finalScale * size, world.finalScale * size };
             SDL_RenderFillRectF(renderer, &dot);
@@ -26,18 +27,16 @@ void renderFrontiers(
     }
 }
 
-void markProvinceFrontiers(World& world, SDL_Renderer* renderer, SDL_Color color, int provinceId) {
+void markProvinceFrontiers(World& world, SDL_Renderer* renderer, SDL_FRect destRect, SDL_Color color, int provinceId) {
     Province* p = provinceFindById(world.provinces, provinceId);
     if (!p) return;
-
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-
     for (const auto& [colorPair, points] : world.provinceFrontiers) {
         uint32_t pColor = ((uint32_t)p->color.r << 16) | ((uint32_t)p->color.g << 8) | (uint32_t)p->color.b;
         if (colorPair.first != pColor && colorPair.second != pColor) continue;
         for (const auto& point : points) {
-            float sx = world.offsetX + point.x * world.finalScale;
-            float sy = world.offsetY + point.y * world.finalScale;
+            float sx = destRect.x + point.x * world.finalScale;
+            float sy = destRect.y + point.y * world.finalScale;
             SDL_FRect dot = { sx, sy, world.finalScale, world.finalScale };
             SDL_RenderFillRectF(renderer, &dot);
         }
@@ -161,20 +160,17 @@ void renderArmy(
 // ===============================================================================================================
 // armies
 // ===============================================================================================================
-void renderArmies(World& world, SDL_Renderer* renderer, int screenW, int screenH) {
+void renderArmies(World& world, SDL_Renderer* renderer, SDL_FRect destRect, int screenW, int screenH) {
     for (const auto& army : world.armies) {
         Province* p = provinceFindById(world.provinces, army.position);
         if (!p) continue;
-
-        float sx = world.offsetX + p->center.x * world.finalScale;
-        float sy = world.offsetY + p->center.y * world.finalScale;
+        float sx = destRect.x + p->center.x * world.finalScale;
+        float sy = destRect.y + p->center.y * world.finalScale;
         if (sx < 0 || sy < 0 || sx > screenW || sy > screenH) continue;
-
         bool selected = (world.selectedProvince == army.position);
         renderArmy(renderer, world, (int)sx, (int)sy, army.power, selected);
     }
 }
-
 // ===============================================================================================================
 // HUD
 // ===============================================================================================================
@@ -223,45 +219,46 @@ void renderHUD(SDL_Renderer* renderer, World& world) {
 // ===============================================================================================================
 // render
 // ===============================================================================================================
-void render(World& world, SDL_Renderer* renderer, SDL_Window* window) {
-    
+void render(World& world, SDL_Renderer* renderer, SDL_Window* window, bool offset) {
     int winWidth, winHeight;
     SDL_GetWindowSize(window, &winWidth, &winHeight);
+
     world.finalScale = std::min(
         (float)winWidth  / world.texWidth,
         (float)winHeight / world.texHeight
     ) * world.scale;
 
-    SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
-    SDL_RenderClear(renderer);
-
-        
- 
     SDL_FRect destRect = {
         world.offsetX,
         world.offsetY,
         world.texWidth  * world.finalScale,
         world.texHeight * world.finalScale
     };
-    displayTexture(renderer, world.height,  destRect, 255);
-    displayTexture(renderer, world.terrain, destRect, 150);
+
+    if (offset) {
+        destRect.x = world.offsetX - world.texWidth * world.finalScale; 
+    }
+
+    displayTexture(renderer, world.height,       destRect, 255);
+    displayTexture(renderer, world.terrain,      destRect, 150);
     displaySurface(renderer, world.countriesImg, destRect, 240);
 
     if (world.scale > 6.0f)
-        renderFrontiers(world, renderer, {0, 0, 0, 120}, winWidth, winHeight, world.provinceFrontiers, 1);
-
+        renderFrontiers(world, renderer, destRect, {0, 0, 0, 120}, winWidth, winHeight, world.provinceFrontiers, 1);
     if (world.scale < 5.0f)
-        renderFrontiers(world, renderer, {0, 0, 0, 220}, winWidth, winHeight, world.countryFrontiers, 6 / world.scale);
-        
+        renderFrontiers(world, renderer, destRect,{0, 0, 0, 220}, winWidth, winHeight, world.countryFrontiers, 6 / world.scale);
     if (world.scale > 4.0f) {
-        renderFrontiers(world, renderer, {0, 0, 0, 220}, winWidth, winHeight, world.countryFrontiers, 1);
-        markProvinceFrontiers(world, renderer,{255, 255, 0, 240}, world.selectedProvince);
-        renderArmies(world, renderer, winWidth, winHeight);
+        renderFrontiers(world, renderer, destRect, {0, 0, 0, 220}, winWidth, winHeight, world.countryFrontiers, 1);
+        markProvinceFrontiers(world, renderer, destRect, {255, 255, 0, 240}, world.selectedProvince);
+        renderArmies(world, renderer, destRect, winWidth, winHeight);
     }
+}
 
-    
-
+void renderDouble(World& world, SDL_Renderer* renderer, SDL_Window* window) {
+    SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
+    SDL_RenderClear(renderer);
+    render(world, renderer, window, false); // mapa principal
+    render(world, renderer, window, true);  // copia desplazada (wrapping)
     renderHUD(renderer, world);
-
     SDL_RenderPresent(renderer);
 }

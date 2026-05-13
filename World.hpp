@@ -106,6 +106,6 @@ struct World {
     float fps = 0.0f;
     float finalScale = 0.f;
     bool running = true;
-    bool freecamera = true;
+    bool freecamera = false;
 };
 

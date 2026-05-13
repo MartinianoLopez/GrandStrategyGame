@@ -43,7 +43,7 @@ int main() {
             eventManager.route(world, event, mainWin, debugWin);
 
         // Update & render
-        render(world, mainWin.renderer, mainWin.window);
+        renderDouble(world, mainWin.renderer, mainWin.window);
         if (debugging) debugWin.render(world);
 
         // Frame cap
