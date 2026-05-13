@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "World.hpp"
 #include "utils.hpp"
+
 struct GameWindow {
     SDL_Window*   window   = nullptr;
     SDL_Renderer* renderer = nullptr;
@@ -13,215 +14,136 @@ struct GameWindow {
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     }
 
-    bool tocaLimiteSuperior(World& world) {
-        bool toca = world.offsetY >= 0;
-        if (toca) SDL_Log("LIMITE SUPERIOR tocado | offsetY: %.2f", world.offsetY);
-        return toca;
+    // =========================================================================
+    // helpers
+    // =========================================================================
+
+    void getScreenSize(int& w, int& h) const {
+        SDL_GetWindowSize(window, &w, &h);
     }
 
-    bool tocaLimiteInferior(World& world, int screenH) {
-        float limitAbajo = screenH - world.texHeight * world.finalScale;
-        bool toca = world.offsetY <= limitAbajo;
-        if (toca) SDL_Log("LIMITE INFERIOR tocado | offsetY: %.2f | limitAbajo: %.2f", world.offsetY, limitAbajo);
-        return toca;
+    float computeScale(const World& world) const {
+        int w, h;
+        getScreenSize(w, h);
+        return std::min((float)w / world.texWidth,
+                        (float)h / world.texHeight) * world.scale;
     }
 
-    bool tocaLimiteDerecha(World& world, int screenW) {
-        float limitDerecha = screenW - world.texWidth * world.finalScale;
-        bool toca = world.offsetX <= limitDerecha;
-        if (toca) SDL_Log("LIMITE DERECHA tocado | offsetX: %.2f | limitDerecha: %.2f", world.offsetX, limitDerecha);
-        return toca;
+    // Maps a screen coordinate to a texture coordinate, wrapping horizontally.
+    // Returns false if the y coordinate is outside the texture bounds.
+    bool screenToTexture(const World& world, float sx, float sy, int& texX, int& texY) const {
+        float scale = computeScale(world);
+        texX = static_cast<int>((sx - world.offsetX) / scale);
+        texY = static_cast<int>((sy - world.offsetY) / scale);
+        texX = ((texX % world.texWidth) + world.texWidth) % world.texWidth; // horizontal wrap
+        return texY >= 0 && texY < world.texHeight;
     }
 
-    bool tocaLimiteIzquierda(World& world, int screenW) {
-        float limitIzquierda = world.texWidth * world.finalScale;
-        bool toca = world.offsetX >= limitIzquierda;
-        if (toca) SDL_Log("LIMITE IZQUIERDA tocado | offsetX: %.2f | limitIzquierda: %.2f", world.offsetX, limitIzquierda);
-        return toca;
+    Province* pickProvince(const World& world, float sx, float sy) const {
+        int texX, texY;
+        if (!screenToTexture(world, sx, sy, texX, texY)) return nullptr;
+        uint32_t color = getPixelColor(world.provincesBmp, texX, texY);
+        return provinceFindByColor(world.provinces, color);
     }
 
-    void processEvent(World& world, const SDL_Event& event) {
+    // =========================================================================
+    // bounds clamping (only applied when freecamera is off)
+    // =========================================================================
 
-        switch (event.type) {
+    void clampToBounds(World& world) {
+        int screenW, screenH;
+        getScreenSize(screenW, screenH);
 
-            //==================================================================================================================
-            // zoom
-            //==================================================================================================================
-            case SDL_MOUSEWHEEL: {
-                float zoomFactor = (event.wheel.y > 0) ? 1.1f : 0.9f;
-                float mx = (float)event.wheel.mouseX;
-                float my = (float)event.wheel.mouseY;
+        float mapW = world.texWidth  * world.finalScale;
+        float mapH = world.texHeight * world.finalScale;
 
-                if (world.freecamera) {
-                    world.offsetX = mx + (world.offsetX - mx) * zoomFactor;
-                    world.offsetY = my + (world.offsetY - my) * zoomFactor;
-                    world.scale *= zoomFactor;
-                } else {
-                    if (world.scale * zoomFactor <= 1.5f) break;
+        if (world.offsetY > 0)                  world.offsetY = 0;
+        if (world.offsetY < screenH - mapH)     world.offsetY = screenH - mapH;
+        if (world.offsetX < screenW - mapW)     world.offsetX = screenW;
+        if (world.offsetX > mapW)               world.offsetX = 0;
+    }
 
-                    world.offsetX = mx + (world.offsetX - mx) * zoomFactor;
-                    world.offsetY = my + (world.offsetY - my) * zoomFactor;
-                    world.scale *= zoomFactor;
+    // =========================================================================
+    // input handlers
+    // =========================================================================
 
-                    int screenW, screenH;
-                    SDL_GetWindowSize(window, &screenW, &screenH);
-                    world.finalScale = std::min(
-                        (float)screenW / world.texWidth,
-                        (float)screenH / world.texHeight
-                    ) * world.scale;
+    void onScroll(World& world, const SDL_Event& e) {
+        float zoom = (e.wheel.y > 0) ? 1.1f : 0.9f;
+        float mx   = (float)e.wheel.mouseX;
+        float my   = (float)e.wheel.mouseY;
 
-                    if (tocaLimiteSuperior(world))         world.offsetY = 0;
-                    if (tocaLimiteInferior(world, screenH)) world.offsetY = screenH - world.texHeight * world.finalScale;
-                    if (tocaLimiteDerecha(world, screenW))  world.offsetX = 0 + screenW;
-                    if (tocaLimiteIzquierda(world, screenW)) world.offsetX = 0;
-                }
+        bool tooZoomedOut = !world.freecamera && world.scale * zoom <= 1.5f;
+        if (tooZoomedOut) return;
+
+        // Zoom toward the mouse cursor
+        world.offsetX = mx + (world.offsetX - mx) * zoom;
+        world.offsetY = my + (world.offsetY - my) * zoom;
+        world.scale  *= zoom;
+
+        if (!world.freecamera) {
+            world.finalScale = computeScale(world);
+            clampToBounds(world);
+        }
+    }
+
+    void onMouseMove(World& world, const SDL_Event& e) {
+        if (!world.dragging) return;
+
+        world.offsetX += e.motion.x - world.lastX;
+        world.offsetY += e.motion.y - world.lastY;
+        world.lastX    = e.motion.x;
+        world.lastY    = e.motion.y;
+
+        if (!world.freecamera)
+            clampToBounds(world);
+    }
+
+    void onRightClick(World& world, const SDL_Event& e) {
+        world.dragging = true;
+        world.lastX    = e.button.x;
+        world.lastY    = e.button.y;
+
+        Province* target = pickProvince(world, e.button.x, e.button.y);
+        if (!target) return;
+        if (target->id == world.selectedProvince) return;
+
+        Army* army = armyPositionFind(world.armies, world.selectedProvince);
+        if (!army) return;
+
+        world.objectiveProvince = target->id;
+        army->position          = target->id;
+    }
+
+    void onLeftClick(World& world, const SDL_Event& e) {
+        Province* target = pickProvince(world, e.button.x, e.button.y);
+        if (!target) {
+            int texX, texY;
+            screenToTexture(world, e.button.x, e.button.y, texX, texY);
+            std::cerr << "No province at color: "
+                      << colorToString(getPixelColor(world.provincesBmp, texX, texY)) << "\n";
+            return;
+        }
+        world.selectedProvince = target->id;
+    }
+
+    // =========================================================================
+    // event dispatch
+    // =========================================================================
+
+    void processEvent(World& world, const SDL_Event& e) {
+        switch (e.type) {
+            case SDL_MOUSEWHEEL:     onScroll(world, e);                          break;
+            case SDL_MOUSEMOTION:    onMouseMove(world, e);                       break;
+            case SDL_MOUSEBUTTONDOWN:
+                if (e.button.button == SDL_BUTTON_RIGHT) onRightClick(world, e);
+                if (e.button.button == SDL_BUTTON_LEFT)  onLeftClick(world, e);
                 break;
-            }
-            //==================================================================================================================
-            // pan
-            //==================================================================================================================
-            case SDL_MOUSEMOTION: {
-                if (!world.dragging) break;
-
-                world.offsetY += event.motion.y - world.lastY;
-                world.offsetX += event.motion.x - world.lastX;
-
-                world.lastX = event.motion.x;
-                world.lastY = event.motion.y;
-
-                if (!world.freecamera) {
-                    int screenW, screenH;
-                    SDL_GetWindowSize(window, &screenW, &screenH);
-
-                    if (tocaLimiteSuperior(world))          world.offsetY = 0;
-                    if (tocaLimiteInferior(world, screenH)) world.offsetY = screenH - world.texHeight * world.finalScale;
-                    if (tocaLimiteDerecha(world, screenW))  world.offsetX = 0 + screenW; 
-                    if (tocaLimiteIzquierda(world, screenW)) world.offsetX = 0;
-                }
-                break;
-            }
-
-
-            case SDL_MOUSEBUTTONDOWN: {
-
-                // RIGHT CLICK
-                if (event.button.button == SDL_BUTTON_RIGHT) {
-
-                    world.dragging = true;
-                    world.lastX = event.button.x;
-                    world.lastY = event.button.y;
-
-                    int winWidth, winHeight;
-                    SDL_GetWindowSize(window, &winWidth, &winHeight);
-
-                    float baseScale = std::min(
-                        (float)winWidth / world.texWidth,
-                        (float)winHeight / world.texHeight
-                    );
-
-                    float finalScale = baseScale * world.scale;
-
-                    int imgX = static_cast<int>(
-                        (event.button.x - world.offsetX) / finalScale
-                    );
-
-                    int imgY = static_cast<int>(
-                        (event.button.y - world.offsetY) / finalScale
-                    );
-
-                if(imgX >= 0 && imgX < world.texWidth &&
-                    imgY >= 0 && imgY < world.texHeight) {
-
-                    uint32_t targetColor =
-                        getPixelColor(world.provincesBmp, imgX, imgY);
-
-                    Province* province =
-                        provinceFindByColor(world.provinces, targetColor);
-
-                    if (province == nullptr)
-                        return;
-
-                    world.objectiveProvince = province->id;
-
-                    if (world.objectiveProvince == world.selectedProvince)
-                        return;
-
-                    Army* army =
-                        armyPositionFind(
-                            world.armies,
-                            world.selectedProvince
-                        );
-
-                    if (army == nullptr)
-                        return;
-
-                    army->position = world.objectiveProvince;
-                }
-                }
-
-                // LEFT CLICK
-                if (event.button.button == SDL_BUTTON_LEFT) {
-
-                    int winWidth, winHeight;
-
-                    SDL_GetWindowSize(window, &winWidth, &winHeight);
-
-                    float baseScale = std::min(
-                        (float)winWidth / world.texWidth,
-                        (float)winHeight / world.texHeight
-                    );
-
-                    float finalScale = baseScale * world.scale;
-
-                    float mx = (float)event.button.x;
-                    float my = (float)event.button.y;
-
-                    int imgX = static_cast<int>(
-                        (mx - world.offsetX) / finalScale
-                    );
-
-                    int imgY = static_cast<int>(
-                        (my - world.offsetY) / finalScale
-                    );
-
-                    if (imgX >= 0 && imgX < world.texWidth &&
-                        imgY >= 0 && imgY < world.texHeight) {
-
-                        uint32_t provinceColor =
-                            getPixelColor(world.provincesBmp, imgX, imgY);
-
-                        auto it =
-                            provinceFindByColor(world.provinces, provinceColor);
-
-                        if (it == nullptr) {
-                            std::cerr << "Color not found: "
-                                    << colorToString(provinceColor)
-                                    << "\n";
-                            break;
-                        }
-
-                        world.selectedProvince = it->id;
-                    }
-                }
-
-                break;
-            }
-
             case SDL_MOUSEBUTTONUP:
-
-                if (event.button.button == SDL_BUTTON_RIGHT) {
-                    world.dragging = false;
-                }
-
+                if (e.button.button == SDL_BUTTON_RIGHT) world.dragging = false;
                 break;
-
             case SDL_QUIT:
-
                 world.running = false;
-
                 break;
-
-            
         }
     }
 };
