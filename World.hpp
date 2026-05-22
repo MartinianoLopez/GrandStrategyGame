@@ -6,6 +6,7 @@
 #include <string>
 #include <utility>
 #include <SDL2/SDL_ttf.h>
+#include <functional>
 
 struct Color {
     int r;
@@ -73,6 +74,26 @@ struct Glyph {
     int h = 0;
 };
 
+struct UIElement {
+    SDL_FRect boundsNorm;
+    SDL_Texture* texture;
+    SDL_Color color;
+    int zOrder;
+    std::function<void()> onClick;
+    std::function<std::string()> getText;
+
+    SDL_FRect resolve(int w, int h) const {
+        return { boundsNorm.x * w, boundsNorm.y * h,
+                 boundsNorm.w * w, boundsNorm.h * h };
+    }
+
+    bool contains(int x, int y, int w, int h) const {
+        SDL_FRect r = resolve(w, h);
+        return x >= r.x && x < r.x + r.w &&
+               y >= r.y && y < r.y + r.h;
+    }
+};
+
 struct World {
     SDL_Surface* provincesBmp = nullptr;
     SDL_Texture* terrain = nullptr;
@@ -107,5 +128,8 @@ struct World {
     float finalScale = 0.f;
     bool running = true;
     bool freecamera = false;
+    bool onMainMenu = false;
+    std::vector<SDL_Texture*> uiTextures;
+    std::vector<UIElement>    uiElements;
 };
 

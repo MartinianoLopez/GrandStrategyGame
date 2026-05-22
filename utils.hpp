@@ -124,3 +124,29 @@ Province* provinceFindByColor(const std::list<Province>& list, uint32_t color) {
     }
     return nullptr;
 }
+void renderText(
+    SDL_Renderer* renderer,
+    World& world,
+    int x,
+    int y,
+    const std::string& text
+) {
+    for (char c : text) {
+
+        if (c < 0 || c >= 128)
+            continue;
+
+        Glyph& g = world.glyphs[(int)c];
+
+        SDL_Rect dst = {
+            x,
+            y,
+            g.w,
+            g.h
+        };
+
+        SDL_RenderCopy(renderer, g.tex, nullptr, &dst);
+
+        x += g.w;
+    }
+}

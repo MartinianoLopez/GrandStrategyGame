@@ -64,32 +64,6 @@ void displayTexture(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRec
 // ===============================================================================================================
 // text & numbers
 // ===============================================================================================================
-void renderText(
-    SDL_Renderer* renderer,
-    World& world,
-    int x,
-    int y,
-    const std::string& text
-) {
-    for (char c : text) {
-
-        if (c < 0 || c >= 128)
-            continue;
-
-        Glyph& g = world.glyphs[(int)c];
-
-        SDL_Rect dst = {
-            x,
-            y,
-            g.w,
-            g.h
-        };
-
-        SDL_RenderCopy(renderer, g.tex, nullptr, &dst);
-
-        x += g.w;
-    }
-}
 
 void renderArmy(
     SDL_Renderer* renderer,
@@ -171,55 +145,11 @@ void renderArmies(World& world, SDL_Renderer* renderer, SDL_FRect destRect, int 
         renderArmy(renderer, world, (int)sx, (int)sy, army.power, selected);
     }
 }
-// ===============================================================================================================
-// HUD
-// ===============================================================================================================
-void renderHUD(SDL_Renderer* renderer, World& world) {
-    static SDL_Texture* flagTex  = nullptr;
-    static std::string lastCountry;
-
-    if (world.playerCountry != lastCountry) {
-        if (flagTex) SDL_DestroyTexture(flagTex);
-        std::string path = "assets/flags/" + world.playerCountry + ".tga";
-        flagTex = IMG_LoadTexture(renderer, path.c_str());
-        lastCountry = world.playerCountry;
-    }
-
-    Country* player = countryTagFind(world.countries, world.playerCountry);
-
-    const int PANEL_H  = 48;
-    const int FLAG_SIZE = 96;
-
-    SDL_Rect panel = { 0, 0, 400, PANEL_H };
-    SDL_SetRenderDrawColor(renderer, 26, 26, 26, 220);
-    SDL_RenderFillRect(renderer, &panel);
-
-    SDL_Rect flagRect = { 2, 2, FLAG_SIZE - 4, FLAG_SIZE - 4 };
-    SDL_RenderCopy(renderer, flagTex, nullptr, &flagRect);
-
-    SDL_SetRenderDrawColor(renderer, 245, 197, 24, 255);
-    for (int i = 0; i < 3; i++) {
-        SDL_Rect border = { 2 - i, 2 - i, FLAG_SIZE - 4 + i * 2, FLAG_SIZE - 4 + i * 2 };
-        SDL_RenderDrawRect(renderer, &border);
-    }
-
-    const int ICON_SIZE = 22;
-    const int ICON_X    = FLAG_SIZE + 8;
-    const int ICON_Y    = (PANEL_H - ICON_SIZE) / 2;
-    SDL_Rect iconRect = { ICON_X, ICON_Y, ICON_SIZE, ICON_SIZE };
-    SDL_SetRenderDrawColor(renderer, 245, 197, 24, 255);
-    SDL_RenderFillRect(renderer, &iconRect);
-
-    int money = player ? player->money : 0;
-    SDL_Color goldColor = { 245, 197, 24, 255 };
-    renderText(renderer, world, ICON_X + ICON_SIZE + 6, (PANEL_H - 16) / 2,
-               std::to_string(money));
-}
 
 // ===============================================================================================================
 // render
 // ===============================================================================================================
-void render(World& world, SDL_Renderer* renderer, SDL_Window* window, bool offset) {
+void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, bool offset) {
     int winWidth, winHeight;
     SDL_GetWindowSize(window, &winWidth, &winHeight);
 
@@ -254,11 +184,35 @@ void render(World& world, SDL_Renderer* renderer, SDL_Window* window, bool offse
     }
 }
 
-void renderDouble(World& world, SDL_Renderer* renderer, SDL_Window* window) {
+// ===============================================================================================================
+// UI
+// ===============================================================================================================
+void renderUI(SDL_Renderer* renderer, World& world, SDL_Window* window) {
+    int w, h;
+    SDL_GetWindowSize(window, &w, &h);
+
+    for (auto& el : world.uiElements) {
+        SDL_FRect r = el.resolve(w, h);
+        //printf("UIElement: x=%.1f y=%.1f w=%.1f h=%.1f\n", r.x, r.y, r.w, r.h);
+
+        if (el.texture) {
+            SDL_RenderCopyF(renderer, el.texture, nullptr, &r);
+        } else {
+            SDL_SetRenderDrawColor(renderer, el.color.r, el.color.g, el.color.b, el.color.a);
+            SDL_RenderFillRectF(renderer, &r);
+        }
+        if (el.getText) {
+            renderText(renderer, world, r.x, r.y, el.getText());
+        }
+    }
+}
+
+
+void renderGame(World& world, SDL_Renderer* renderer, SDL_Window* window) {
     SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
     SDL_RenderClear(renderer);
-    render(world, renderer, window, false); // mapa principal
-    render(world, renderer, window, true);  // copia desplazada (wrapping)
-    renderHUD(renderer, world);
+    renderMap(world, renderer, window, false); // mapa principal
+    renderMap(world, renderer, window, true);  // copia desplazada (wrapping)
+    renderUI(renderer, world, window);  
     SDL_RenderPresent(renderer);
 }

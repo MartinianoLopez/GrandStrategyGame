@@ -115,12 +115,24 @@ struct GameWindow {
     }
 
     void onLeftClick(World& world, const SDL_Event& e) {
+        int w, h;
+        getScreenSize(w, h);
+
+        // primero UI
+        for (auto it = world.uiElements.rbegin(); it != world.uiElements.rend(); ++it) {
+            if (it->contains(e.button.x, e.button.y, w, h)) {
+                if (it->onClick) it->onClick();
+                return; // consumido
+            }
+        }
+
+        // luego mapa
         Province* target = pickProvince(world, e.button.x, e.button.y);
         if (!target) {
             int texX, texY;
             screenToTexture(world, e.button.x, e.button.y, texX, texY);
             std::cerr << "No province at color: "
-                      << colorToString(getPixelColor(world.provincesBmp, texX, texY)) << "\n";
+                    << colorToString(getPixelColor(world.provincesBmp, texX, texY)) << "\n";
             return;
         }
         world.selectedProvince = target->id;
@@ -129,18 +141,37 @@ struct GameWindow {
     // =========================================================================
     // event dispatch
     // =========================================================================
-
     void processEvent(World& world, const SDL_Event& e) {
         switch (e.type) {
-            case SDL_MOUSEWHEEL:     onScroll(world, e);                          break;
-            case SDL_MOUSEMOTION:    onMouseMove(world, e);                       break;
+
+            case SDL_MOUSEWHEEL:
+                if (!world.onMainMenu) {
+                    onScroll(world, e);
+                }
+                break;
+
+            case SDL_MOUSEMOTION:
+                if (!world.onMainMenu) {
+                    onMouseMove(world, e);
+                }
+                break;
+
             case SDL_MOUSEBUTTONDOWN:
-                if (e.button.button == SDL_BUTTON_RIGHT) onRightClick(world, e);
-                if (e.button.button == SDL_BUTTON_LEFT)  onLeftClick(world, e);
+                if (e.button.button == SDL_BUTTON_RIGHT) {
+                    onRightClick(world, e);
+                }
+
+                if (e.button.button == SDL_BUTTON_LEFT) {
+                    onLeftClick(world, e);
+                }
                 break;
+
             case SDL_MOUSEBUTTONUP:
-                if (e.button.button == SDL_BUTTON_RIGHT) world.dragging = false;
+                if (e.button.button == SDL_BUTTON_RIGHT) {
+                    world.dragging = false;
+                }
                 break;
+
             case SDL_QUIT:
                 world.running = false;
                 break;

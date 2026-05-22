@@ -10,8 +10,15 @@
 
 ## To Do
 
-- make a main menu
+- make a main menu(load game, new game, exit)
+- improve the UI
 - Convert frontier pixels to lines
-- Improve troop sistem
-- Make a basic game dinamic
-- Make ia countries
+- complete the troop system
+- Make basic game functions
+- Make inteligent countries
+
+## Arquitecture MVC
+
+- Model = World
+- View = Renderer
+- Controler = event management
