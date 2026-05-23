@@ -184,16 +184,12 @@ void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, bool of
     }
 }
 
-// ===============================================================================================================
-// UI
-// ===============================================================================================================
 void renderUI(SDL_Renderer* renderer, World& world, SDL_Window* window) {
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
 
     for (auto& el : world.uiElements) {
         SDL_FRect r = el.resolve(w, h);
-        //printf("UIElement: x=%.1f y=%.1f w=%.1f h=%.1f\n", r.x, r.y, r.w, r.h);
 
         if (el.texture) {
             SDL_RenderCopyF(renderer, el.texture, nullptr, &r);
@@ -201,8 +197,14 @@ void renderUI(SDL_Renderer* renderer, World& world, SDL_Window* window) {
             SDL_SetRenderDrawColor(renderer, el.color.r, el.color.g, el.color.b, el.color.a);
             SDL_RenderFillRectF(renderer, &r);
         }
+
         if (el.getText) {
-            renderText(renderer, world, r.x, r.y, el.getText());
+            std::string text = el.getText();
+            int tw, th;
+            TTF_SizeText(world.font, text.c_str(), &tw, &th);
+            float tx = r.x + (r.w - tw) * 0.5f;
+            float ty = r.y + (r.h - th) * 0.5f;
+            renderText(renderer, world, tx, ty, text);
         }
     }
 }

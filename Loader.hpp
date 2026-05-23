@@ -410,60 +410,6 @@ void initFont(World& world, SDL_Renderer* renderer, const char* fontPath) {
         SDL_FreeSurface(s);
     }
 }
-void buildGameUI(World& world, SDL_Renderer* renderer) {
-    for (auto t : world.uiTextures) SDL_DestroyTexture(t);
-    world.uiTextures.clear();
-    world.uiElements.clear();
-
-    std::string path = "assets/flags/" + world.playerCountry + ".tga";
-    SDL_Texture* flagTex = IMG_LoadTexture(renderer, path.c_str());
-    world.uiTextures.push_back(flagTex);
-
-    // bandera
-    world.uiElements.push_back({{0.01f, 0.01f, 0.06f, 0.08f}, flagTex, {0,0,0,0}, 1, nullptr, nullptr});
-
-    // barra superior
-    world.uiElements.push_back({{0.08f, 0.01f, 0.60f, 0.05f}, nullptr, {26,26,26,220}, 1, nullptr, nullptr});
-
-    // dinero
-    world.uiElements.push_back({{0.09f, 0.02f, 0.05f, 0.04f}, nullptr, {0,0,0,0}, 2, nullptr,
-        [&world]() {
-            Country* player = countryTagFind(world.countries, world.playerCountry);
-            return player ? "$" + std::to_string(player->money) : "$0";
-        }});
-
-    // poblacion
-    world.uiElements.push_back({{0.20f, 0.02f, 0.05f, 0.04f}, nullptr, {0,0,0,0}, 2, nullptr,
-        [&world]() {
-            return "POP: 1200";
-        }});
-
-    // ejercito
-    world.uiElements.push_back({{0.31f, 0.02f, 0.05f, 0.04f}, nullptr, {0,0,0,0}, 2, nullptr,
-        [&world]() {
-            int count = 0;
-            for (auto& a : world.armies)
-                if (a.owner == world.playerCountry) count++;
-            return "ARM: " + std::to_string(count);
-        }});
-
-    // fecha
-    world.uiElements.push_back({{0.42f, 0.02f, 0.08f, 0.04f}, nullptr, {0,0,0,0}, 2, nullptr,
-        [&world]() {
-            return "1444 Jan 1"; // hardcoded por ahora
-        }});
-
-    // provincia seleccionada
-    world.uiElements.push_back({{0.35f, 0.92f, 0.30f, 0.06f}, nullptr, {26,26,26,200}, 1, nullptr, nullptr});
-    world.uiElements.push_back({{0.36f, 0.93f, 0.28f, 0.04f}, nullptr, {0,0,0,0}, 2, nullptr,
-        [&world]() {
-            Province* p = provinceFindById(world.provinces, world.selectedProvince);
-            return p ? p->name : "Ninguna";
-        }});
-
-    std::sort(world.uiElements.begin(), world.uiElements.end(),
-        [](const UIElement& a, const UIElement& b){ return a.zOrder < b.zOrder; });
-}
 
 // ===============================================================================================================
 // LOAD ALL
@@ -494,10 +440,12 @@ void loadAssets(World& world, SDL_Renderer* renderer) {
     world.provinceFrontiers = findFrontiers(world.provincesBmp);
     world.countryFrontiers  = findFrontiersBetweenCountries(world, world.provinceFrontiers);
 
+    world.texStone = IMG_LoadTexture(renderer, "assets/ui/stone.png");
+    world.bootonTex = IMG_LoadTexture(renderer, "assets/ui/booton.png");
+
     initFont(world, renderer,"assets/Nunito/Nunito-VariableFont_wght.ttf");
-    world.playerCountry = "GBR";
-    buildGameUI(world, renderer);
     auto end = std::chrono::high_resolution_clock::now();
     float ms = std::chrono::duration<float, std::milli>(end - start).count();
+    
     std::cerr << "time: " << ms << " ms\n";
 }

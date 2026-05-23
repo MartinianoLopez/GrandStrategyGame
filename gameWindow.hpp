@@ -114,7 +114,8 @@ struct GameWindow {
         army->position          = target->id;
     }
 
-    void onLeftClick(World& world, const SDL_Event& e) {
+    void onLeftClick(World& world, const SDL_Event& e) {        
+
         int w, h;
         getScreenSize(w, h);
 
@@ -126,6 +127,8 @@ struct GameWindow {
             }
         }
 
+
+
         // luego mapa
         Province* target = pickProvince(world, e.button.x, e.button.y);
         if (!target) {
@@ -134,8 +137,18 @@ struct GameWindow {
             std::cerr << "No province at color: "
                     << colorToString(getPixelColor(world.provincesBmp, texX, texY)) << "\n";
             return;
-        }
+        }        
+        
         world.selectedProvince = target->id;
+
+        if(world.place == MenuPlace::CountrySelection ){
+            Province* p = provinceFindById(world.provinces, world.selectedProvince);
+            Country* c = countryTagFind(world.countries, p->owner);
+            world.playerCountry = c->tag;
+            std::string path = "assets/flags/" + world.playerCountry + ".tga";
+            world.flagTex = IMG_LoadTexture(renderer, path.c_str());
+            if (world.flagTex) world.flagTex = world.flagTex;
+        }
     }
 
     // =========================================================================
@@ -145,15 +158,17 @@ struct GameWindow {
         switch (e.type) {
 
             case SDL_MOUSEWHEEL:
-                if (!world.onMainMenu) {
+                if (world.place == MenuPlace::InGame || world.place == MenuPlace::CountrySelection )
+                {
                     onScroll(world, e);
                 }
                 break;
 
             case SDL_MOUSEMOTION:
-                if (!world.onMainMenu) {
+                if (world.place == MenuPlace::InGame || world.place == MenuPlace::CountrySelection)
+                {
                     onMouseMove(world, e);
-                }
+                } 
                 break;
 
             case SDL_MOUSEBUTTONDOWN:

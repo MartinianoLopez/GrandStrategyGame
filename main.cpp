@@ -8,6 +8,7 @@
 #include "eventRouter.hpp"
 #include <SDL2/SDL_ttf.h>
 #include "Loader.hpp"
+#include "UIManager.hpp"
 
 int main() {
     std::cerr << "START\n";
@@ -42,8 +43,10 @@ int main() {
 
         // Events
         SDL_Event event;
-        while (SDL_PollEvent(&event))
+        while (SDL_PollEvent(&event)){
             eventManager.route(world, event, mainWin, debugWin);
+            buildUI(world, mainWin.renderer);
+        }
 
         // Update & render
         renderGame(world, mainWin.renderer, mainWin.window);

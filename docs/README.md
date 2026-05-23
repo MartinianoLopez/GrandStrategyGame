@@ -10,8 +10,8 @@
 
 ## To Do
 
-- make a main menu(load game, new game, exit)
-- improve the UI
+- make the load game
+- improve the in Game UI
 - Convert frontier pixels to lines
 - complete the troop system
 - Make basic game functions

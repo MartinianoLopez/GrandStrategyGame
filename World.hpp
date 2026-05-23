@@ -7,7 +7,6 @@
 #include <utility>
 #include <SDL2/SDL_ttf.h>
 #include <functional>
-
 struct Color {
     int r;
     int g;
@@ -83,9 +82,31 @@ struct UIElement {
     std::function<std::string()> getText;
 
     SDL_FRect resolve(int w, int h) const {
-        return { boundsNorm.x * w, boundsNorm.y * h,
-                 boundsNorm.w * w, boundsNorm.h * h };
+    SDL_FRect base = { boundsNorm.x * w, boundsNorm.y * h,
+                       boundsNorm.w * w, boundsNorm.h * h };
+
+    if (!texture) return base;
+
+    int texW, texH;
+    SDL_QueryTexture(texture, nullptr, nullptr, &texW, &texH);
+
+    float texRatio  = (float)texW / texH;
+    float boxRatio  = base.w / base.h;
+
+    if (texRatio > boxRatio) {
+        // limitado por ancho
+        float newH = base.w / texRatio;
+        base.y += (base.h - newH) * 0.5f;
+        base.h  = newH;
+    } else {
+        // limitado por alto
+        float newW = base.h * texRatio;
+        base.x += (base.w - newW) * 0.5f;
+        base.w  = newW;
     }
+
+    return base;
+}
 
     bool contains(int x, int y, int w, int h) const {
         SDL_FRect r = resolve(w, h);
@@ -94,6 +115,12 @@ struct UIElement {
     }
 };
 
+enum class MenuPlace { 
+    MainMenu, 
+    CountrySelection, 
+    InGame,
+    LoadGame
+};
 struct World {
     SDL_Surface* provincesBmp = nullptr;
     SDL_Texture* terrain = nullptr;
@@ -111,6 +138,8 @@ struct World {
     int objectiveProvince = 0;
 
     std::string playerCountry;
+    SDL_Texture* flagTex = nullptr;
+    SDL_Texture* bootonTex = nullptr;
 
     TTF_Font* font = nullptr;
     Glyph glyphs[128];
@@ -128,8 +157,10 @@ struct World {
     float finalScale = 0.f;
     bool running = true;
     bool freecamera = false;
-    bool onMainMenu = false;
+    MenuPlace place = MenuPlace::MainMenu;
     std::vector<SDL_Texture*> uiTextures;
     std::vector<UIElement>    uiElements;
+    SDL_Texture* texStone = nullptr;
+
 };
 
