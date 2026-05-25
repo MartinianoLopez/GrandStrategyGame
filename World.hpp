@@ -121,6 +121,7 @@ enum class MenuPlace {
     InGame,
     LoadGame
 };
+
 struct World {
     SDL_Surface* provincesBmp = nullptr;
     SDL_Texture* terrain = nullptr;
@@ -161,6 +162,8 @@ struct World {
     std::vector<SDL_Texture*> uiTextures;
     std::vector<UIElement>    uiElements;
     SDL_Texture* texStone = nullptr;
+    std::vector<std::string> saveFiles;
+    std::string selectedSave;
 
 };
 

@@ -10,12 +10,12 @@
 
 ## To Do
 
-- make the load game
 - improve the in Game UI
 - Convert frontier pixels to lines
 - complete the troop system
 - Make basic game functions
 - Make inteligent countries
+- Improve the map aesthetics
 
 ## Arquitecture MVC
 

@@ -1,167 +1,467 @@
 #pragma once
+
 #include <string>
-#include "World.hpp"
 #include <fstream>
 #include <sstream>
 #include <filesystem>
 #include <regex>
 #include <iostream>
-#include <SDL2/SDL_image.h>
-#include "utils.hpp"
 #include <chrono>
 
+#include <SDL2/SDL_image.h>
+
+#include "World.hpp"
+#include "utils.hpp"
+#include "saves.hpp"
+
 // ===============================================================================================================
-// in game UI
+// UI HELPERS
 // ===============================================================================================================
+
+inline void clearUI(World& world) {
+
+    for (auto texture : world.uiTextures)
+        SDL_DestroyTexture(texture);
+
+    world.uiTextures.clear();
+    world.uiElements.clear();
+}
+
+inline void sortUI(World& world) {
+
+    std::sort(
+        world.uiElements.begin(),
+        world.uiElements.end(),
+        [](const UIElement& a, const UIElement& b) {
+            return a.zOrder < b.zOrder;
+        }
+    );
+}
+
+inline void addPanel(
+    World& world,
+    SDL_FRect rect,
+    SDL_Texture* texture,
+    SDL_Color color,
+    int zOrder = 1
+) {
+
+    world.uiElements.push_back({
+        rect,
+        texture,
+        color,
+        zOrder,
+        nullptr,
+        nullptr
+    });
+}
+
+inline void addText(
+    World& world,
+    SDL_FRect rect,
+    int zOrder,
+    std::function<std::string()> text
+) {
+
+    world.uiElements.push_back({
+        rect,
+        nullptr,
+        {0,0,0,0},
+        zOrder,
+        nullptr,
+        text
+    });
+}
+
+inline void addButton(
+    World& world,
+    SDL_FRect rect,
+    SDL_Color color,
+    std::function<void()> onClick,
+    const std::string& text
+) {
+
+    world.uiElements.push_back({
+        rect,
+        world.bootonTex,
+        color,
+        2,
+        onClick,
+        [text]() { return text; }
+    });
+}
+
+// ===============================================================================================================
+// IN-GAME UI
+// ===============================================================================================================
+
 void buildGameUI(World& world, SDL_Renderer* renderer) {
-    for (auto t : world.uiTextures) SDL_DestroyTexture(t);
-    world.uiTextures.clear();
-    world.uiElements.clear();
 
-    std::string path = "assets/flags/" + world.playerCountry + ".tga";
-    SDL_Texture* flagTex = IMG_LoadTexture(renderer, path.c_str());
-    world.uiTextures.push_back(flagTex);
+    clearUI(world);
 
-    // bandera
-    world.uiElements.push_back({{0.01f, 0.01f, 0.06f, 0.08f}, flagTex, {0,0,0,0}, 1, nullptr, nullptr});
+    // Load player flag
+    std::string flagPath =
+        "assets/flags/" +
+        world.playerCountry +
+        ".tga";
 
-    // barra superior
-    world.uiElements.push_back({{0.08f, 0.01f, 0.60f, 0.05f}, nullptr, {26,26,26,220}, 1, nullptr, nullptr});
+    SDL_Texture* flagTexture =
+        IMG_LoadTexture(renderer, flagPath.c_str());
 
-    // dinero
-    world.uiElements.push_back({{0.09f, 0.02f, 0.05f, 0.04f}, nullptr, {0,0,0,0}, 2, nullptr,
+    world.uiTextures.push_back(flagTexture);
+
+    // Player flag
+    addPanel(
+        world,
+        {0.01f, 0.01f, 0.06f, 0.08f},
+        flagTexture,
+        {0,0,0,0}
+    );
+
+    // Top bar
+    addPanel(
+        world,
+        {0.08f, 0.01f, 0.60f, 0.05f},
+        nullptr,
+        {26,26,26,220}
+    );
+
+    // Money
+    addText(
+        world,
+        {0.09f, 0.02f, 0.05f, 0.04f},
+        2,
         [&world]() {
-            Country* player = countryTagFind(world.countries, world.playerCountry);
-            return player ? "$" + std::to_string(player->money) : "$0";
-        }});
 
-    // poblacion
-    world.uiElements.push_back({{0.20f, 0.02f, 0.05f, 0.04f}, nullptr, {0,0,0,0}, 2, nullptr,
-        [&world]() {
+            Country* player =
+                countryTagFind(
+                    world.countries,
+                    world.playerCountry
+                );
+
+            return player
+                ? "$" + std::to_string(player->money)
+                : "$0";
+        }
+    );
+
+    // Population
+    addText(
+        world,
+        {0.20f, 0.02f, 0.05f, 0.04f},
+        2,
+        []() {
             return "POP: 1200";
-        }});
+        }
+    );
 
-    // ejercito
-    world.uiElements.push_back({{0.31f, 0.02f, 0.05f, 0.04f}, nullptr, {0,0,0,0}, 2, nullptr,
+    // Army count
+    addText(
+        world,
+        {0.31f, 0.02f, 0.05f, 0.04f},
+        2,
         [&world]() {
-            int count = 0;
-            for (auto& a : world.armies)
-                if (a.owner == world.playerCountry) count++;
-            return "ARM: " + std::to_string(count);
-        }});
 
-    // fecha
-    world.uiElements.push_back({{0.42f, 0.02f, 0.08f, 0.04f}, nullptr, {0,0,0,0}, 2, nullptr,
+            int armyCount = 0;
+
+            for (auto& army : world.armies)
+                if (army.owner == world.playerCountry)
+                    armyCount++;
+
+            return "ARM: " + std::to_string(armyCount);
+        }
+    );
+
+    // Date
+    addText(
+        world,
+        {0.42f, 0.02f, 0.08f, 0.04f},
+        2,
+        []() {
+            return "1444 Jan 1";
+        }
+    );
+
+    // Selected province background
+    addPanel(
+        world,
+        {0.35f, 0.92f, 0.30f, 0.06f},
+        world.bootonTex,
+        {26,26,26,200}
+    );
+
+    // Selected province name
+    addText(
+        world,
+        {0.36f, 0.93f, 0.28f, 0.04f},
+        2,
         [&world]() {
-            return "1444 Jan 1"; // hardcoded por ahora
-        }});
 
-    // provincia seleccionada
-    world.uiElements.push_back({{0.35f, 0.92f, 0.30f, 0.06f}, world.bootonTex, {26,26,26,200}, 1, nullptr, nullptr});
-    world.uiElements.push_back({{0.36f, 0.93f, 0.28f, 0.04f}, nullptr, {0,0,0,0}, 2, nullptr,
+            Province* province =
+                provinceFindById(
+                    world.provinces,
+                    world.selectedProvince
+                );
+
+            return province
+                ? province->name
+                : "None";
+        }
+    );
+    // Save button
+    addButton(
+        world,
+        {0.79f, 0.68f, 0.16f, 0.06f},
+        {60,90,160,240},
         [&world]() {
-            Province* p = provinceFindById(world.provinces, world.selectedProvince);
-            return p ? p->name : "Ninguna";
-        }});
 
-    std::sort(world.uiElements.begin(), world.uiElements.end(),
-        [](const UIElement& a, const UIElement& b){ return a.zOrder < b.zOrder; });
+            auto now =
+                std::chrono::system_clock::now();
+
+            auto time =
+                std::chrono::system_clock::to_time_t(now);
+
+            std::string saveName =
+                std::to_string(time);
+
+            saveGame(world);
+
+            refreshSaveFiles(world);
+        },
+        "SAVE GAME"
+    );
+    // Back button
+    addButton(
+        world,
+        {0.79f, 0.76f, 0.16f, 0.06f},
+        {160,40,40,240},
+        [&world]() {
+            world.place = MenuPlace::MainMenu;
+        },
+        "BACK"
+    );
+
+    sortUI(world);
 }
 
-
-
 // ===============================================================================================================
-// Menu
+// MAIN MENU UI
 // ===============================================================================================================
+
 void buildMainMenuUI(World& world, SDL_Renderer* renderer) {
-    for (auto t : world.uiTextures) SDL_DestroyTexture(t);
-    world.uiTextures.clear();
-    world.uiElements.clear();
 
-    // fondo oscuro semitransparente detras de los botones
-    world.uiElements.push_back({{0.30f, 0.60f, 0.40f, 0.32f}, nullptr, {10,10,10,180}, 1, nullptr, nullptr});
+    clearUI(world);
 
-    // boton PLAY
-    world.uiElements.push_back({{0.35f, 0.63f, 0.30f, 0.07f}, world.bootonTex, {34,139,34,240}, 2,
-        [&world]() { world.place = MenuPlace::CountrySelection; },
-        []() { return "PLAY"; }});
+    // Background panel
+    addPanel(
+        world,
+        {0.30f, 0.60f, 0.40f, 0.32f},
+        world.texStone,
+        {0,0,0,0}
+    );
 
-    // boton LOAD
-    world.uiElements.push_back({{0.35f, 0.73f, 0.30f, 0.07f}, world.bootonTex, {60,90,160,240}, 2,
-        [&world]() { /* load logic */ },
-        []() { return "LOAD"; }});
+    // Play button
+    addButton(
+        world,
+        {0.35f, 0.63f, 0.30f, 0.07f},
+        {34,139,34,240},
+        [&world]() {
+            world.place = MenuPlace::CountrySelection;
+        },
+        "PLAY"
+    );
 
-    // boton EXIT
-    world.uiElements.push_back({{0.35f, 0.83f, 0.30f, 0.07f}, world.bootonTex, {160,40,40,240}, 2,
-        [&world]() { world.running = false; },
-        []() { return "EXIT"; }});
+    // Load button
+    addButton(
+        world,
+        {0.35f, 0.73f, 0.30f, 0.07f},
+        {60,90,160,240},
+        [&world]() {
+            world.place = MenuPlace::LoadGame;
+        },
+        "LOAD"
+    );
 
-    std::sort(world.uiElements.begin(), world.uiElements.end(),
-        [](const UIElement& a, const UIElement& b){ return a.zOrder < b.zOrder; });
+    // Exit button
+    addButton(
+        world,
+        {0.35f, 0.83f, 0.30f, 0.07f},
+        {160,40,40,240},
+        [&world]() {
+            world.running = false;
+        },
+        "EXIT"
+    );
+
+    sortUI(world);
 }
+
+// ===============================================================================================================
+// LOAD GAME UI
+// ===============================================================================================================
+void buildLoadGameUI(
+    World& world,
+    SDL_Renderer* renderer
+) {
+
+    clearUI(world);
+
+    refreshSaveFiles(world);
+
+    // Background
+    addPanel(
+        world,
+        {0.25f, 0.15f, 0.50f, 0.70f},
+        world.texStone,
+        {0,0,0,0}
+    );
+
+    float y = 0.20f;
+
+    // Save list
+    for (const std::string& save : world.saveFiles) {
+
+        addButton(
+            world,
+            {0.30f, y, 0.40f, 0.06f},
+            {34,139,34,240},
+
+            [&world, save]() {
+
+                world.selectedSave = save;
+
+                loadGame(world, save);
+
+                world.place = MenuPlace::InGame;
+            },
+
+            save
+        );
+
+        y += 0.08f;
+    }
+
+    // Back button
+    addButton(
+        world,
+        {0.30f, 0.78f, 0.40f, 0.06f},
+        {160,40,40,240},
+
+        [&world]() {
+            world.place = MenuPlace::MainMenu;
+        },
+
+        "BACK"
+    );
+
+    sortUI(world);
+}
+
+// ===============================================================================================================
+// COUNTRY SELECTION UI
+// ===============================================================================================================
 
 void buildCountrySelectionUI(World& world, SDL_Renderer* renderer) {
-    for (auto t : world.uiTextures) SDL_DestroyTexture(t);
-    world.uiTextures.clear();
-    world.uiElements.clear();
 
-    // --- Panel fondo ---
-    world.uiElements.push_back({
+    clearUI(world);
+
+    // Right panel background
+    addPanel(
+        world,
         {0.76f, 0.20f, 0.22f, 0.65f},
-        world.texStone, {20,20,20,220}, 1,
-        nullptr, nullptr
-    });
+        world.texStone,
+        {0,0,0,0}
+    );
 
-    // --- Nombre del país (centrado, sin fondo) ---
-    world.uiElements.push_back({
+    // Country name
+    addText(
+        world,
         {0.76f, 0.22f, 0.22f, 0.05f},
-        nullptr, {0,0,0,0}, 2,
-        nullptr,
-        [&world]() -> std::string {
-            Province* p = provinceFindById(world.provinces, world.selectedProvince);
-            if (!p) return "Selecciona una provincia";
-            Country* c = countryTagFind(world.countries, p->owner);
-            if (c) world.playerCountry = c->tag;
-            return c ? c->name : "Sin dueño";
-        }
-    });
-
-    // --- Flag 
-    world.uiElements.push_back({
-        {0.77f, 0.28f, 0.20f, 0.22f},  
-        world.flagTex, {30,30,30,180}, 2,
-        nullptr, nullptr
-    });
-
-    // --- Botón JUGAR ---
-    world.uiElements.push_back({
-        {0.79f, 0.68f, 0.16f, 0.06f},
-        world.bootonTex, {34,139,34,240}, 2,
+        2,
         [&world]() {
+
+            Province* province =
+                provinceFindById(
+                    world.provinces,
+                    world.selectedProvince
+                );
+
+            if (!province)
+                return std::string("Select your Kingdom");
+
+            Country* country =
+                countryTagFind(
+                    world.countries,
+                    province->owner
+                );
+
+            if (country)
+                world.playerCountry = country->tag;
+
+            return country
+                ? country->name
+                : "Select your Kingdom";
+        }
+    );
+
+    // Country flag
+    addPanel(
+        world,
+        {0.77f, 0.28f, 0.20f, 0.22f},
+        world.flagTex,
+        {0,0,0,0},
+        2
+    );
+
+    // Play button
+    addButton(
+        world,
+        {0.79f, 0.68f, 0.16f, 0.06f},
+        {34,139,34,240},
+        [&world]() {
+
             if (!world.playerCountry.empty())
                 world.place = MenuPlace::InGame;
         },
-        []() -> std::string { return "JUGAR"; }
-    });
+        "PLAY"
+    );
 
-    // --- Botón VOLVER ---
-    world.uiElements.push_back({
+    // Back button
+    addButton(
+        world,
         {0.79f, 0.76f, 0.16f, 0.06f},
-        world.bootonTex, {160,40,40,240}, 2,
-        [&world]() { world.place = MenuPlace::MainMenu; },
-        []() -> std::string { return "VOLVER"; }
-    });
+        {160,40,40,240},
+        [&world]() {
+            world.place = MenuPlace::MainMenu;
+        },
+        "BACK"
+    );
 
-    std::sort(world.uiElements.begin(), world.uiElements.end(),
-        [](const UIElement& a, const UIElement& b){ return a.zOrder < b.zOrder; });
+    sortUI(world);
 }
 
-
+// ===============================================================================================================
+// UI BUILDER
+// ===============================================================================================================
 
 void buildUI(World& world, SDL_Renderer* renderer) {
+
     switch (world.place) {
-        case MenuPlace::MainMenu:         buildMainMenuUI(world, renderer);        break;
-        case MenuPlace::CountrySelection: buildCountrySelectionUI(world, renderer); break;
-        case MenuPlace::InGame:           buildGameUI(world, renderer);            break;
+
+        case MenuPlace::MainMenu:
+            buildMainMenuUI(world, renderer);
+            break;
+
+        case MenuPlace::CountrySelection:
+            buildCountrySelectionUI(world, renderer);
+            break;
+
+        case MenuPlace::InGame:
+            buildGameUI(world, renderer);
+            break;
+
+        case MenuPlace::LoadGame:
+            buildLoadGameUI(world, renderer);
+            break;
     }
 }

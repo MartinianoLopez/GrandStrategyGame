@@ -135,76 +135,53 @@ std::string extractValue(const std::string& line, const std::string& key) {
 // ===============================================================================================================
 // loaders
 // ===============================================================================================================
+std::list<Province> loadProvinces(World& world, const std::string& path) {
 
-std::list<Province> loadProvinces(
-    const std::map<uint32_t, SDL_Point>& centerList
-) {
-
+    auto centerList = initProvincesCenters(world);
     std::list<Province> provinces;
-
-    std::ifstream file("assets/provinces.txt");
+    std::ifstream file(path);
 
     if (!file.is_open()) {
-        std::cerr << "Error: could not open provinces.txt\n";
+        std::cerr << "Error: could not open provinces file\n";
         return provinces;
     }
 
-    // format:
-    // id;r;g;b;name;owner
+    auto toInt = [](const std::string& s, int fallback = 0) -> int {
+        try { return s.empty() ? fallback : std::stoi(s); }
+        catch (...) { return fallback; }
+    };
 
     std::string line;
-
-    // skip header
-    std::getline(file, line);
-
     while (std::getline(file, line)) {
 
-        std::stringstream ss(line);
-
+        std::istringstream ss(line);
+        std::vector<std::string> parts;
         std::string token;
 
-        std::vector<std::string> parts;
-
-        while (std::getline(ss, token, ';')) {
+        while (std::getline(ss, token, ';'))
             parts.push_back(token);
-        }
 
-        if (parts.size() < 6)
-            continue;
+        if (parts.size() < 6) continue;
 
-        int id = std::stoi(parts[0]);
+        int id = toInt(parts[0]);
+        int r  = toInt(parts[1]);
+        int g  = toInt(parts[2]);
+        int b  = toInt(parts[3]);
 
-        int r = std::stoi(parts[1]);
-        int g = std::stoi(parts[2]);
-        int b = std::stoi(parts[3]);
+        Province p(id, parts[4].empty() ? "Unknown" : parts[4],
+                       parts[5].empty() ? "UNK"     : parts[5],
+                       Color(r, g, b));
 
-        std::string name = parts[4];
-        std::string owner = parts[5];
-
-        Province p(
-            id,
-            name,
-            owner,
-            Color(r, g, b)
-        );
-
-        uint32_t colorKey =
-            ((uint32_t)r << 16) |
-            ((uint32_t)g << 8) |
-            (uint32_t)b;
-
-        auto it = centerList.find(colorKey);
-
-        if (it != centerList.end()) {
+        uint32_t key = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
+        auto it = centerList.find(key);
+        if (it != centerList.end())
             p.center = it->second;
-        }
 
-        provinces.push_back(std::move(p));
+        provinces.push_back(p);
     }
 
     return provinces;
 }
-
 // ===============================================================================================================
 
 std::list<Country> loadCountries() {
@@ -263,58 +240,46 @@ std::list<Country> loadCountries() {
 
 // ===============================================================================================================
 
-std::list<Army> loadArmies() {
+std::list<Army> loadArmies(const std::string& path) {
 
     std::list<Army> armies;
-
-    std::ifstream file("assets/armies.txt");
+    std::ifstream file(path);
 
     if (!file.is_open()) {
-        std::cerr << "Error: could not open armies.txt\n";
+        std::cerr << "Error: could not open: " << path << "\n";
         return armies;
     }
 
-    // format:
-    // id;name;owner;power
-
     std::string line;
-
-    // skip header
-    std::getline(file, line);
-
     while (std::getline(file, line)) {
 
-        std::stringstream ss(line);
+        std::cout << "[LINE] " << line << "\n";
 
+        std::istringstream ss(line);
+        std::vector<std::string> parts;
         std::string token;
 
-        std::vector<std::string> parts;
-
-        while (std::getline(ss, token, ';')) {
+        while (std::getline(ss, token, ';'))
             parts.push_back(token);
-        }
 
-        if (parts.size() < 4)
-            continue;
+        if (parts.size() < 4) continue;
 
-        int provinceId = std::stoi(parts[0]);
-
-        std::string name = parts[1];
-
-        std::string owner = parts[2];
-
-        int power = std::stoi(parts[3]);
+        auto toInt = [](const std::string& s, int fallback = 0) -> int {
+            try { return s.empty() ? fallback : std::stoi(s); }
+            catch (...) { return fallback; }
+        };
 
         armies.emplace_back(
-            provinceId,
-            name,
-            owner,
-            power
+            toInt(parts[0]),
+            parts[1],
+            parts[2],
+            toInt(parts[3])
         );
     }
-
     return armies;
 }
+
+// ===============================================================================================================
 
 SDL_Surface* prepareCountries(const World& world) {
     auto start = std::chrono::high_resolution_clock::now();
@@ -376,6 +341,8 @@ SDL_Surface* prepareCountries(const World& world) {
     return result;
 }
 
+// ===============================================================================================================
+
 void initFont(World& world, SDL_Renderer* renderer, const char* fontPath) {
     if (TTF_Init() == -1) {
         SDL_Log("TTF init error: %s", TTF_GetError());
@@ -429,11 +396,9 @@ void loadAssets(World& world, SDL_Renderer* renderer) {
     world.texWidth  = world.provincesBmp->w;
     world.texHeight = world.provincesBmp->h;
 
-    std::map<uint32_t, SDL_Point> centerList = initProvincesCenters(world);
-
-    world.provinces = loadProvinces(centerList);
+    world.provinces = loadProvinces(world, "assets/provinces.txt");
     world.countries = loadCountries();
-    world.armies    = loadArmies();
+    world.armies    = loadArmies("assets/armies.txt");
 
     world.countriesImg = prepareCountries(world);
 
