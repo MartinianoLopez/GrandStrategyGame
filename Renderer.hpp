@@ -70,10 +70,10 @@ void renderArmy(
     World& world,
     int x,
     int y,
-    int number,
+    Army army,
     bool selected
 ) {
-    std::string s = std::to_string(number);
+    std::string s = std::to_string(army.power);
 
     int totalW = 0;
     int maxH = 0;
@@ -99,7 +99,7 @@ void renderArmy(
         maxH + padding * 2
     };
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 180);
+    SDL_SetRenderDrawColor(renderer, army.color.r, army.color.g, army.color.b, 180);
     SDL_RenderFillRect(renderer, &bg);
 
     if (selected) {
@@ -142,7 +142,7 @@ void renderArmies(World& world, SDL_Renderer* renderer, SDL_FRect destRect, int 
         float sy = destRect.y + p->center.y * world.finalScale;
         if (sx < 0 || sy < 0 || sx > screenW || sy > screenH) continue;
         bool selected = (world.selectedProvince == army.position);
-        renderArmy(renderer, world, (int)sx, (int)sy, army.power, selected);
+        renderArmy(renderer, world, (int)sx, (int)sy, army, selected);
     }
 }
 

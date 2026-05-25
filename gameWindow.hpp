@@ -109,7 +109,7 @@ struct GameWindow {
 
         Army* army = armyPositionFind(world.armies, world.selectedProvince);
         if (!army) return;
-
+            
         world.objectiveProvince = target->id;
         army->position          = target->id;
     }

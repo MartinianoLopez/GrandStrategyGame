@@ -59,13 +59,10 @@ struct Army {
     std::string name;
     std::string owner; // country tag
     int power;
+    Color color;
 
-    Army(int position, std::string name, std::string owner, int power)
-        : position(position), name(name), owner(owner), power(power) {}
-    Army(int position, std::string owner, int power)
-        : position(position), name("army"), owner(owner), power(power) {}
-    Army(int position, int power)
-        : position(position), name("Debuging Army"), owner("no Owner"), power(power) {}
+    Army(int position, std::string name, std::string owner, int power, Color color)
+        : position(position), name(name), owner(owner), power(power), color(color) {}
 };
 struct Glyph {
     SDL_Texture* tex = nullptr;

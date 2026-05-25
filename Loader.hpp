@@ -240,7 +240,7 @@ std::list<Country> loadCountries() {
 
 // ===============================================================================================================
 
-std::list<Army> loadArmies(const std::string& path) {
+std::list<Army> loadArmies(const std::string& path, World& world) {
 
     std::list<Army> armies;
     std::ifstream file(path);
@@ -269,11 +269,16 @@ std::list<Army> loadArmies(const std::string& path) {
             catch (...) { return fallback; }
         };
 
+        Color color = {0, 0, 0};
+        Country* c = countryTagFind(world.countries, parts[2]);
+        if (c) color = c->color;
+
         armies.emplace_back(
             toInt(parts[0]),
             parts[1],
             parts[2],
-            toInt(parts[3])
+            toInt(parts[3]),
+            color
         );
     }
     return armies;
@@ -398,7 +403,7 @@ void loadAssets(World& world, SDL_Renderer* renderer) {
 
     world.provinces = loadProvinces(world, "assets/provinces.txt");
     world.countries = loadCountries();
-    world.armies    = loadArmies("assets/armies.txt");
+    world.armies    = loadArmies("assets/armies.txt", world);
 
     world.countriesImg = prepareCountries(world);
 
