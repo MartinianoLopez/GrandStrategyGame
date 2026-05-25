@@ -156,7 +156,26 @@ struct GameWindow {
     // =========================================================================
     void processEvent(World& world, const SDL_Event& e) {
         switch (e.type) {
+            case SDL_WINDOWEVENT:
+                if (e.window.event == SDL_WINDOWEVENT_RESIZED) {
+                    int w, h;
+                    getScreenSize(w, h);
 
+                    float oldScale = world.finalScale;
+                    // texel bajo el centro antes del resize
+                    float texCX = (w / 10.0f - world.offsetX) / oldScale;
+                    float texCY = (h / 10.0f - world.offsetY) / oldScale;
+
+                    world.finalScale = computeScale(world);
+
+                    // reposicionar para que ese texel siga bajo el centro
+                    world.offsetX = w / 10.0f - texCX * world.finalScale;
+                    world.offsetY = h / 10.0f - texCY * world.finalScale;
+
+                    if (!world.freecamera)
+                        clampToBounds(world);
+                }
+                break;
             case SDL_MOUSEWHEEL:
                 if (world.place == MenuPlace::InGame || world.place == MenuPlace::CountrySelection )
                 {
