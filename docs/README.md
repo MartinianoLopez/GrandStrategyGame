@@ -10,6 +10,7 @@
 
 ## To Do
 
+- fix asset glitch
 - improve the in Game UI
 - Convert frontier pixels to lines
 - complete the troop system

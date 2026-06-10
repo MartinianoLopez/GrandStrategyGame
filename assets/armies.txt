@@ -1,0 +1,95 @@
+id;name;owner;power
+
+3;Ejército Colonial Francés;FRA;3200
+7;Guardia de Normandía;FRA;4100
+12;Defensores de Alejandría;MAM;2800
+18;Ejército del Danubio;TUR;1700
+22;Legión Otomana Oriental;TUR;4800
+27;Ejército de Castilla;CAS;3500
+31;Ejército Bretón;FRA;3700
+36;Guardia del Nilo;MAM;3300
+41;Ejército de Moscovia;RUS;2500
+45;Milicia de Granada;CAS;1400
+52;Ejército de Anatolia;TUR;3400
+58;Caballería Janízara;TUR;2300
+63;Ejército de Aragón;CAS;3500
+69;Guardia Castellana;CAS;1600
+74;Defensores de Irlanda;ENG;1300
+81;Ejército de Burgos;CAS;1700
+87;Gran Ejército Castellano;CAS;5000
+94;Guardia del Egeo;TUR;3300
+101;Primera Armada Inglesa;ENG;4600
+108;Guardia de Escocia;ENG;2400
+115;Ejército Siberiano;RUS;3900
+123;Legión del Cáucaso;RUS;2100
+132;Ejército del Loira;FRA;4500
+145;Ejército de Sevilla;CAS;2700
+151;Fuerzas del Báltico;RUS;4300
+167;Ejército Imperial Otomano;TUR;5000
+174;Guardia de Londres;ENG;3100
+182;Ejército del Don;RUS;2900
+191;Milicia de Marsella;FRA;1500
+205;Ejército del Sinaí;MAM;4200
+218;Legión de Constantinopla;TUR;2600
+227;Ejército de Navarra;CAS;4100
+233;Ejército del Volga;RUS;3700
+241;Guardia de York;ENG;2200
+256;Ejército Alpino Francés;FRA;2800
+268;Ejército de Crimea;RUS;4300
+279;Guardia Real Inglesa;ENG;5000
+284;Milicia del Cairo;MAM;1100
+297;Ejército de Galicia;CAS;3900
+305;Ejército del Mar Negro;TUR;4700
+318;Ejército de París;FRA;4500
+327;Guardia de Novgorod;RUS;2100
+336;Legión del Levante;MAM;3000
+348;Ejército de Toulouse;FRA;2700
+359;Defensores de Damasco;MAM;1500
+367;Ejército de Adrianópolis;TUR;4500
+378;Ejército Cosaco;RUS;2900
+384;Ejército de Liverpool;ENG;2400
+399;Ejército Normando;FRA;3600
+412;Gran Armada Inglesa;ENG;5000
+428;Ejército de Kiev;RUS;2500
+437;Guardia de Jerusalén;MAM;1200
+449;Ejército Andaluz;CAS;4700
+463;Ejército Tracio;TUR;4100
+474;Ejército de San Petersburgo;RUS;3400
+488;Milicia de Nottingham;ENG;1100
+497;Ejército de Córdoba;CAS;4900
+512;Ejército Imperial Francés;FRA;5000
+526;Guardia Otomana Occidental;TUR;2600
+539;Ejército de Bristol;ENG;2100
+548;Ejército del Cáucaso;RUS;3100
+561;Legión de Siria;MAM;2600
+579;Guardia del Zar;RUS;4400
+588;Ejército de Valencia;CAS;4900
+603;Ejército Naval Inglés;ENG;5000
+617;Ejército del Sena;FRA;4400
+629;Caballería Otomana;TUR;2300
+642;Ejército de Orleans;FRA;3900
+658;Ejército de Manchester;ENG;3700
+674;Guardia Imperial Rusa;RUS;4900
+689;Milicia Egipcia;MAM;1700
+703;Ejército de Murcia;CAS;4700
+718;Ejército Balcánico;TUR;1800
+733;Ejército Ural;RUS;1600
+749;Primera Guardia Francesa;FRA;4800
+764;Infantería Real Inglesa;ENG;3900
+778;Ejército de Salamanca;CAS;3500
+791;Legión Siberiana;RUS;2200
+804;Defensores del Delta;MAM;3000
+819;Ejército de Gales;ENG;2700
+833;Ejército de León;CAS;3600
+847;Ejército del Bósforo;TUR;4800
+862;Ejército del Norte Francés;FRA;3700
+879;Fuerzas de Constantinopla;TUR;2800
+894;Ejército del Volga Superior;RUS;4200
+908;Guardia de Dover;ENG;3200
+921;Milicia de Alepo;MAM;1900
+937;Ejército Bretón Occidental;FRA;4600
+948;Ejército de Toledo;CAS;4600
+963;Ejército del Mar Caspio;RUS;4300
+977;Guardia de Escandinavia Inglesa;ENG;3400
+989;Ejército de Rumelia;TUR;2400
+1000;Gran Guardia Mameluca;MAM;4200
