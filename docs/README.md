@@ -1,25 +1,31 @@
 # Grand Strategy Game
 
-![screenshot](/docs/screenshot-2026-05-07_16-37-54.png)
+![screenshot](/docs/gamestate.png)
 
-## Game Requirements
+## Game Range
 
 - Full 2D
 - Reliable
 - Scalable
 
-## To Do
+## Game requierements
 
-- fix asset glitch
-- improve the in Game UI
-- Convert frontier pixels to lines
+The game has to do everything that EU4 is capable to do, without entering in the more complex sistems, only the essentials to fullfill all the main activities.
+
+## MVP To Do
+
+- improve the Game UI
 - complete the troop system
 - Make basic game functions
 - Make inteligent countries
-- Improve the map aesthetics
 
-## Arquitecture MVC
+## next version to do
 
-- Model = World
-- View = Renderer
-- Controler = event management
+- convert frontier pixels to lines
+- imprube the game aesthetics 
+
+## MVC Arquitecture 
+
+- Model     =  World: controlls all the game data in one place
+- View      =  Renderer: draws all the layers in one place
+- Controler =  Events management: manege all the inputs in one place
