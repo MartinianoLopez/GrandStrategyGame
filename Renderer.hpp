@@ -48,7 +48,10 @@ void markProvinceFrontiers(World& world, SDL_Renderer* renderer, SDL_FRect destR
 // ===============================================================================================================
 void displaySurface(SDL_Renderer* renderer, SDL_Surface* surface, const SDL_FRect& destRect, Uint8 alpha) {
     if (!surface) return;
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_Surface* converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA32, 0);
+    if (!converted) return;
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, converted);
+    SDL_FreeSurface(converted);
     if (!texture) return;
     SDL_SetTextureAlphaMod(texture, alpha);
     SDL_RenderCopyF(renderer, texture, nullptr, &destRect);
@@ -170,8 +173,9 @@ void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, bool of
     }
 
     displayTexture(renderer, world.height,       destRect, 255);
-    displayTexture(renderer, world.terrain,      destRect, 150);
-    displaySurface(renderer, world.countriesImg, destRect, 240);
+    displayTexture(renderer, world.terrain,      destRect, 120);
+    displaySurface(renderer, world.countriesImg, destRect, 230);
+    
 
     if (world.scale > 6.0f)
         renderFrontiers(world, renderer, destRect, {0, 0, 0, 120}, winWidth, winHeight, world.provinceFrontiers, 1);

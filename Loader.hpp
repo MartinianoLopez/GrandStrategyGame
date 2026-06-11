@@ -253,8 +253,6 @@ std::list<Army> loadArmies(const std::string& path, World& world) {
     std::string line;
     while (std::getline(file, line)) {
 
-        std::cout << "[LINE] " << line << "\n";
-
         std::istringstream ss(line);
         std::vector<std::string> parts;
         std::string token;
@@ -286,16 +284,18 @@ std::list<Army> loadArmies(const std::string& path, World& world) {
 
 // ===============================================================================================================
 
-SDL_Surface* prepareCountries(const World& world) {
+SDL_Surface* prepareCountries(SDL_Renderer* renderer,const World& world) {
     auto start = std::chrono::high_resolution_clock::now();
 
     SDL_Surface* provinces = world.provincesBmp;
     if (!provinces) return nullptr;
 
     SDL_Surface* result = SDL_CreateRGBSurfaceWithFormat(
-        0, provinces->w, provinces->h, 32, provinces->format->format
+        0, provinces->w, provinces->h, 32, SDL_PIXELFORMAT_RGBA32
     );
     if (!result) return nullptr;
+
+    SDL_FillRect(result, nullptr, SDL_MapRGBA(result->format, 0, 0, 0, 0));
 
     std::map<uint32_t, uint32_t> colorToCountryColor;
 
@@ -327,9 +327,7 @@ SDL_Surface* prepareCountries(const World& world) {
                 continue;
             }
 
-            uint32_t countryColor = ((uint32_t)c->color.r << 16) |
-                                    ((uint32_t)c->color.g << 8)  |
-                                     (uint32_t)c->color.b;
+            uint32_t countryColor = SDL_MapRGB(result->format, c->color.r, c->color.g, c->color.b);
 
             colorToCountryColor[pixelColor] = countryColor;
             setPixel(result, x, y, countryColor);
@@ -342,7 +340,6 @@ SDL_Surface* prepareCountries(const World& world) {
     auto end = std::chrono::high_resolution_clock::now();
     float ms = std::chrono::duration<float, std::milli>(end - start).count();
     std::cerr << "prepareCountries: " << ms << " ms\n";
-
     return result;
 }
 
@@ -359,7 +356,7 @@ void initFont(World& world, SDL_Renderer* renderer, const char* fontPath) {
         return;
     }
 
-    SDL_Color color = {255,255,255,255};
+    SDL_Color color = {0,0,0,255};
 
     for (int c = 32; c < 127; c++) {
         char text[2] = { (char)c, '\0' };
@@ -388,15 +385,15 @@ void initFont(World& world, SDL_Renderer* renderer, const char* fontPath) {
 // ===============================================================================================================
 void loadAssets(World& world, SDL_Renderer* renderer) {
     auto start = std::chrono::high_resolution_clock::now();
-    
-    world.provincesBmp = IMG_Load("assets/terrain/provinces.bmp");
+    std::string folderpath = "assets/terrainOld/";
+    world.provincesBmp = IMG_Load((folderpath + "provinces.bmp").c_str());
     if (!world.provincesBmp) {
         std::cerr << "Error loading provinces.bmp: " << IMG_GetError() << "\n";
         return;
     }
 
-    world.terrain = surfaceToTexture(renderer, IMG_Load("assets/terrain/terrain.bmp"));
-    world.height  = surfaceToTexture(renderer, IMG_Load("assets/terrain/heightmap.bmp"));
+    world.terrain = surfaceToTexture(renderer, IMG_Load((folderpath + "terrain.bmp").c_str()));
+    world.height  = surfaceToTexture(renderer, IMG_Load((folderpath + "heightmap.bmp").c_str()));
 
     world.texWidth  = world.provincesBmp->w;
     world.texHeight = world.provincesBmp->h;
@@ -405,7 +402,7 @@ void loadAssets(World& world, SDL_Renderer* renderer) {
     world.countries = loadCountries();
     world.armies    = loadArmies("assets/armies.txt", world);
 
-    world.countriesImg = prepareCountries(world);
+    world.countriesImg = prepareCountries(renderer,world);
 
     world.provinceFrontiers = findFrontiers(world.provincesBmp);
     world.countryFrontiers  = findFrontiersBetweenCountries(world, world.provinceFrontiers);

@@ -58,12 +58,8 @@ uint32_t getPixelColor(SDL_Surface* surface, int x, int y) {
 }
 
 void setPixel(SDL_Surface* surface, int x, int y, uint32_t color) {
-    uint8_t r = (color)       & 0xFF;
-    uint8_t g = (color >> 8)  & 0xFF;
-    uint8_t b = (color >> 16) & 0xFF;
-    Uint32 pixel = SDL_MapRGBA(surface->format, b, g, r, 255);
-    Uint8* p = (Uint8*)surface->pixels + y * surface->pitch + x * 4;
-    *(Uint32*)p = pixel;
+    Uint8* p = (Uint8*)surface->pixels + y * surface->pitch + x * surface->format->BytesPerPixel;
+    *(Uint32*)p = color;
 }
 
 // ===============================================================================================================
