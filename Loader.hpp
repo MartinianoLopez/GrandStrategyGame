@@ -414,7 +414,13 @@ void loadAssets(World& world, SDL_Renderer* renderer) {
     initFont(world, renderer,"assets/Nunito/Nunito-VariableFont_wght.ttf");
     auto end = std::chrono::high_resolution_clock::now();
     float ms = std::chrono::duration<float, std::milli>(end - start).count();
-    world.offsetX = 0.5f * (1920 - world.texWidth * world.scale);
-    world.offsetY = 0.5f * (1080 - world.texHeight * world.scale);
+
+
+    world.finalScale = std::min(1920.0f / world.texWidth,1080.0f / world.texHeight) * world.scale;
+
+    // center starts over europe 
+    world.offsetX = 0.57f * (1920 - world.texWidth * world.finalScale);
+    world.offsetY = 0.22f * (1080 - world.texHeight * world.finalScale);
+
     std::cerr << "time: " << ms << " ms\n";
 }

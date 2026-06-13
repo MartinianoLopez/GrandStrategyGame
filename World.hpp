@@ -144,15 +144,15 @@ struct World {
     int texHeight = 0;
 
     float scale = 5.0f;
-    float offsetX = 200.0f; // broken -inf, -inf offset
-    float offsetY = -200.0f; // broken -inf, -inf offset
+    float offsetX = 0.0f;
+    float offsetY = 0.0f; 
     bool dragging = false;
     int lastX = 0, lastY = 0;
     int frameDelay = 1000 / 60;
     float fps = 0.0f;
-    float finalScale = 0.f;
+    float finalScale = 0.0f;
     bool running = true;
-    bool freecamera = false; // broken -inf, -inf offset   
+    bool freecamera = false; 
     
     std::string playerCountry;
     SDL_Texture* flagTex = nullptr;
