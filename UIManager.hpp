@@ -121,8 +121,8 @@ void buildGameUI(World& world, SDL_Renderer* renderer) {
     // Top bar
     addPanel(
         world,
-        {0.08f, 0.01f, 0.60f, 0.05f},
-        nullptr,
+        {0.2f, 0.001f, 0.60f, 0.1f},
+        world.statusBarTexture,
         {26,26,26,220}
     );
 
@@ -255,7 +255,7 @@ void buildMainMenuUI(World& world, SDL_Renderer* renderer) {
     // Background panel
     addPanel(
         world,
-        {0.30f, 0.60f, 0.40f, 0.32f},
+        {0.25f, 0.50f, 0.50f, 0.50f},
         world.texStone,
         {0,0,0,0}
     );
@@ -429,7 +429,7 @@ void buildCountrySelectionUI(World& world, SDL_Renderer* renderer) {
     // Back button
     addButton(
         world,
-        {0.79f, 0.76f, 0.16f, 0.06f},
+        {0.79f, 0.74f, 0.16f, 0.06f},
         {160,40,40,240},
         [&world]() {
             world.place = MenuPlace::MainMenu;

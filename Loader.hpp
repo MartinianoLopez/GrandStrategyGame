@@ -385,7 +385,7 @@ void initFont(World& world, SDL_Renderer* renderer, const char* fontPath) {
 // ===============================================================================================================
 void loadAssets(World& world, SDL_Renderer* renderer) {
     auto start = std::chrono::high_resolution_clock::now();
-    std::string folderpath = "assets/terrainOld/";
+    std::string folderpath = "assets/terrainCustom/";
     world.provincesBmp = IMG_Load((folderpath + "provinces.bmp").c_str());
     if (!world.provincesBmp) {
         std::cerr << "Error loading provinces.bmp: " << IMG_GetError() << "\n";
@@ -407,12 +407,14 @@ void loadAssets(World& world, SDL_Renderer* renderer) {
     world.provinceFrontiers = findFrontiers(world.provincesBmp);
     world.countryFrontiers  = findFrontiersBetweenCountries(world, world.provinceFrontiers);
 
-    world.texStone = IMG_LoadTexture(renderer, "assets/ui/stone.png");
+    world.texStone = IMG_LoadTexture(renderer, "assets/ui/table.png");
     world.bootonTex = IMG_LoadTexture(renderer, "assets/ui/booton.png");
+    world.statusBarTexture = IMG_LoadTexture(renderer, "assets/ui/statusBar.png");
 
     initFont(world, renderer,"assets/Nunito/Nunito-VariableFont_wght.ttf");
     auto end = std::chrono::high_resolution_clock::now();
     float ms = std::chrono::duration<float, std::milli>(end - start).count();
-    
+    world.offsetX = 0.5f * (1920 - world.texWidth * world.scale);
+    world.offsetY = 0.5f * (1080 - world.texHeight * world.scale);
     std::cerr << "time: " << ms << " ms\n";
 }

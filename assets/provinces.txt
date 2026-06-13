@@ -16,7 +16,7 @@ id;r;g;b;name;owner
 15;130;62;0;Midtjylland;DAN
 16;2;64;64;Bohuslän;NOR
 17;130;66;128;Akershus;NOR
-18;2;68;192;Umeå;NONE
+18;2;68;192;Umeå;SWE
 19;130;70;255;Österbotten;SWE
 20;2;72;0;Trøndelag;NOR
 21;131;74;64;Hålogaland;NOR
@@ -165,8 +165,8 @@ id;r;g;b;name;owner
 164;23;104;255;Naxos;NAX
 165;151;106;0;Bern;SWI
 166;23;108;64;Schwyz;SWI
-167;151;110;128;Caux;FRA
-168;24;112;192;Normandie;FRA
+167;151;110;128;Caux;ENG
+168;24;112;192;Normandie;ENG
 169;152;114;255;Armor;BRI
 170;24;116;0;Finistère;BRI
 171;152;118;64;Morbihan;BRI
@@ -4112,7 +4112,7 @@ id;r;g;b;name;owner
 4111;119;212;150;Saintonge;FRA
 4112;157;124;213;Aurilac;FRA
 4113;103;160;108;Uleaborg;SWE
-4114;145;85;134;Luleå;NONE
+4114;145;85;134;Luleå;SWE
 4115;156;39;189;Mazyr;LIT
 4116;119;162;166;Belyov;OKA
 4117;205;163;151;Bezhetsk;MOS
@@ -4383,7 +4383,7 @@ id;r;g;b;name;owner
 4382;213;194;38;Ommeland;FRI
 4383;220;189;139;Haag;HOL
 4384;234;156;30;Rennes;BRI
-4385;206;210;106;Cotentin;FRA
+4385;206;210;106;Cotentin;ENG
 4386;153;88;207;Vendee;FRA
 4387;227;104;55;Angouleme;FRA
 4388;90;50;219;Chartres;FRA

@@ -19,10 +19,11 @@ The game has to do everything that EU4 is capable to do, without entering in the
 - Make basic game functions
 - Make inteligent countries
 
-## next version to do
+## next version ideas
 
 - convert frontier pixels to lines
 - imprube the game aesthetics 
+- make the ui code into a txt config file witch is read every few renders to be able to change the ui like a css in real time.
 
 ## MVC Arquitecture 
 

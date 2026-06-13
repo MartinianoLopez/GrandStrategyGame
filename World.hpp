@@ -135,9 +135,7 @@ struct World {
     int selectedProvince = 0;
     int objectiveProvince = 0;
 
-    std::string playerCountry;
-    SDL_Texture* flagTex = nullptr;
-    SDL_Texture* bootonTex = nullptr;
+ 
 
     TTF_Font* font = nullptr;
     Glyph glyphs[128];
@@ -146,19 +144,24 @@ struct World {
     int texHeight = 0;
 
     float scale = 5.0f;
-    float offsetX = -2100.f;
-    float offsetY = -230.f;
+    float offsetX = 200.0f; // broken -inf, -inf offset
+    float offsetY = -200.0f; // broken -inf, -inf offset
     bool dragging = false;
     int lastX = 0, lastY = 0;
     int frameDelay = 1000 / 60;
     float fps = 0.0f;
     float finalScale = 0.f;
     bool running = true;
-    bool freecamera = false;
+    bool freecamera = false; // broken -inf, -inf offset   
+    
+    std::string playerCountry;
+    SDL_Texture* flagTex = nullptr;
+    SDL_Texture* bootonTex = nullptr;
     MenuPlace place = MenuPlace::MainMenu;
     std::vector<SDL_Texture*> uiTextures;
     std::vector<UIElement>    uiElements;
     SDL_Texture* texStone = nullptr;
+    SDL_Texture* statusBarTexture = nullptr;
     std::vector<std::string> saveFiles;
     std::string selectedSave;
 
