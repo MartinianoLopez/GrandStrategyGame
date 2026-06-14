@@ -123,16 +123,28 @@ Province* provinceFindByColor(const std::list<Province>& list, uint32_t color) {
 void renderText(
     SDL_Renderer* renderer,
     World& world,
+    const std::string& fontId,
     int x,
     int y,
     const std::string& text
 ) {
+    Font* font = nullptr;
+    for (auto& f : world.fonts) {
+        if (f.id == fontId) {
+            font = &f;
+            break;
+        }
+    }
+    if (!font) return;
+
     for (char c : text) {
 
         if (c < 0 || c >= 128)
             continue;
 
-        Glyph& g = world.glyphs[(int)c];
+        Glyph& g = font->glyphs[(int)c];
+
+        if (!g.tex) continue;
 
         SDL_Rect dst = {
             x,

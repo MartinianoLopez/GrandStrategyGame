@@ -9,6 +9,7 @@
 #include <SDL2/SDL_ttf.h>
 #include "Loader.hpp"
 #include "UIManager.hpp"
+#include "saves.hpp"
 
 int main() {
     std::cerr << "START\n";
@@ -62,7 +63,6 @@ int main() {
     // Shutdown                                                                                        
     // =========================================================================================
 
-    TTF_CloseFont(world.font);
     TTF_Quit();                
     SDL_Quit();
     if (debugging) debugWin.shutdown();

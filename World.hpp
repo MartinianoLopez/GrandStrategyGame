@@ -69,6 +69,10 @@ struct Glyph {
     int w = 0;
     int h = 0;
 };
+struct Font {
+    std::string id;
+    Glyph glyphs[128];
+};
 
 struct UIElement {
     SDL_FRect boundsNorm;
@@ -77,6 +81,8 @@ struct UIElement {
     int zOrder;
     std::function<void()> onClick;
     std::function<std::string()> getText;
+
+    std::string font = "simple";
 
     SDL_FRect resolve(int w, int h) const {
     SDL_FRect base = { boundsNorm.x * w, boundsNorm.y * h,
@@ -135,10 +141,7 @@ struct World {
     int selectedProvince = 0;
     int objectiveProvince = 0;
 
- 
-
-    TTF_Font* font = nullptr;
-    Glyph glyphs[128];
+    std::list<Font> fonts;
 
     int texWidth = 0;
     int texHeight = 0;

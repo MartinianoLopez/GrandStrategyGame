@@ -1,5 +1,5 @@
 #pragma once
-#include "imgui.h"
+#include "imgui.h" 
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_sdlrenderer2.h"
 #include "World.hpp"
@@ -69,7 +69,6 @@ struct DebugWindow {
             ImGui::Text("provincesBmp  %s", ok(world.provincesBmp));
             ImGui::Text("terrain       %s", ok(world.terrain));
             ImGui::Text("height        %s", ok(world.height));
-            ImGui::Text("font          %s", ok(world.font));
         }
 
         // ── Selected Province ─────────────────────────────────────────────────

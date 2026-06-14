@@ -71,27 +71,31 @@ void displayTexture(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRec
 void renderArmy(
     SDL_Renderer* renderer,
     World& world,
+    const std::string& fontId,
     int x,
     int y,
     Army army,
     bool selected
 ) {
+    Font* font = nullptr;
+    for (auto& f : world.fonts) {
+        if (f.id == fontId) { font = &f; break; }
+    }
+    if (!font) return;
+
     std::string s = std::to_string(army.power);
 
     int totalW = 0;
     int maxH = 0;
 
     for (char c : s) {
-        Glyph& g = world.glyphs[(int)c];
+        Glyph& g = font->glyphs[(int)c];
         totalW += g.w;
         maxH = std::max(maxH, g.h);
     }
 
     x -= totalW / 2;
     y -= maxH / 2;
-
-    x = int(x);
-    y = int(y);
 
     const int padding = 1;
 
@@ -119,7 +123,7 @@ void renderArmy(
 
     for (char c : s) {
 
-        Glyph& g = world.glyphs[(int)c];
+        Glyph& g = font->glyphs[(int)c];
 
         SDL_Rect dst = {
             x,
@@ -145,7 +149,7 @@ void renderArmies(World& world, SDL_Renderer* renderer, SDL_FRect destRect, int 
         float sy = destRect.y + p->center.y * world.finalScale;
         if (sx < 0 || sy < 0 || sx > screenW || sy > screenH) continue;
         bool selected = (world.selectedProvince == army.position);
-        renderArmy(renderer, world, (int)sx, (int)sy, army, selected);
+        renderArmy(renderer, world, "simple", (int)sx, (int)sy, army, selected);
     }
 }
 
@@ -204,11 +208,25 @@ void renderUI(SDL_Renderer* renderer, World& world, SDL_Window* window) {
 
         if (el.getText) {
             std::string text = el.getText();
-            int tw, th;
-            TTF_SizeText(world.font, text.c_str(), &tw, &th);
-            float tx = r.x + (r.w - tw) * 0.5f;
-            float ty = r.y + (r.h - th) * 0.5f;
-            renderText(renderer, world, tx, ty, text);
+
+            Font* font = nullptr;
+            for (auto& f : world.fonts) {
+                if (f.id == el.font) { font = &f; break; }
+            }
+            if (!font) continue;
+
+            int tw = 0, th = 0;
+            for (char c : text) {
+                if (c < 0 || c >= 128) continue;
+                Glyph& g = font->glyphs[(int)c];
+                tw += g.w;
+                th = std::max(th, g.h);
+            }
+
+            int tx = (int)(r.x + (r.w - tw) * 0.5f);
+            int ty = (int)(r.y + (r.h - th) * 0.5f);
+
+            renderText(renderer, world, el.font, tx, ty, text);
         }
     }
 }

@@ -368,41 +368,31 @@ SDL_Surface* prepareCountries(SDL_Renderer* renderer,const World& world) {
 
 // ===============================================================================================================
 
-void initFont(World& world, SDL_Renderer* renderer, const char* fontPath) {
-    if (TTF_Init() == -1) {
-        SDL_Log("TTF init error: %s", TTF_GetError());
-        return;
-    }
-    world.font = TTF_OpenFont(fontPath, 11);
-    if (!world.font) {
-        SDL_Log("Font load error: %s", TTF_GetError());
-        return;
-    }
+Font initFont(SDL_Renderer* renderer, const std::string& id, const char* fontPath, SDL_Color color, int fontSize) {
+    Font font;
+    font.id = id;
 
-    SDL_Color color = {0,0,0,255};
+    TTF_Font* ttf = TTF_OpenFont(fontPath, fontSize);
+    if (!ttf) {
+        SDL_Log("Font load error: %s", TTF_GetError());
+        return font;
+    }
 
     for (int c = 32; c < 127; c++) {
         char text[2] = { (char)c, '\0' };
+        SDL_Surface* s = TTF_RenderText_Solid(ttf, text, color);
+        if (!s) continue;
 
-        SDL_Surface* s = TTF_RenderText_Solid(
-            world.font,
-            text,
-            color
-        );
-
-        if (!s)
-            continue;
-
-        world.glyphs[c].tex =
-            SDL_CreateTextureFromSurface(renderer, s);
-
-        world.glyphs[c].w = s->w;
-        world.glyphs[c].h = s->h;
+        font.glyphs[c].tex = SDL_CreateTextureFromSurface(renderer, s);
+        font.glyphs[c].w = s->w;
+        font.glyphs[c].h = s->h;
 
         SDL_FreeSurface(s);
     }
-}
 
+    TTF_CloseFont(ttf);
+    return font;
+}
 // ===============================================================================================================
 // LOAD ALL
 // ===============================================================================================================
@@ -433,8 +423,14 @@ void loadAssets(World& world, SDL_Renderer* renderer) {
     world.texStone = IMG_LoadTexture(renderer, "assets/ui/table.png");
     world.bootonTex = IMG_LoadTexture(renderer, "assets/ui/booton.png");
     world.statusBarTexture = IMG_LoadTexture(renderer, "assets/ui/statusBar.png");
+    if (TTF_Init() == -1) {
+        SDL_Log("TTF init error: %s", TTF_GetError());
+        return; // o manejo de error apropiado
+    }
+    world.fonts.push_back(initFont(renderer, "simple", "assets/fonts/Nunito/Nunito-VariableFont_wght.ttf", {0, 0, 0, 255}, 11));
+    world.fonts.push_back(initFont(renderer, "fancy", "assets/fonts/Cinzel/Cinzel-VariableFont_wght.ttf", {220, 220, 220, 255}, 20));
+    
 
-    initFont(world, renderer,"assets/Nunito/Nunito-VariableFont_wght.ttf");
     auto end = std::chrono::high_resolution_clock::now();
     float ms = std::chrono::duration<float, std::milli>(end - start).count();
 

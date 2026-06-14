@@ -52,7 +52,8 @@ inline void addPanel(
         color,
         zOrder,
         nullptr,
-        nullptr
+        nullptr,
+        "fancy"
     });
 }
 
@@ -69,7 +70,8 @@ inline void addText(
         {0,0,0,0},
         zOrder,
         nullptr,
-        text
+        text,
+        "fancy"
     });
 }
 
@@ -87,7 +89,8 @@ inline void addButton(
         color,
         2,
         onClick,
-        [text]() { return text; }
+        [text]() { return text; },
+        "simple"
     });
 }
 
