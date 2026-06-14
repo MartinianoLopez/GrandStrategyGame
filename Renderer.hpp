@@ -174,7 +174,7 @@ void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, bool of
 
     displayTexture(renderer, world.height,       destRect, 255);
     displayTexture(renderer, world.terrain,      destRect, 200);
-    displaySurface(renderer, world.countriesImg, destRect, 220);
+    displaySurface(renderer, world.countriesImg, destRect, 245);
     
 
     if (world.scale > 6.0f)

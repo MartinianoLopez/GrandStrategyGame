@@ -182,6 +182,9 @@ std::list<Province> loadProvinces(World& world, const std::string& path) {
 
     return provinces;
 }
+
+
+
 // ===============================================================================================================
 
 std::list<Country> loadCountries() {
@@ -237,6 +240,26 @@ std::list<Country> loadCountries() {
 
     return countries;
 }
+void desaturateCountries(std::list<Country>& countries, double k = 0.3, int brightness = 20) {
+    for (auto& c : countries) {
+        int r = c.color.r;
+        int g = c.color.g;
+        int b = c.color.b;
+
+        double gray = (r + g + b) / 3.0;
+
+        int newR = static_cast<int>(r + (gray - r) * k) + brightness;
+        int newG = static_cast<int>(g + (gray - g) * k) + brightness;
+        int newB = static_cast<int>(b + (gray - b) * k) + brightness;
+
+        newR = std::clamp(newR, 0, 255);
+        newG = std::clamp(newG, 0, 255);
+        newB = std::clamp(newB, 0, 255);
+
+        c.color = Color(newR, newG, newB);
+    }
+}
+
 
 // ===============================================================================================================
 
@@ -400,8 +423,8 @@ void loadAssets(World& world, SDL_Renderer* renderer) {
 
     world.provinces = loadProvinces(world, "assets/provinces.txt");
     world.countries = loadCountries();
+    desaturateCountries(world.countries, 0.3, 5);
     world.armies    = loadArmies("assets/armies.txt", world);
-
     world.countriesImg = prepareCountries(renderer,world);
 
     world.provinceFrontiers = findFrontiers(world.provincesBmp);
