@@ -1,6 +1,8 @@
 #include "utils.hpp"
 #include "World.hpp"
 #include <algorithm>
+#include <chrono>
+
 
 // ===============================================================================================================
 // frontiers
@@ -46,16 +48,28 @@ void markProvinceFrontiers(World& world, SDL_Renderer* renderer, SDL_FRect destR
 // ===============================================================================================================
 // display
 // ===============================================================================================================
+// do not use too expensive in terms of performance
 void displaySurface(SDL_Renderer* renderer, SDL_Surface* surface, const SDL_FRect& destRect, Uint8 alpha) {
+    //from surface to texture
     if (!surface) return;
     SDL_Surface* converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA32, 0);
     if (!converted) return;
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, converted);
     SDL_FreeSurface(converted);
+    // display texture 
     if (!texture) return;
     SDL_SetTextureAlphaMod(texture, alpha);
     SDL_RenderCopyF(renderer, texture, nullptr, &destRect);
     SDL_DestroyTexture(texture);
+}
+
+SDL_Texture* convertSurfaceToTexture(SDL_Renderer* renderer, SDL_Surface* surface) {
+    if (!surface) return nullptr;
+    SDL_Surface* converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA32, 0);
+    if (!converted) return nullptr;
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, converted);
+    SDL_FreeSurface(converted);
+    return texture;
 }
 
 void displayTexture(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRect& destRect, Uint8 alpha) {
@@ -157,6 +171,8 @@ void renderArmies(World& world, SDL_Renderer* renderer, SDL_FRect destRect, int 
 // render
 // ===============================================================================================================
 void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, bool offset) {
+    auto t0 = std::chrono::high_resolution_clock::now();
+
     int winWidth, winHeight;
     SDL_GetWindowSize(window, &winWidth, &winHeight);
 
@@ -175,21 +191,43 @@ void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, bool of
     if (offset) {
         destRect.x = world.offsetX - world.texWidth * world.finalScale; 
     }
+    auto t1 = std::chrono::high_resolution_clock::now();
 
     displayTexture(renderer, world.height,       destRect, 255);
+    auto t2 = std::chrono::high_resolution_clock::now();
+
     displayTexture(renderer, world.terrain,      destRect, 200);
-    displaySurface(renderer, world.countriesImg, destRect, 245);
-    
+    auto t3 = std::chrono::high_resolution_clock::now();
+
+    displayTexture(renderer, world.countriesTex, destRect, 245);
+    auto t4 = std::chrono::high_resolution_clock::now();
 
     if (world.scale > 6.0f)
         renderFrontiers(world, renderer, destRect, {0, 0, 0, 120}, winWidth, winHeight, world.provinceFrontiers, 1);
+    auto t5 = std::chrono::high_resolution_clock::now();
+
     if (world.scale < 5.0f)
         renderFrontiers(world, renderer, destRect,{0, 0, 0, 220}, winWidth, winHeight, world.countryFrontiers, 6 / world.scale);
+    auto t6 = std::chrono::high_resolution_clock::now();
+
     if (world.scale > 4.0f) {
         renderFrontiers(world, renderer, destRect, {0, 0, 0, 220}, winWidth, winHeight, world.countryFrontiers, 1);
         markProvinceFrontiers(world, renderer, destRect, {255, 255, 0, 240}, world.selectedProvince);
         renderArmies(world, renderer, destRect, winWidth, winHeight);
     }
+    auto t7 = std::chrono::high_resolution_clock::now();
+
+    auto ms = [](auto a, auto b){ return std::chrono::duration<float, std::milli>(b - a).count(); };
+    /*
+    std::cerr << "[map" << (offset ? "_wrap" : "") << "]\n"
+              << "  setup: "       << ms(t0,t1) << " ms\n"
+              << "  height: "      << ms(t1,t2) << " ms\n"
+              << "  terrain: "     << ms(t2,t3) << " ms\n"
+              << "  countries: "   << ms(t3,t4) << " ms\n"
+              << "  provFront: "   << ms(t4,t5) << " ms\n"
+              << "  countryFront1: " << ms(t5,t6) << " ms\n"
+              << "  countryFront2/marks/armies: " << ms(t6,t7) << " ms\n";
+    */
 }
 
 void renderUI(SDL_Renderer* renderer, World& world, SDL_Window* window) {

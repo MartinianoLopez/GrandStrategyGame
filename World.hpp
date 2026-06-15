@@ -130,6 +130,7 @@ struct World {
     SDL_Texture* terrain = nullptr;
     SDL_Texture* height = nullptr;
     SDL_Surface* countriesImg = nullptr;
+    SDL_Texture* countriesTex = nullptr;
     
     std::list<Province> provinces;
     std::list<Country> countries;

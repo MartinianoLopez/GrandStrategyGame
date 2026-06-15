@@ -416,6 +416,7 @@ void loadAssets(World& world, SDL_Renderer* renderer) {
     desaturateCountries(world.countries, 0.3, 5);
     world.armies    = loadArmies("assets/armies.txt", world);
     world.countriesImg = prepareCountries(renderer,world);
+    world.countriesTex = surfaceToTexture(renderer, world.countriesImg);
 
     world.provinceFrontiers = findFrontiers(world.provincesBmp);
     world.countryFrontiers  = findFrontiersBetweenCountries(world, world.provinceFrontiers);
@@ -423,10 +424,12 @@ void loadAssets(World& world, SDL_Renderer* renderer) {
     world.texStone = IMG_LoadTexture(renderer, "assets/ui/table.png");
     world.bootonTex = IMG_LoadTexture(renderer, "assets/ui/booton.png");
     world.statusBarTexture = IMG_LoadTexture(renderer, "assets/ui/statusBar.png");
+
     if (TTF_Init() == -1) {
         SDL_Log("TTF init error: %s", TTF_GetError());
-        return; // o manejo de error apropiado
+        return;
     }
+    
     world.fonts.push_back(initFont(renderer, "simple", "assets/fonts/Nunito/Nunito-VariableFont_wght.ttf", {0, 0, 0, 255}, 11));
     world.fonts.push_back(initFont(renderer, "fancy", "assets/fonts/Cinzel/Cinzel-VariableFont_wght.ttf", {220, 220, 220, 255}, 20));
     
