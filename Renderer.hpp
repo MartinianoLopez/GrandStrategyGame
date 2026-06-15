@@ -7,7 +7,7 @@
 // ===============================================================================================================
 // frontiers
 // ===============================================================================================================
-void renderFrontiers(
+inline void renderFrontiers(
     World& world,
     SDL_Renderer* renderer,
     SDL_FRect destRect,
@@ -29,7 +29,7 @@ void renderFrontiers(
     }
 }
 
-void markProvinceFrontiers(World& world, SDL_Renderer* renderer, SDL_FRect destRect, SDL_Color color, int provinceId) {
+inline void markProvinceFrontiers(World& world, SDL_Renderer* renderer, SDL_FRect destRect, SDL_Color color, int provinceId) {
     Province* p = provinceFindById(world.provinces, provinceId);
     if (!p) return;
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
@@ -49,7 +49,7 @@ void markProvinceFrontiers(World& world, SDL_Renderer* renderer, SDL_FRect destR
 // display
 // ===============================================================================================================
 // do not use too expensive in terms of performance
-void displaySurface(SDL_Renderer* renderer, SDL_Surface* surface, const SDL_FRect& destRect, Uint8 alpha) {
+inline void displaySurface(SDL_Renderer* renderer, SDL_Surface* surface, const SDL_FRect& destRect, Uint8 alpha) {
     //from surface to texture
     if (!surface) return;
     SDL_Surface* converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA32, 0);
@@ -63,7 +63,7 @@ void displaySurface(SDL_Renderer* renderer, SDL_Surface* surface, const SDL_FRec
     SDL_DestroyTexture(texture);
 }
 
-SDL_Texture* convertSurfaceToTexture(SDL_Renderer* renderer, SDL_Surface* surface) {
+inline SDL_Texture* convertSurfaceToTexture(SDL_Renderer* renderer, SDL_Surface* surface) {
     if (!surface) return nullptr;
     SDL_Surface* converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA32, 0);
     if (!converted) return nullptr;
@@ -72,7 +72,7 @@ SDL_Texture* convertSurfaceToTexture(SDL_Renderer* renderer, SDL_Surface* surfac
     return texture;
 }
 
-void displayTexture(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRect& destRect, Uint8 alpha) {
+inline void displayTexture(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRect& destRect, Uint8 alpha) {
     if (!texture) return;
     SDL_SetTextureAlphaMod(texture, alpha);
     SDL_RenderCopyF(renderer, texture, nullptr, &destRect);
@@ -82,7 +82,7 @@ void displayTexture(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRec
 // text & numbers
 // ===============================================================================================================
 
-void renderArmy(
+inline void renderArmy(
     SDL_Renderer* renderer,
     World& world,
     const std::string& fontId,
@@ -155,7 +155,7 @@ void renderArmy(
 // ===============================================================================================================
 // armies
 // ===============================================================================================================
-void renderArmies(World& world, SDL_Renderer* renderer, SDL_FRect destRect, int screenW, int screenH) {
+inline void renderArmies(World& world, SDL_Renderer* renderer, SDL_FRect destRect, int screenW, int screenH) {
     for (const auto& army : world.armies) {
         Province* p = provinceFindById(world.provinces, army.position);
         if (!p) continue;
@@ -170,7 +170,7 @@ void renderArmies(World& world, SDL_Renderer* renderer, SDL_FRect destRect, int 
 // ===============================================================================================================
 // render
 // ===============================================================================================================
-void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, bool offset) {
+inline void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, bool isSecondMap) {
     auto t0 = std::chrono::high_resolution_clock::now();
 
     int winWidth, winHeight;
@@ -188,7 +188,7 @@ void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, bool of
         world.texHeight * world.finalScale
     };
 
-    if (offset) {
+    if (isSecondMap) {
         destRect.x = world.offsetX - world.texWidth * world.finalScale; 
     }
     auto t1 = std::chrono::high_resolution_clock::now();
@@ -230,7 +230,7 @@ void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, bool of
     */
 }
 
-void renderUI(SDL_Renderer* renderer, World& world, SDL_Window* window) {
+inline void renderUI(SDL_Renderer* renderer, World& world, SDL_Window* window) {
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
 
@@ -254,9 +254,9 @@ void renderUI(SDL_Renderer* renderer, World& world, SDL_Window* window) {
             if (!font) continue;
 
             int tw = 0, th = 0;
-            for (char c : text) {
-                if (c < 0 || c >= 128) continue;
-                Glyph& g = font->glyphs[(int)c];
+            for (unsigned char c : text) {
+                if (c >= 128) continue;
+                Glyph& g = font->glyphs[c];
                 tw += g.w;
                 th = std::max(th, g.h);
             }
@@ -270,7 +270,7 @@ void renderUI(SDL_Renderer* renderer, World& world, SDL_Window* window) {
 }
 
 
-void renderGame(World& world, SDL_Renderer* renderer, SDL_Window* window) {
+inline void renderGame(World& world, SDL_Renderer* renderer, SDL_Window* window) {
     SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
     SDL_RenderClear(renderer);
     renderMap(world, renderer, window, false); // mapa principal

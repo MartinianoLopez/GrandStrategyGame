@@ -32,7 +32,7 @@
         "kind": "build",
         "isDefault": true
       },
-      "problemMatcher": ["$gcc"]
+      "problemMatcher": ["$msCompile"]
     }
   ]
 }

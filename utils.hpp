@@ -1,9 +1,7 @@
 #pragma once
-#include <map>
 #include <list>
 #include <optional>
 #include <string>
-#include <iostream>
 #include <SDL2/SDL.h>
 #include "World.hpp"
 
@@ -22,7 +20,7 @@ auto mapFind(const Map& map, const typename Map::key_type& key)
 // ===============================================================================================================
 // color
 // ===============================================================================================================
-std::string colorToString(uint32_t color) {
+inline std::string colorToString(uint32_t color) {
     uint8_t r = (color >> 16) & 0xFF;
     uint8_t g = (color >> 8)  & 0xFF;
     uint8_t b = (color)       & 0xFF;
@@ -32,7 +30,7 @@ std::string colorToString(uint32_t color) {
 // ===============================================================================================================
 // pixels
 // ===============================================================================================================
-uint32_t getPixelColor(SDL_Surface* surface, int x, int y) {
+inline uint32_t getPixelColor(SDL_Surface* surface, int x, int y) {
 
     uint8_t* pixel =
         (uint8_t*)surface->pixels
@@ -57,7 +55,7 @@ uint32_t getPixelColor(SDL_Surface* surface, int x, int y) {
         (uint32_t)b;
 }
 
-void setPixel(SDL_Surface* surface, int x, int y, uint32_t color) {
+inline void setPixel(SDL_Surface* surface, int x, int y, uint32_t color) {
     Uint8* p = (Uint8*)surface->pixels + y * surface->pitch + x * surface->format->BytesPerPixel;
     *(Uint32*)p = color;
 }
@@ -65,7 +63,7 @@ void setPixel(SDL_Surface* surface, int x, int y, uint32_t color) {
 // ===============================================================================================================
 // surface → texture
 // ===============================================================================================================
-SDL_Texture* surfaceToTexture(SDL_Renderer* renderer, SDL_Surface* surface) {
+inline SDL_Texture* surfaceToTexture(SDL_Renderer* renderer, SDL_Surface* surface) {
     if (!surface) return nullptr;
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
@@ -78,14 +76,14 @@ SDL_Texture* surfaceToTexture(SDL_Renderer* renderer, SDL_Surface* surface) {
 // ===============================================================================================================
 
 
-Country* countryTagFind(const std::list<Country>& list, const std::string& tag) {
+inline Country* countryTagFind(const std::list<Country>& list, const std::string& tag) {
     for (auto& country : list)
         if (country.tag == tag)
             return const_cast<Country*>(&country);
     return nullptr;
 }
 
-Army* armyPositionFind(const std::list<Army>& list, int provinceId) {
+inline Army* armyPositionFind(const std::list<Army>& list, int provinceId) {
     for (auto& army : list)
         if (army.position == provinceId)
             return const_cast<Army*>(&army);
@@ -95,10 +93,10 @@ Army* armyPositionFind(const std::list<Army>& list, int provinceId) {
 // ===============================================================================================================
 // armies
 // ===============================================================================================================
-void moveArmy(Army& army, int toProvinceId) {
+inline void moveArmy(Army& army, int toProvinceId) {
     army.position = toProvinceId;
 }
-Province* provinceFindById(const std::list<Province>& list, int id) {
+inline Province* provinceFindById(const std::list<Province>& list, int id) {
     for (auto& province : list) {
         if (province.id == id)
             return const_cast<Province*>(&province);
@@ -106,7 +104,7 @@ Province* provinceFindById(const std::list<Province>& list, int id) {
 
     return nullptr;
 }
-Province* provinceFindByColor(const std::list<Province>& list, uint32_t color) {
+inline Province* provinceFindByColor(const std::list<Province>& list, uint32_t color) {
     int r = (color >> 16) & 0xFF;
     int g = (color >> 8)  & 0xFF;
     int b = (color)       & 0xFF;
@@ -120,7 +118,7 @@ Province* provinceFindByColor(const std::list<Province>& list, uint32_t color) {
     }
     return nullptr;
 }
-void renderText(
+inline void renderText(
     SDL_Renderer* renderer,
     World& world,
     const std::string& fontId,
@@ -138,11 +136,12 @@ void renderText(
     if (!font) return;
 
     for (char c : text) {
+        unsigned char uc = static_cast<unsigned char>(c);
 
-        if (c < 0 || c >= 128)
+        if (uc >= 128)
             continue;
 
-        Glyph& g = font->glyphs[(int)c];
+        Glyph& g = font->glyphs[(int)uc];
 
         if (!g.tex) continue;
 

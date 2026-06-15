@@ -3,9 +3,8 @@
 #include "World.hpp"
 #include <fstream>
 #include <sstream>
-#include <filesystem>
-#include <regex>
 #include <iostream>
+#include <algorithm>
 #include <SDL2/SDL_image.h>
 #include "utils.hpp"
 #include <chrono>
@@ -13,33 +12,35 @@
 // ===============================================================================================================
 // frontiers
 // ===============================================================================================================
-std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFrontiers(SDL_Surface* img) {   
+inline std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFrontiers(SDL_Surface* img) {   
     std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> frontierList;
     int imgW = img->w;
     int imgH = img->h;
 
-    for (int y = 0; y < imgH; y++)
-    for (int x = 0; x < imgW; x++) {
-        uint32_t current = getPixelColor(img, x, y);
-        if (x + 1 < imgW) { 
-            uint32_t next = getPixelColor(img, x + 1, y);
-            if (next != current) frontierList[{current, next}].push_back({x + 0.5f, (float)y});
+    for (int y = 0; y < imgH; y++){
+        for (int x = 0; x < imgW; x++) {
+            uint32_t current = getPixelColor(img, x, y);
+            if (x + 1 < imgW) { 
+                uint32_t next = getPixelColor(img, x + 1, y);
+                if (next != current) frontierList[{current, next}].push_back({x + 0.5f, (float)y});
+            }
         }
     }
 
-    for (int y = 0; y < imgH; y++) 
-    for (int x = 0; x < imgW; x++) {  
-        uint32_t current = getPixelColor(img, x, y);
-        if (y + 1 < imgH) {  
-            uint32_t next = getPixelColor(img, x, y + 1);
-            if (next != current) frontierList[{current, next}].push_back({(float)x, y + 0.5f});
+    for (int y = 0; y < imgH; y++){ 
+        for (int x = 0; x < imgW; x++) {  
+            uint32_t current = getPixelColor(img, x, y);
+            if (y + 1 < imgH) {  
+                uint32_t next = getPixelColor(img, x, y + 1);
+                if (next != current) frontierList[{current, next}].push_back({(float)x, y + 0.5f});
+            }
         }
     }
 
     return frontierList;
 }
 
-std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFrontiersBetweenCountries(
+inline std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFrontiersBetweenCountries(
     World& world,
     const std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>>& frontiers)
 {
@@ -67,7 +68,7 @@ std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFrontiersBe
 
 
 
-std::map<uint32_t, SDL_Point> initProvincesCenters(const World& world) {
+inline std::map<uint32_t, SDL_Point> initProvincesCenters(const World& world) {
 
     struct Accum {
         int sumX = 0;
@@ -111,7 +112,7 @@ std::map<uint32_t, SDL_Point> initProvincesCenters(const World& world) {
 // ===============================================================================================================
 // helpers
 // ===============================================================================================================
-std::string extractValue(const std::string& line, const std::string& key) {
+inline std::string extractValue(const std::string& line, const std::string& key) {
     // busca "key": "value" o "key": number
     size_t pos = line.find("\"" + key + "\"");
     if (pos == std::string::npos) return "";
@@ -135,7 +136,7 @@ std::string extractValue(const std::string& line, const std::string& key) {
 // ===============================================================================================================
 // loaders
 // ===============================================================================================================
-std::list<Province> loadProvinces(World& world, const std::string& path) {
+inline std::list<Province> loadProvinces(World& world, const std::string& path) {
 
     auto centerList = initProvincesCenters(world);
     std::list<Province> provinces;
@@ -187,7 +188,7 @@ std::list<Province> loadProvinces(World& world, const std::string& path) {
 
 // ===============================================================================================================
 
-std::list<Country> loadCountries() {
+inline std::list<Country> loadCountries() {
 
     std::list<Country> countries;
 
@@ -240,7 +241,7 @@ std::list<Country> loadCountries() {
 
     return countries;
 }
-void desaturateCountries(std::list<Country>& countries, double k = 0.3, int brightness = 20) {
+inline void desaturateCountries(std::list<Country>& countries, double k = 0.3, int brightness = 20) {
     for (auto& c : countries) {
         int r = c.color.r;
         int g = c.color.g;
@@ -263,7 +264,7 @@ void desaturateCountries(std::list<Country>& countries, double k = 0.3, int brig
 
 // ===============================================================================================================
 
-std::list<Army> loadArmies(const std::string& path, World& world) {
+inline std::list<Army> loadArmies(const std::string& path, World& world) {
 
     std::list<Army> armies;
     std::ifstream file(path);
@@ -307,7 +308,7 @@ std::list<Army> loadArmies(const std::string& path, World& world) {
 
 // ===============================================================================================================
 
-SDL_Surface* prepareCountries(SDL_Renderer* renderer,const World& world) {
+inline SDL_Surface* prepareCountries(SDL_Renderer* renderer,const World& world) {
     auto start = std::chrono::high_resolution_clock::now();
 
     SDL_Surface* provinces = world.provincesBmp;
@@ -368,7 +369,7 @@ SDL_Surface* prepareCountries(SDL_Renderer* renderer,const World& world) {
 
 // ===============================================================================================================
 
-Font initFont(SDL_Renderer* renderer, const std::string& id, const char* fontPath, SDL_Color color, int fontSize) {
+inline Font initFont(SDL_Renderer* renderer, const std::string& id, const char* fontPath, SDL_Color color, int fontSize) {
     Font font;
     font.id = id;
 
@@ -396,7 +397,7 @@ Font initFont(SDL_Renderer* renderer, const std::string& id, const char* fontPat
 // ===============================================================================================================
 // LOAD ALL
 // ===============================================================================================================
-void loadAssets(World& world, SDL_Renderer* renderer) {
+inline void loadAssets(World& world, SDL_Renderer* renderer) {
     auto start = std::chrono::high_resolution_clock::now();
     std::string folderpath = "assets/terrainCustom/";
     world.provincesBmp = IMG_Load((folderpath + "provinces.bmp").c_str());

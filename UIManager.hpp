@@ -1,15 +1,8 @@
 #pragma once
 
 #include <string>
-#include <fstream>
-#include <sstream>
-#include <filesystem>
-#include <regex>
-#include <iostream>
 #include <chrono>
-
 #include <SDL2/SDL_image.h>
-
 #include "World.hpp"
 #include "utils.hpp"
 #include "saves.hpp"
@@ -98,7 +91,7 @@ inline void addButton(
 // IN-GAME UI
 // ===============================================================================================================
 
-void buildGameUI(World& world, SDL_Renderer* renderer) {
+inline void buildGameUI(World& world, SDL_Renderer* renderer) {
 
     clearUI(world);
 
@@ -251,7 +244,7 @@ void buildGameUI(World& world, SDL_Renderer* renderer) {
 // MAIN MENU UI
 // ===============================================================================================================
 
-void buildMainMenuUI(World& world, SDL_Renderer* renderer) {
+inline void buildMainMenuUI(World& world, SDL_Renderer* renderer) {
 
     clearUI(world);
 
@@ -302,7 +295,7 @@ void buildMainMenuUI(World& world, SDL_Renderer* renderer) {
 // ===============================================================================================================
 // LOAD GAME UI
 // ===============================================================================================================
-void buildLoadGameUI(
+inline void buildLoadGameUI(
     World& world,
     SDL_Renderer* renderer
 ) {
@@ -364,7 +357,7 @@ void buildLoadGameUI(
 // COUNTRY SELECTION UI
 // ===============================================================================================================
 
-void buildCountrySelectionUI(World& world, SDL_Renderer* renderer) {
+inline void buildCountrySelectionUI(World& world, SDL_Renderer* renderer) {
 
     clearUI(world);
 
@@ -447,7 +440,7 @@ void buildCountrySelectionUI(World& world, SDL_Renderer* renderer) {
 // UI BUILDER
 // ===============================================================================================================
 
-void buildUI(World& world, SDL_Renderer* renderer) {
+inline void buildUI(World& world, SDL_Renderer* renderer) {
 
     switch (world.place) {
 
