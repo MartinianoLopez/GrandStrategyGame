@@ -54,7 +54,8 @@ inline void addText(
     World& world,
     SDL_FRect rect,
     int zOrder,
-    std::function<std::string()> text
+    std::function<std::string()> text,
+    std::string font
 ) {
 
     world.uiElements.push_back({
@@ -64,7 +65,7 @@ inline void addText(
         zOrder,
         nullptr,
         text,
-        "fancy"
+        font
     });
 }
 
@@ -90,6 +91,17 @@ inline void addButton(
 // ===============================================================================================================
 // IN-GAME UI
 // ===============================================================================================================
+    
+    /*
+    ideal layout:
+        addPanel(
+        world,
+        position {10, 10}
+        size {100, 100},
+        texture,
+        color {0,0,0,0}
+    );
+    */
 
 inline void buildGameUI(World& world, SDL_Renderer* renderer) {
 
@@ -109,8 +121,15 @@ inline void buildGameUI(World& world, SDL_Renderer* renderer) {
     // Player flag
     addPanel(
         world,
-        {0.01f, 0.01f, 0.06f, 0.08f},
+        {0.02f, 0.012f, 0.06f, 0.08f},
         flagTexture,
+        {0,0,0,0}
+    );
+
+    addPanel(
+        world,
+        {0.00f, 0.0f, 0.1f, 0.1f},
+        world.flagFrameTexture,
         {0,0,0,0}
     );
 
@@ -125,7 +144,7 @@ inline void buildGameUI(World& world, SDL_Renderer* renderer) {
     // Money
     addText(
         world,
-        {0.09f, 0.02f, 0.05f, 0.04f},
+        {0.42f, 0.02f, 0.05f, 0.04f},
         2,
         [&world]() {
 
@@ -138,23 +157,14 @@ inline void buildGameUI(World& world, SDL_Renderer* renderer) {
             return player
                 ? "$" + std::to_string(player->money)
                 : "$0";
-        }
-    );
-
-    // Population
-    addText(
-        world,
-        {0.20f, 0.02f, 0.05f, 0.04f},
-        2,
-        []() {
-            return "POP: 1200";
-        }
+        },
+        "fancy"
     );
 
     // Army count
     addText(
         world,
-        {0.31f, 0.02f, 0.05f, 0.04f},
+        {0.56f, 0.02f, 0.05f, 0.04f},
         2,
         [&world]() {
 
@@ -164,18 +174,25 @@ inline void buildGameUI(World& world, SDL_Renderer* renderer) {
                 if (army.owner == world.playerCountry)
                     armyCount++;
 
-            return "ARM: " + std::to_string(armyCount);
-        }
+            return  std::to_string(armyCount);
+        },
+        "fancy"
     );
-
     // Date
+    addPanel(
+        world,
+        {0.90f, 0.02f, 0.08f, 0.04f},
+        world.timeFrameTexture,
+        {26,26,26,200}
+    );
     addText(
         world,
-        {0.42f, 0.02f, 0.08f, 0.04f},
+        {0.90f, 0.02f, 0.08f, 0.04f},
         2,
         []() {
             return "1444 Jan 1";
-        }
+        },
+        "fancy"
     );
 
     // Selected province background
@@ -202,40 +219,42 @@ inline void buildGameUI(World& world, SDL_Renderer* renderer) {
             return province
                 ? province->name
                 : "None";
-        }
-    );
-    // Save button
-    addButton(
-        world,
-        {0.79f, 0.68f, 0.16f, 0.06f},
-        {60,90,160,240},
-        [&world]() {
-
-            auto now =
-                std::chrono::system_clock::now();
-
-            auto time =
-                std::chrono::system_clock::to_time_t(now);
-
-            std::string saveName =
-                std::to_string(time);
-
-            saveGame(world);
-
-            refreshSaveFiles(world);
         },
-        "SAVE GAME"
+        "simple"
     );
-    // Back button
-    addButton(
-        world,
-        {0.79f, 0.76f, 0.16f, 0.06f},
-        {160,40,40,240},
-        [&world]() {
-            world.place = MenuPlace::MainMenu;
-        },
-        "BACK"
-    );
+// Background panel
+addPanel(
+    world,
+    {0.68f, 0.50f, 0.50f, 0.50f},  // esquina abajo derecha
+    world.texStone,
+    {0,0,0,0}
+);
+
+// Save button
+addButton(
+    world,
+    {0.850f, 0.68f, 0.16f, 0.06f},  // desplazado dentro del panel
+    {60,90,160,240},
+    [&world]() {
+        auto now = std::chrono::system_clock::now();
+        auto time = std::chrono::system_clock::to_time_t(now);
+        std::string saveName = std::to_string(time);
+        saveGame(world);
+        refreshSaveFiles(world);
+    },
+    "SAVE GAME"
+);
+
+// Back button
+addButton(
+    world,
+    {0.850f, 0.76f, 0.16f, 0.06f},  // debajo del save button
+    {160,40,40,240},
+    [&world]() {
+        world.place = MenuPlace::MainMenu;
+    },
+    "BACK"
+);
 
     sortUI(world);
 }
@@ -397,7 +416,8 @@ inline void buildCountrySelectionUI(World& world, SDL_Renderer* renderer) {
             return country
                 ? country->name
                 : "Select your Kingdom";
-        }
+        },
+        "fancy"
     );
 
     // Country flag

@@ -164,8 +164,12 @@ struct World {
     MenuPlace place = MenuPlace::MainMenu;
     std::vector<SDL_Texture*> uiTextures;
     std::vector<UIElement>    uiElements;
+
     SDL_Texture* texStone = nullptr;
     SDL_Texture* statusBarTexture = nullptr;
+    SDL_Texture* timeFrameTexture = nullptr;
+    SDL_Texture* flagFrameTexture = nullptr;
+
     std::vector<std::string> saveFiles;
     std::string selectedSave;
 

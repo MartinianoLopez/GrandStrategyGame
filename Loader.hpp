@@ -425,6 +425,8 @@ inline void loadAssets(World& world, SDL_Renderer* renderer) {
     world.texStone = IMG_LoadTexture(renderer, "assets/ui/table.png");
     world.bootonTex = IMG_LoadTexture(renderer, "assets/ui/booton.png");
     world.statusBarTexture = IMG_LoadTexture(renderer, "assets/ui/statusBar.png");
+    world.timeFrameTexture = IMG_LoadTexture(renderer, "assets/ui/timeFrame.png");
+    world.flagFrameTexture = IMG_LoadTexture(renderer, "assets/ui/flagFrame.png");
 
     if (TTF_Init() == -1) {
         SDL_Log("TTF init error: %s", TTF_GetError());
@@ -432,7 +434,7 @@ inline void loadAssets(World& world, SDL_Renderer* renderer) {
     }
     
     world.fonts.push_back(initFont(renderer, "simple", "assets/fonts/Nunito/Nunito-VariableFont_wght.ttf", {0, 0, 0, 255}, 11));
-    world.fonts.push_back(initFont(renderer, "fancy", "assets/fonts/Cinzel/Cinzel-VariableFont_wght.ttf", {220, 220, 220, 255}, 20));
+    world.fonts.push_back(initFont(renderer, "fancy", "assets/fonts/Cinzel/Cinzel-VariableFont_wght.ttf", {220, 220, 220, 255}, 15));
     
 
     auto end = std::chrono::high_resolution_clock::now();
