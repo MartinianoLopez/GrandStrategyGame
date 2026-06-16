@@ -3,9 +3,9 @@
 #include <string>
 #include <chrono>
 #include <SDL2/SDL_image.h>
-#include "World.hpp"
-#include "utils.hpp"
-#include "saves.hpp"
+#include "../Model/World.hpp"
+#include "../utils.hpp"
+#include "../Model/saves.hpp"
 
 // ===============================================================================================================
 // UI HELPERS

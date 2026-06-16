@@ -6,7 +6,7 @@
 #include <iostream>
 #include <algorithm>
 #include <SDL2/SDL_image.h>
-#include "utils.hpp"
+#include "../utils.hpp"
 #include <chrono>
 
 // ===============================================================================================================

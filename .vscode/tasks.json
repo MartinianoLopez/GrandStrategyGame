@@ -9,7 +9,7 @@
         "-g",
         "-O0",
         "-std=c++17",
-        "*.cpp",
+        "src/main.cpp",
         "vendor/imgui/imgui.cpp",
         "vendor/imgui/imgui_draw.cpp",
         "vendor/imgui/imgui_tables.cpp",

@@ -1,14 +1,14 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <iostream>
-#include "World.hpp"
-#include "Renderer.hpp"
-#include "gameWindow.hpp"
-#include "debugWindow.hpp"
-#include "eventRouter.hpp"
+#include "Model/World.hpp"
+#include "View/Renderer.hpp"
+#include "Controller/gameWindow.hpp"
+#include "Controller/debugWindow.hpp"
+#include "Controller/eventRouter.hpp"
 #include <SDL2/SDL_ttf.h>
-#include "Loader.hpp"
-#include "UIManager.hpp"
+#include "Model/Loader.hpp"
+#include "View/UIManager.hpp"
 
 int main() {
     std::cerr << "START\n";

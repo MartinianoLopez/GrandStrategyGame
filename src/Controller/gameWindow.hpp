@@ -3,8 +3,8 @@
 #include <SDL2/SDL_image.h>
 #include <iostream>
 #include <algorithm>
-#include "World.hpp"
-#include "utils.hpp"
+#include "../Model/World.hpp"
+#include "../utils.hpp"
 
 struct GameWindow {
     SDL_Window*   window   = nullptr;
@@ -110,7 +110,7 @@ struct GameWindow {
         if (target->id == world.selectedProvince) return;
 
         Army* army = armyPositionFind(world.armies, world.selectedProvince);
-        if (!army) return;
+        if (!army) return; 
             
         world.objectiveProvince = target->id;
         army->position          = target->id;

@@ -1,9 +1,12 @@
 #pragma once
 #include <SDL2/SDL.h>
-#include "World.hpp"
+#include "../Model/World.hpp"
 #include "debugWindow.hpp"
 #include "gameWindow.hpp"
+/*
+Acts over debug window and game window to determine on wich one the input event has ocurred
 
+*/
 struct EventRouter {
 
 

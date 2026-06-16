@@ -26,26 +26,38 @@ The goal is a **lean, reliable, and scalable core** that covers every major game
 
 The project follows a strict **MVC (Model-View-Controller)** pattern to keep concerns cleanly separated and the codebase maintainable as it scales.
 
+## Architecture
+
 ```
-┌─────────────────────────────────────────────────┐
-│                   CONTROLLER                    │
-│         Event Management · Input Handling       │
-└────────────────────┬────────────────────────────┘
-                     │
-        ┌────────────┴────────────┐
-        ▼                         ▼
-┌───────────────┐        ┌────────────────┐
-│     MODEL     │        │      VIEW      │
-│  World State  │        │    Renderer    │
-│  Game Data    │        │  Layer System  │
-└───────────────┘        └────────────────┘
+┌───────────────┐     ┌───────────────┐
+│  CONTROLLER   │     │  SIMULATION   │
+│  Event Mgmt   │     │ Time Tracking │
+│  Input Handle │     │  Game Events  │
+└───────┬───────┘     └───────┬───────┘
+        │                     │
+        └──────────┬──────────┘
+                   │
+                   ▼
+        ┌─────────────────┐
+        │      MODEL      │
+        │   World State   │
+        │   Game Data     │
+        └────────┬────────┘
+                 │
+                 ▼
+        ┌────────────────┐
+        │      VIEW      │
+        │    Renderer    │
+        │  Layer System  │
+        └────────────────┘
 ```
 
 | Layer | Class | Responsibility |
 |-------|-------|----------------|
-| **Model** | `World` | Single source of truth for all game data — nations, provinces, armies, time, relations |
-| **View** | `Renderer` | Draws all visual layers in a defined order; contains no game logic |
-| **Controller** | `EventManager` | Handles all user input and routes it to the appropriate model mutations |
+| **Controller** | `EventManager` | Handles user input and routes it to model mutations |
+| **Simulation** | `Simulation` | Mutates the model driven by time and game events |
+| **Model** | `World` | Single source of truth — nations, provinces, armies, relations |
+| **View** | `Renderer` | Draws all visual layers in order; no game logic |
 
 ---
 
