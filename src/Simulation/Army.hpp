@@ -1,3 +1,4 @@
+#include "../Model/World.hpp"
 /*
 // ============================================================
 // ARMY MOVEMENT SYSTEM
@@ -93,3 +94,13 @@ showTroopPath(selectedArmy):
         drawLine(prev, province.center)
         prev = province.center
 */
+inline void moveArmy(Army& army, int toProvinceId) {
+    army.position = toProvinceId;
+}
+
+inline Army* armyPositionFind(const std::list<Army>& list, int provinceId) {
+    for (auto& army : list)
+        if (army.position == provinceId)
+            return const_cast<Army*>(&army);
+    return nullptr;
+}

@@ -1,5 +1,7 @@
 # Assets
 saves/
+# Config
+.vscode/settings.json
 
 # Build
 app

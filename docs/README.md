@@ -58,6 +58,7 @@ The project follows a strict **MVC (Model-View-Controller)** pattern to keep con
 | **Simulation** | `Simulation` | Mutates the model driven by time and game events |
 | **Model** | `World` | Single source of truth — nations, provinces, armies, relations |
 | **View** | `Renderer` | Draws all visual layers in order; no game logic |
+| **Utils** | `Utils` | Utils are functions that doesnt belong to any domain |
 
 ---
 

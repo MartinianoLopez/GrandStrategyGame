@@ -5,6 +5,7 @@
 #include <algorithm>
 #include "../Model/World.hpp"
 #include "../utils.hpp"
+#include "../Simulation/Army.hpp"
 
 struct GameWindow {
     SDL_Window*   window   = nullptr;
@@ -128,8 +129,6 @@ struct GameWindow {
                 return; // consumido
             }
         }
-
-
 
         // luego mapa
         Province* target = pickProvince(world, e.button.x, e.button.y);

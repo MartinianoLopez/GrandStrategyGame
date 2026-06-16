@@ -81,38 +81,38 @@ struct UIElement {
     int zOrder;
     std::function<void()> onClick;
     std::function<std::string()> getText;
-
     std::string font = "simple";
 
-    SDL_FRect resolve(int w, int h) const {
-    SDL_FRect base = { boundsNorm.x * w, boundsNorm.y * h,
-                       boundsNorm.w * w, boundsNorm.h * h };
+    SDL_FRect calculateBase(int w, int h) const {
 
-    if (!texture) return base;
+        SDL_FRect base = { boundsNorm.x * w, boundsNorm.y * h,
+                        boundsNorm.w * w, boundsNorm.h * h };
 
-    int texW, texH;
-    SDL_QueryTexture(texture, nullptr, nullptr, &texW, &texH);
+        if (!texture) return base;
 
-    float texRatio  = (float)texW / texH;
-    float boxRatio  = base.w / base.h;
+        int texW, texH;
+        SDL_QueryTexture(texture, nullptr, nullptr, &texW, &texH);
 
-    if (texRatio > boxRatio) {
-        // limitado por ancho
-        float newH = base.w / texRatio;
-        base.y += (base.h - newH) * 0.5f;
-        base.h  = newH;
-    } else {
-        // limitado por alto
-        float newW = base.h * texRatio;
-        base.x += (base.w - newW) * 0.5f;
-        base.w  = newW;
+        float texRatio  = (float)texW / texH;
+        float boxRatio  = base.w / base.h;
+
+        if (texRatio > boxRatio) {
+            // limitado por ancho
+            float newH = base.w / texRatio;
+            base.y += (base.h - newH) * 0.5f;
+            base.h  = newH;
+        } else {
+            // limitado por alto
+            float newW = base.h * texRatio;
+            base.x += (base.w - newW) * 0.5f;
+            base.w  = newW;
+        }
+
+        return base;
     }
 
-    return base;
-}
-
     bool contains(int x, int y, int w, int h) const {
-        SDL_FRect r = resolve(w, h);
+        SDL_FRect r = calculateBase(w, h);
         return x >= r.x && x < r.x + r.w &&
                y >= r.y && y < r.y + r.h;
     }

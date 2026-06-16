@@ -395,6 +395,17 @@ inline Font initFont(SDL_Renderer* renderer, const std::string& id, const char* 
     return font;
 }
 // ===============================================================================================================
+// surface → texture
+// ===============================================================================================================
+inline SDL_Texture* surfaceToTexture(SDL_Renderer* renderer, SDL_Surface* surface) {
+    if (!surface) return nullptr;
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    SDL_FreeSurface(surface);
+    return texture;
+}
+
+// ===============================================================================================================
 // LOAD ALL
 // ===============================================================================================================
 inline void loadAssets(World& world, SDL_Renderer* renderer) {
