@@ -1,12 +1,16 @@
-/*
-includes
+#pragma once
+#include "../Model/World.hpp"
+#include "Army.hpp"
 
-functions:
+inline void updateWorld(World& world){
+    updateArmyMovement(world);
+}
 
-updateCountriesTexture reload the countries from the data each time a change is made in the ownership of the provinces.
-
-main call:
-
-peaceDealUpdate calls updateCountriesTexture
-
-*/
+inline void timeRun(World& world, float deltaTime) {
+    world.timeAccumulator += deltaTime * world.timeSpeed;
+    if (world.timeAccumulator >= 1.0f) {
+        world.timeAccumulator -= 1.0f;
+        world.days += 1;
+        updateWorld(world);
+    }
+}

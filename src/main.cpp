@@ -9,7 +9,7 @@
 #include <SDL2/SDL_ttf.h>
 #include "Model/Loader.hpp"
 #include "View/UIManager.hpp"
-
+#include "Simulation/Time.hpp"
 int main() {
     std::cerr << "START\n";
 
@@ -37,26 +37,30 @@ int main() {
     // Game Loop                                                                                          
     // =========================================================================================
 
-    while (world.running) {
-        Uint32 frameStart = SDL_GetTicks();
+    Uint32 lastTicks = SDL_GetTicks();
 
-        // Events
-        SDL_Event event;
-        while (SDL_PollEvent(&event)){
-            eventManager.route(world, event, mainWin, debugWin);
-            buildUI(world, mainWin.renderer);
-        }
+while (world.running) {
+    Uint32 frameStart = SDL_GetTicks();
+    float deltaTime = (frameStart - lastTicks) / 1000.0f;
+    lastTicks = frameStart;
 
-        // Update & render
-        renderGame(world, mainWin.renderer, mainWin.window);
-        if (debugging) debugWin.render(world);
-
-        // Frame cap
-        Uint32 frameTime = SDL_GetTicks() - frameStart;
-        world.fps = 1000.0f / (frameTime > 0 ? frameTime : 1);
-        if (frameTime < (Uint32)world.frameDelay)
-        SDL_Delay(world.frameDelay - frameTime);            
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        eventManager.route(world, event, mainWin, debugWin);
+        buildUI(world, mainWin.renderer);
     }
+
+    if (world.timePaused == false)
+        timeRun(world, deltaTime);
+
+    renderGame(world, mainWin.renderer, mainWin.window);
+    if (debugging) debugWin.render(world);
+
+    Uint32 frameTime = SDL_GetTicks() - frameStart;
+    world.fps = 1000.0f / (frameTime > 0 ? frameTime : 1);
+    if (frameTime < (Uint32)world.frameDelay)
+        SDL_Delay(world.frameDelay - frameTime);
+}
 
     // =========================================================================================
     // Shutdown                                                                                        

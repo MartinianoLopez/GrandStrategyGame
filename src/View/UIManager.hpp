@@ -189,8 +189,8 @@ inline void buildGameUI(World& world, SDL_Renderer* renderer) {
         world,
         {0.90f, 0.02f, 0.08f, 0.04f},
         2,
-        []() {
-            return "1444 Jan 1";
+        [&world]() {
+            return std::to_string(world.days);
         },
         "fancy"
     );

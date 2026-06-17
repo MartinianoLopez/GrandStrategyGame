@@ -66,7 +66,7 @@ struct Army {
     Color color;
 
     Army(int position, std::string name, std::string owner, int power, Color color)
-        : position(position), name(name), owner(owner), power(power), color(color) {}
+        : position(position), name(name), owner(owner), power(power), color(color), movementStage(0) {}
 };
 
 struct Glyph {
@@ -131,6 +131,12 @@ enum class MenuPlace {
 };
 
 struct World {
+    int days = 0;
+    float timeAccumulator = 0;
+    float timeSpeed = 5;
+    bool timePaused = false;
+    int armyMovementSpeed = 25;
+    
     SDL_Surface* provincesBmp = nullptr;
     SDL_Texture* terrain = nullptr;
     SDL_Texture* height = nullptr;

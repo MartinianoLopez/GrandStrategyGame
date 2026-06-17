@@ -1,9 +1,11 @@
+#pragma once
 #include "../Model/World.hpp"
 #include <vector>
 #include <queue>
 #include <unordered_map>
 #include <algorithm>
 #include <iostream>
+
 // ============================================================
 // PATH PLANNING
 // ============================================================
@@ -40,6 +42,7 @@ inline std::vector<int> calculatePath(World& world, int from, int to) {
     for (int p = to; p != -1; p = parent[p])
         path.push_back(p);
     std::reverse(path.begin(), path.end());
+    path.erase(path.begin());
     return path;
 }
 
@@ -57,7 +60,23 @@ inline void createArmyMovement(World& world,Army* army, int from, int to) {
     return;
 }
 
+// ============================================================
+// DAILY SIMULATION TICK
+// ============================================================
 
+inline void updateArmyMovement(World& world) {
+    for (auto& army : world.armies) {
+        if (army.path.empty()) continue;
+        army.movementStage += world.armyMovementSpeed;
+        std::cout << "[" << army.name << "] stage: " << army.movementStage << " path size: " << army.path.size() << "\n";
+        if (army.movementStage >= 100) {
+            army.movementStage -= 100;
+            army.position = army.path.front();
+            army.path.erase(army.path.begin());
+            std::cout << "[" << army.name << "] moved to: " << army.position << "\n";
+        }
+    }
+}
 
 
 /*
@@ -71,19 +90,7 @@ bool checkMilitaryAccess(int from, int to){
 
 
 
-// ============================================================
-// DAILY SIMULATION TICK
-// ============================================================
 
-updateTroopMovement(){
-    for each army:
-        if army.path is empty: continue
-        army.moveStage += 15 // no modifiers for now
-        if army.moveStage >= 100:
-            army.moveStage -= 100
-            army.position = army.path.popFirst()
-            checkForCollisions(army)
-}
 // ============================================================
 // COLLISION & COMBAT RESOLUTION
 // ============================================================
