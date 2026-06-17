@@ -112,9 +112,11 @@ struct GameWindow {
 
         Army* army = armyPositionFind(world.armies, world.selectedProvince);
         if (!army) return; 
-            
+        
         world.objectiveProvince = target->id;
-        army->position          = target->id;
+        std::cout << "try start\n";
+        createArmyMovement(world, army, world.selectedProvince, world.objectiveProvince);
+        //army->position          = target->id;
     }
 
     void onLeftClick(World& world, const SDL_Event& e) {        

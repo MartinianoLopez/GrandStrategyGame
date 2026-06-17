@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <chrono>
 
+
 inline void renderText(
     SDL_Renderer* renderer,
     World& world,
@@ -204,6 +205,40 @@ inline void renderArmies(World& world, SDL_Renderer* renderer, SDL_FRect destRec
         renderArmy(renderer, world, "simple", (int)sx, (int)sy, army, selected);
     }
 }
+inline std::optional<Army> findArmy(World& world, int selectedProvince) {
+    for (const auto& army : world.armies) {
+        if (army.position == selectedProvince)
+            return army;
+    }
+    return std::nullopt;
+}
+
+// ============================================================
+// army path
+// ============================================================
+
+inline void showSelectedArmyPath(World& world, SDL_Renderer* renderer, SDL_FRect destRect) {
+    auto selectedArmy = findArmy(world, world.selectedProvince);
+    if (!selectedArmy || selectedArmy->path.empty()) return;
+
+    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+
+    Province* from = provinceFindById(world.provinces, selectedArmy->position);
+    if (!from) return;
+
+    float px = destRect.x + from->center.x * world.finalScale;
+    float py = destRect.y + from->center.y * world.finalScale;
+
+    for (int provinceId : selectedArmy->path) {
+        Province* p = provinceFindById(world.provinces, provinceId);
+        if (!p) continue;
+        float cx = destRect.x + p->center.x * world.finalScale;
+        float cy = destRect.y + p->center.y * world.finalScale;
+        SDL_RenderDrawLineF(renderer, px, py, cx, cy);
+        px = cx;
+        py = cy;
+    }
+}
 
 // ===============================================================================================================
 // render
@@ -252,6 +287,7 @@ inline void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, 
         renderFrontiers(world, renderer, destRect, {0, 0, 0, 220}, winWidth, winHeight, world.countryFrontiers, 1);
         markProvinceFrontiers(world, renderer, destRect, {255, 255, 0, 240}, world.selectedProvince);
         renderArmies(world, renderer, destRect, winWidth, winHeight);
+        showSelectedArmyPath(world, renderer, destRect);
     }
     auto t7 = std::chrono::high_resolution_clock::now();
 

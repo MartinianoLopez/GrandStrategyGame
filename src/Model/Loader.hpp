@@ -40,6 +40,21 @@ inline std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFron
     return frontierList;
 }
 
+inline std::map<int, std::vector<int>> buildAdjacency(
+    const std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>>& provinceFrontiers,
+    const std::list<Province>& provinces)
+{
+    std::map<int, std::vector<int>> adjacency;
+    for (const auto& [pair, _] : provinceFrontiers) {
+        Province* a = provinceFindByColor(provinces, pair.first);
+        Province* b = provinceFindByColor(provinces, pair.second);
+        if (!a || !b) continue;
+        adjacency[a->id].push_back(b->id);
+        adjacency[b->id].push_back(a->id);
+    }
+    return adjacency;
+}
+
 inline std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFrontiersBetweenCountries(
     World& world,
     const std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>>& frontiers)
@@ -432,6 +447,8 @@ inline void loadAssets(World& world, SDL_Renderer* renderer) {
 
     world.provinceFrontiers = findFrontiers(world.provincesBmp);
     world.countryFrontiers  = findFrontiersBetweenCountries(world, world.provinceFrontiers);
+
+    world.adjacencyGraph = buildAdjacency(world.provinceFrontiers, world.provinces);
 
     world.texStone = IMG_LoadTexture(renderer, "assets/ui/table.png");
     world.bootonTex = IMG_LoadTexture(renderer, "assets/ui/booton.png");

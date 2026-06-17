@@ -47,23 +47,28 @@ struct Province {
     int id;
     std::string name;
     std::string owner;
+    std::string controller;
     Color color;
     SDL_Point center;
 
     Province(int id, std::string name, std::string owner, Color color)
-        : id(id), name(name), owner(owner), color(color) {}
+        : id(id), name(name), owner(owner), controller(""), color(color) {}
 };
 
 struct Army {
-    int position; // province Id
+    int position; 
+    std::vector<int> path;
+    int movementStage;
+
     std::string name;
-    std::string owner; // country tag
+    std::string owner; 
     int power;
     Color color;
 
     Army(int position, std::string name, std::string owner, int power, Color color)
         : position(position), name(name), owner(owner), power(power), color(color) {}
 };
+
 struct Glyph {
     SDL_Texture* tex = nullptr;
     int w = 0;
@@ -138,6 +143,7 @@ struct World {
 
     std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> provinceFrontiers;
     std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> countryFrontiers;
+    std::map<int, std::vector<int>> adjacencyGraph;
     
     int selectedProvince = 0;
     int objectiveProvince = 0;

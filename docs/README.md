@@ -21,6 +21,19 @@
 The goal is a **lean, reliable, and scalable core** that covers every major game loop activity, keeping the experience accessible while preserving the strategic depth that defines the genre.
 
 ---
+## Game Images
+
+These screenshots were taken from the game and may reflect an older development stage.
+## Screenshots
+
+| | |
+|---|---|
+| ![](1.png) | ![](2.png) |
+| ![](3.png) | ![](4.png) |
+| ![](5.png) | ![](6.png) |
+
+
+---
 
 ## Architecture
 
@@ -151,16 +164,5 @@ The long-term goal is a fully moddable grand strategy engine where every visual 
 - Vector-quality borders with zoom-level-aware rendering
 
 ---
-
-## Game Images
-
-These screenshots were taken from the game and may reflect an older development stage.
-
-![screenshot](1.png)
-![screenshot](2.png)
-![screenshot](3.png)
-![screenshot](4.png)
-![screenshot](5.png)
-
 
 *Built with a focus on clean architecture, measurable performance, and strategic depth.*
