@@ -78,9 +78,10 @@ struct Font {
     std::string id;
     Glyph glyphs[128];
 };
+struct UIRect { int x, y, w, h; };
 
 struct UIElement {
-    SDL_FRect boundsNorm;
+    UIRect boundsNorm;
     SDL_Texture* texture;
     SDL_Color color;
     int zOrder;
@@ -90,8 +91,8 @@ struct UIElement {
 
     SDL_FRect calculateBase(int w, int h) const {
 
-        SDL_FRect base = { boundsNorm.x * w, boundsNorm.y * h,
-                        boundsNorm.w * w, boundsNorm.h * h };
+        SDL_FRect base = { boundsNorm.x/100.f * w, boundsNorm.y/100.f * h,
+                   boundsNorm.w/100.f * w, boundsNorm.h/100.f * h };
 
         if (!texture) return base;
 

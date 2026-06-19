@@ -30,6 +30,10 @@ int main() {
         World world;
 
         loadAssets(world, mainWin.renderer);
+   
+        UIRegistry reg;
+        initRegistry(reg, world);
+        
 
     std::cerr << "LOADED\n";
     
@@ -37,30 +41,47 @@ int main() {
     // Game Loop                                                                                          
     // =========================================================================================
 
-    Uint32 lastTicks = SDL_GetTicks();
+    Uint32 lastTicks    = SDL_GetTicks();
+    Uint32 lastUIReload = SDL_GetTicks();
+    MenuPlace lastPlace = world.place;
+    loadUIFromFile(world, reg, "assets/ui/ui_layout.txt", mainWin.renderer);
 
-while (world.running) {
-    Uint32 frameStart = SDL_GetTicks();
-    float deltaTime = (frameStart - lastTicks) / 1000.0f;
-    lastTicks = frameStart;
+    while (world.running) {
 
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-        eventManager.route(world, event, mainWin, debugWin);
-        buildUI(world, mainWin.renderer);
+        // ── Timing ───────────────────────────────────────
+        Uint32 frameStart = SDL_GetTicks();
+        float deltaTime   = (frameStart - lastTicks) / 1000.0f;
+        lastTicks         = frameStart;
+
+        // ── Events ───────────────────────────────────────
+        SDL_Event event;
+        while (SDL_PollEvent(&event))
+            eventManager.route(world, event, mainWin, debugWin);
+
+        // ── Simulation ───────────────────────────────────
+        if (!world.timePaused)
+            timeRun(world, deltaTime);
+
+        // ── UI ───────────────────────────────────────────
+        bool placeChanged = world.place != lastPlace;
+        bool timerFired   = (frameStart - lastUIReload) >= 2000;
+
+        if (placeChanged || (debugging && timerFired)) {
+            loadUIFromFile(world, reg, "assets/ui/ui_layout.txt", mainWin.renderer);
+            lastPlace    = world.place;
+            lastUIReload = frameStart;
+        }
+
+        // ── Render ───────────────────────────────────────
+        renderGame(world, mainWin.renderer, mainWin.window);
+        if (debugging) debugWin.render(world);
+
+        // ── Frame cap ────────────────────────────────────
+        Uint32 frameTime = SDL_GetTicks() - frameStart;
+        world.fps        = 1000.0f / (frameTime > 0 ? frameTime : 1);
+        if (frameTime < (Uint32)world.frameDelay)
+            SDL_Delay(world.frameDelay - frameTime);
     }
-
-    if (world.timePaused == false)
-        timeRun(world, deltaTime);
-
-    renderGame(world, mainWin.renderer, mainWin.window);
-    if (debugging) debugWin.render(world);
-
-    Uint32 frameTime = SDL_GetTicks() - frameStart;
-    world.fps = 1000.0f / (frameTime > 0 ? frameTime : 1);
-    if (frameTime < (Uint32)world.frameDelay)
-        SDL_Delay(world.frameDelay - frameTime);
-}
 
     // =========================================================================================
     // Shutdown                                                                                        

@@ -91,12 +91,14 @@ The project follows a strict **MVC (Model-View-Controller)** pattern to keep con
 - Development tracking
 - Income generation per province
 
+#### Military System
+
+- **Troop movement** — order armies across land and sea
 ---
 
 ### In Development (MVP)
 
 #### Military System
-- **Troop movement** — order armies across land and sea
 - **Troop limits** — manpower caps based on development and nation size
 - **Naval transport** — sea-crossing mechanics for amphibious operations
 

@@ -1,0 +1,42 @@
+# UI Layout
+# PANEL  x y w h texture r g b a zOrder
+# TEXT   x y w h font zOrder endpoint
+# BUTTON x y w h r g b a action label
+
+SCREEN InGame
+
+PANEL  2  1  6  8  flagTex           0   0   0   0   1
+PANEL  0  0  10 10 flagFrameTexture  0   0   0   0   1
+PANEL  20 0  60 10 statusBarTexture  26  26  26  220 1
+TEXT   42 2  5  4  fancy             2   player_money
+TEXT   56 2  5  4  fancy             2   army_count
+PANEL  90 2  8  4  timeFrameTexture  26  26  26  200 1
+TEXT   90 2  8  4  fancy             2   days
+PANEL  35 92 30 6  bootonTex         26  26  26  200 1
+TEXT   36 93 28 4  simple            2   selected_province
+PANEL  68 50 50 50 texStone          0   0   0   0   1
+BUTTON 85 68 16 6  60  90  160 240   save SAVE GAME
+BUTTON 85 76 16 6  160 40  40  240   goto:MainMenu BACK
+
+SCREEN MainMenu
+
+PANEL  25 50 50 50 texStone 0   0   0   0   1
+BUTTON 35 63 30 7  34  139 34  240   goto:CountrySelection PLAY
+BUTTON 35 73 30 7  60  90  160 240   goto:LoadGame LOAD
+BUTTON 35 83 30 7  160 40  40  240   exit EXIT
+
+SCREEN LoadGame
+
+PANEL  25 15 50 70 texStone 0 0 0 0 1
+
+# load list to fix
+
+BUTTON 30 78 40 6  160 40 40 240 goto:MainMenu BACK
+
+SCREEN CountrySelection
+
+PANEL  76 20 22 65 texStone  0 0 0 0 1
+TEXT   76 22 22 5  fancy     2 selected_country
+PANEL  77 28 20 22 flagTex   0 0 0 0 2
+BUTTON 79 68 16 6  34  139 34  240 play_if_selected PLAY
+BUTTON 79 74 16 6  160 40  40  240 goto:MainMenu BACK
