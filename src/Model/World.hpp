@@ -132,7 +132,8 @@ enum class MenuPlace {
 };
 
 struct World {
-    int days = 0;
+    int days = -180000;
+    std::string date = "";
     float timeAccumulator = 0;
     float timeSpeed = 5;
     bool timePaused = false;

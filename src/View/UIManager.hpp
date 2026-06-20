@@ -37,8 +37,8 @@ inline void registerEndpoints(UIRegistry& reg, World& world) {
         return std::to_string(count);
     };
 
-    reg.endpoints["days"] = [](World& w) {
-        return std::to_string(w.days);
+    reg.endpoints["date"] = [](World& w) {
+        return w.date;
     };
 
     reg.endpoints["selected_province"] = [](World& w) {

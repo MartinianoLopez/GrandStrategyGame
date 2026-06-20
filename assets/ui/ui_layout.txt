@@ -10,8 +10,8 @@ PANEL  0  0  10 10 flagFrameTexture  0   0   0   0   1
 PANEL  20 0  60 10 statusBarTexture  26  26  26  220 1
 TEXT   42 2  5  4  fancy             2   player_money
 TEXT   56 2  5  4  fancy             2   army_count
-PANEL  90 2  8  4  timeFrameTexture  26  26  26  200 1
-TEXT   90 2  8  4  fancy             2   days
+PANEL  84 -1  16  10  timeFrameTexture  26  26  26  200 1
+TEXT   88 2  8  4  fancy            2  date
 PANEL  35 92 30 6  bootonTex         26  26  26  200 1
 TEXT   36 93 28 4  simple            2   selected_province
 PANEL  68 50 50 50 texStone          0   0   0   0   1

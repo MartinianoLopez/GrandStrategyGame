@@ -1,11 +1,13 @@
 #include "../utils.hpp"
 #include "../Model/World.hpp"
+#include "SDL_rect.h"
 #include <algorithm>
 #include <chrono>
 
 
 inline void renderText(
     SDL_Renderer* renderer,
+    SDL_FRect rect,
     World& world,
     const std::string& fontId,
     int x,
@@ -309,13 +311,13 @@ inline void renderUI(SDL_Renderer* renderer, World& world, SDL_Window* window) {
     SDL_GetWindowSize(window, &w, &h);
 
     for (auto& el : world.uiElements) {
-        SDL_FRect r = el.calculateBase(w, h);
+        SDL_FRect rect = el.calculateBase(w, h);
 
         if (el.texture) {
-            SDL_RenderCopyF(renderer, el.texture, nullptr, &r);
+            SDL_RenderCopyF(renderer, el.texture, nullptr, &rect);
         } else {
             SDL_SetRenderDrawColor(renderer, el.color.r, el.color.g, el.color.b, el.color.a);
-            SDL_RenderFillRectF(renderer, &r);
+            SDL_RenderFillRectF(renderer, &rect);
         }
 
         if (el.getText) {
@@ -335,14 +337,13 @@ inline void renderUI(SDL_Renderer* renderer, World& world, SDL_Window* window) {
                 th = std::max(th, g.h);
             }
 
-            int tx = (int)(r.x + (r.w - tw) * 0.5f);
-            int ty = (int)(r.y + (r.h - th) * 0.5f);
+            int tx = (int)(rect.x + (rect.w - tw) * 0.5f);
+            int ty = (int)(rect.y + (rect.h - th) * 0.5f);
 
-            renderText(renderer, world, el.font, tx, ty, text);
+            renderText(renderer, rect, world, el.font, tx, ty, text);
         }
     }
 }
-
 
 inline void renderGame(World& world, SDL_Renderer* renderer, SDL_Window* window) {
     SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
