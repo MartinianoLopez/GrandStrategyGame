@@ -1,5 +1,6 @@
 #pragma once
 #include "../Model/World.hpp"
+#include "../utils.hpp"
 #include <vector>
 #include <queue>
 #include <unordered_map>
@@ -9,6 +10,8 @@
 // ============================================================
 // PATH PLANNING
 // ============================================================
+
+// I should calculate the path searching for a posible accesible path or return none
 
 inline std::vector<int> calculatePath(World& world, int from, int to) {
     const auto& adjacency = world.adjacencyGraph;
@@ -50,13 +53,40 @@ inline std::vector<int> calculatePath(World& world, int from, int to) {
 // ARMY MOVEMENT SYSTEM
 // ============================================================
 
+// This is fine but the idea was incorrect, i need to find accesible paths at the calculator
+
+inline bool checkMilitaryAccess(std::vector<int> path, World& world, int from, Army* army){
+    int current = from;
+    for (int next : path){
+        Province* province = provinceFindById(world.provinces, next);
+        if (!province) return false;
+
+        Country* country = countryTagFind(world.countries, province->owner);
+        if (!country) return false;
+
+        if (country->tag != army->owner){
+            auto& acc = country->accessibleCountries;
+            if (std::find(acc.begin(), acc.end(), army->owner) == acc.end())
+                return false;
+        }
+        current = next;
+    }
+    return true;
+}
+
 inline void createArmyMovement(World& world,Army* army, int from, int to) {
-    //TODO check for allowed access first
+    
     std::cout << "try calculate\n";
     std::vector<int> path = calculatePath(world, from, to);
+
     std::cout << "end of calculus\n";
-    if (path.empty()) return;
-    army -> path = path;
+    if (path.empty()) return;    
+    if(checkMilitaryAccess(path, world, from, army)){
+        std::cout << "Allowed\n";
+       army -> path = path; 
+    }else{
+        std::cout << "Denied\n";
+    }
     return;
 }
 
@@ -79,18 +109,12 @@ inline void updateArmyMovement(World& world) {
 }
 
 
+
+
+
+
+
 /*
-bool checkMilitaryAccess(int from, int to){
-    find country from
-    find country to
-    find in country militaryAccess over to
-    find if country is at war with to
-    return itcancross
-}
-
-
-
-
 // ============================================================
 // COLLISION & COMBAT RESOLUTION
 // ============================================================

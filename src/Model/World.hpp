@@ -36,11 +36,12 @@ struct Country {
     std::string name;
     Color color;
     int money;
+    std::vector<std::string> accessibleCountries;
 
     Country(std::string tag, std::string name, Color color)
-        : tag(tag), name(name), color(color), money(100) {}
+        : tag(tag), name(name), color(color), money(100), accessibleCountries{tag} {}
     Country(std::string tag, std::string name, Color color, int money)
-        : tag(tag), name(name), color(color), money(money) {}
+        : tag(tag), name(name), color(color), money(money), accessibleCountries{tag} {}
 };
 
 struct Province {
