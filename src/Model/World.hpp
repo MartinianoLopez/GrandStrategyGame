@@ -37,6 +37,7 @@ struct Country {
     Color color;
     int money;
     std::vector<std::string> accessibleCountries;
+    std::map<int, std::vector<int>> accessibilityGraph;
 
     Country(std::string tag, std::string name, Color color)
         : tag(tag), name(name), color(color), money(100), accessibleCountries{tag} {}
@@ -153,7 +154,8 @@ struct World {
     std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> provinceFrontiers;
     std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> countryFrontiers;
     std::map<int, std::vector<int>> adjacencyGraph;
-    
+    std::unordered_map<int, Province*> provinceById;
+
     int selectedProvince = 0;
     int objectiveProvince = 0;
 

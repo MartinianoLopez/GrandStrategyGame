@@ -13,9 +13,16 @@
 
 // I should calculate the path searching for a posible accesible path or return none
 
-inline std::vector<int> calculatePath(World& world, int from, int to) {
-    const auto& adjacency = world.adjacencyGraph;
+inline std::vector<int> calculatePath(World& world, std::string ownerTag, int from, int to) {
+    std::cout << "try calculate\n";
 
+    // national accessiblity
+    const std::map<int, std::vector<int>>* adjacency = &countryTagFind(world.countries, ownerTag)->accessibilityGraph;
+
+    // world accesibility
+    if (!adjacency->count(from))
+        adjacency = &world.adjacencyGraph; 
+    
     std::unordered_map<int, int> parent;
     std::queue<int> queue;
     queue.push(from);
@@ -25,8 +32,8 @@ inline std::vector<int> calculatePath(World& world, int from, int to) {
         int current = queue.front(); queue.pop();
         if (current == to) break;
 
-        auto it = adjacency.find(current);
-        if (it == adjacency.end()) {
+        auto it = adjacency->find(current);
+        if (it == adjacency->end()) {
             std::cout << "Province " << current << " not found in adjacency\n";
             continue;
         }
@@ -46,6 +53,7 @@ inline std::vector<int> calculatePath(World& world, int from, int to) {
         path.push_back(p);
     std::reverse(path.begin(), path.end());
     path.erase(path.begin());
+      std::cout << "end of calculus\n";
     return path;
 }
 
@@ -53,40 +61,11 @@ inline std::vector<int> calculatePath(World& world, int from, int to) {
 // ARMY MOVEMENT SYSTEM
 // ============================================================
 
-// This is fine but the idea was incorrect, i need to find accesible paths at the calculator
-
-inline bool checkMilitaryAccess(std::vector<int> path, World& world, int from, Army* army){
-    int current = from;
-    for (int next : path){
-        Province* province = provinceFindById(world.provinces, next);
-        if (!province) return false;
-
-        Country* country = countryTagFind(world.countries, province->owner);
-        if (!country) return false;
-
-        if (country->tag != army->owner){
-            auto& acc = country->accessibleCountries;
-            if (std::find(acc.begin(), acc.end(), army->owner) == acc.end())
-                return false;
-        }
-        current = next;
-    }
-    return true;
-}
 
 inline void createArmyMovement(World& world,Army* army, int from, int to) {
-    
-    std::cout << "try calculate\n";
-    std::vector<int> path = calculatePath(world, from, to);
-
-    std::cout << "end of calculus\n";
+    std::vector<int> path = calculatePath(world, army->owner, from, to);
     if (path.empty()) return;    
-    if(checkMilitaryAccess(path, world, from, army)){
-        std::cout << "Allowed\n";
        army -> path = path; 
-    }else{
-        std::cout << "Denied\n";
-    }
     return;
 }
 

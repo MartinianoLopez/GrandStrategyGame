@@ -8,6 +8,7 @@
 #include <SDL2/SDL_image.h>
 #include "../utils.hpp"
 #include <chrono>
+#include <unordered_set>
 
 // ===============================================================================================================
 // frontiers
@@ -40,6 +41,7 @@ inline std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFron
     return frontierList;
 }
 
+
 inline std::map<int, std::vector<int>> buildAdjacency(
     const std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>>& provinceFrontiers,
     const std::list<Province>& provinces)
@@ -53,6 +55,43 @@ inline std::map<int, std::vector<int>> buildAdjacency(
         adjacency[b->id].push_back(a->id);
     }
     return adjacency;
+}
+
+inline std::map<int, std::vector<int>> buildAdjacencyPerCountry(
+    const World& world,
+    const std::vector<std::string>& accessibleCountryTags)
+{
+    const std::unordered_set<std::string> accessible(
+        accessibleCountryTags.begin(), accessibleCountryTags.end());
+
+    std::unordered_map<int, Province*> idMap;
+    for (auto& province : world.provinces)
+        idMap[province.id] = const_cast<Province*>(&province);
+
+    std::map<int, std::vector<int>> adjacency;
+
+    for (const auto& [provinceId, neighbors] : world.adjacencyGraph) {
+        auto itA = idMap.find(provinceId);
+        if (itA == idMap.end() || !accessible.count(itA->second->owner)) continue;
+
+        std::cout << "Processing province: " << provinceId << " owner: " << itA->second->owner << std::endl;
+
+        for (int neighborId : neighbors) {
+            auto itB = idMap.find(neighborId);
+            if (itB == idMap.end() || !accessible.count(itB->second->owner)) continue;
+
+            adjacency[provinceId].push_back(neighborId);
+        }
+    }
+
+    return adjacency;
+}
+
+inline void buildAccessibilityGraphsPerCountry(World& world)
+{
+    for (auto& country : world.countries) {
+        country.accessibilityGraph = buildAdjacencyPerCountry(world, country.accessibleCountries);
+    }
 }
 
 inline std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFrontiersBetweenCountries(
@@ -419,6 +458,12 @@ inline SDL_Texture* surfaceToTexture(SDL_Renderer* renderer, SDL_Surface* surfac
     SDL_FreeSurface(surface);
     return texture;
 }
+// optimization
+inline void buildProvinceIdMap(World& world) {
+    world.provinceById.clear();
+    for (auto& province : world.provinces)
+        world.provinceById[province.id] = &province;
+}
 
 // ===============================================================================================================
 // LOAD ALL
@@ -449,6 +494,9 @@ inline void loadAssets(World& world, SDL_Renderer* renderer) {
     world.countryFrontiers  = findFrontiersBetweenCountries(world, world.provinceFrontiers);
 
     world.adjacencyGraph = buildAdjacency(world.provinceFrontiers, world.provinces);
+    buildProvinceIdMap(world);
+    buildAccessibilityGraphsPerCountry(world);
+    
 
     world.texStone = IMG_LoadTexture(renderer, "assets/ui/table.png");
     world.bootonTex = IMG_LoadTexture(renderer, "assets/ui/booton.png");
