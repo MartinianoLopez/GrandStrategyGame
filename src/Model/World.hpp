@@ -40,9 +40,9 @@ struct Country {
     std::map<int, std::vector<int>> accessibilityGraph;
 
     Country(std::string tag, std::string name, Color color)
-        : tag(tag), name(name), color(color), money(100), accessibleCountries{tag} {}
+        : tag(tag), name(name), color(color), money(100), accessibleCountries{tag, "NONE"} {}
     Country(std::string tag, std::string name, Color color, int money)
-        : tag(tag), name(name), color(color), money(money), accessibleCountries{tag} {}
+        : tag(tag), name(name), color(color), money(money), accessibleCountries{tag, "NONE"} {}
 };
 
 struct Province {

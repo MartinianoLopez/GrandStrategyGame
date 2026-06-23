@@ -1,25 +1,13 @@
 #pragma once
 #include <list>
-#include <optional>
 #include <string>
 #include <SDL2/SDL.h>
 #include "Model/World.hpp"
 
 // ===============================================================================================================
-// map find
+// color (used only for debuging)
 // ===============================================================================================================
-template <typename Map>
-auto mapFind(const Map& map, const typename Map::key_type& key)
-    -> std::optional<typename Map::mapped_type>
-{
-    auto it = map.find(key);
-    if (it == map.end()) return std::nullopt;
-    return it->second;
-}
 
-// ===============================================================================================================
-// color
-// ===============================================================================================================
 inline std::string colorToString(uint32_t color) {
     uint8_t r = (color >> 16) & 0xFF;
     uint8_t g = (color >> 8)  & 0xFF;
@@ -28,8 +16,9 @@ inline std::string colorToString(uint32_t color) {
 }
 
 // ===============================================================================================================
-// pixels
+// pixels (used for loading assets and for province picking)
 // ===============================================================================================================
+
 inline uint32_t getPixelColor(SDL_Surface* surface, int x, int y) {
 
     uint8_t* pixel =
@@ -55,16 +44,17 @@ inline uint32_t getPixelColor(SDL_Surface* surface, int x, int y) {
         (uint32_t)b;
 }
 
+// ===============================================================================================================
+// used to prepare countries map
+// ===============================================================================================================
 inline void setPixel(SDL_Surface* surface, int x, int y, uint32_t color) {
     Uint8* p = (Uint8*)surface->pixels + y * surface->pitch + x * surface->format->BytesPerPixel;
     *(Uint32*)p = color;
 }
 
-
 // ===============================================================================================================
-// province find by bmp color
+// country finder
 // ===============================================================================================================
-
 
 inline Country* countryTagFind(const std::list<Country>& list, const std::string& tag) {
     for (auto& country : list)
@@ -73,10 +63,10 @@ inline Country* countryTagFind(const std::list<Country>& list, const std::string
     return nullptr;
 }
 
+// ===============================================================================================================
+// province finders
+// ===============================================================================================================
 
-// ===============================================================================================================
-// armies
-// ===============================================================================================================
 inline Province* provinceFindById(const std::list<Province>& list, int id) {
     for (auto& province : list) {
         if (province.id == id)

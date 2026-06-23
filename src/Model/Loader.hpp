@@ -74,7 +74,7 @@ inline std::map<int, std::vector<int>> buildAdjacencyPerCountry(
         auto itA = idMap.find(provinceId);
         if (itA == idMap.end() || !accessible.count(itA->second->owner)) continue;
 
-        std::cout << "Processing province: " << provinceId << " owner: " << itA->second->owner << std::endl;
+        //std::cout << "Processing province: " << provinceId << " owner: " << itA->second->owner << std::endl;
 
         for (int neighborId : neighbors) {
             auto itB = idMap.find(neighborId);

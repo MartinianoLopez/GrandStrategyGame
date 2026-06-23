@@ -10,16 +10,18 @@
 #include "Model/Loader.hpp"
 #include "View/UIManager.hpp"
 #include "Simulation/Time.hpp"
+
 int main() {
-    std::cerr << "START\n";
 
-        GameWindow mainWin = GameWindow();
-        DebugWindow debugWin;
-        EventRouter eventManager;
+    bool debugging = true;
 
-        bool debugging = true;
-        debugWin.init();
-        if (!debugging) debugWin.hide();
+    GameWindow mainWin = GameWindow();
+
+    DebugWindow debugWin;    
+    debugWin.init();
+    if (!debugging) debugWin.hide();
+
+    EventRouter eventManager;
 
     // =========================================================================================
     // LOADING                                                                                          
@@ -27,24 +29,24 @@ int main() {
     
     std::cerr << "LOADING...\n";
 
-        World world;
+    World world;
+    loadAssets(world, mainWin.renderer);
 
-        loadAssets(world, mainWin.renderer);
-   
-        UIRegistry reg;
-        initRegistry(reg, world);
-        
+    UIRegistry reg;
+    initRegistry(reg, world);
+    loadUIFromFile(world, reg, "assets/ui/ui_layout.txt", mainWin.renderer);
 
-    std::cerr << "LOADED\n";
     
     // =========================================================================================
     // Game Loop                                                                                          
     // =========================================================================================
+    
+    std::cerr << "START\n";
 
     Uint32 lastTicks    = SDL_GetTicks();
     Uint32 lastUIReload = SDL_GetTicks();
+
     MenuPlace lastPlace = world.place;
-    loadUIFromFile(world, reg, "assets/ui/ui_layout.txt", mainWin.renderer);
 
     while (world.running) {
 
@@ -96,5 +98,6 @@ int main() {
     SDL_Quit();
 
     std::cerr << "END\n";
+
     return 0;
 }
