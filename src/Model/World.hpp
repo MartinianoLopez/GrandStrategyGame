@@ -158,6 +158,7 @@ struct World {
 
     int selectedProvince = 0;
     int objectiveProvince = 0;
+    std::vector<Army*> selectedArmies;
 
     std::list<Font> fonts;
 

@@ -120,93 +120,81 @@ inline void displayTexture(SDL_Renderer* renderer, SDL_Texture* texture, const S
 }
 
 // ===============================================================================================================
-// text & numbers
+// Armies
 // ===============================================================================================================
 
-inline void renderArmy(
-    SDL_Renderer* renderer,
-    World& world,
-    const std::string& fontId,
-    int x,
-    int y,
-    Army army,
-    bool selected
-) {
+inline void renderSelectedOverlay(SDL_Renderer* renderer, World& world, int x, int y, const Army& army) {
     Font* font = nullptr;
     for (auto& f : world.fonts) {
-        if (f.id == fontId) { font = &f; break; }
+        if (f.id == "simple") { font = &f; break; }
     }
     if (!font) return;
-
     std::string s = std::to_string(army.power);
-
-    int totalW = 0;
-    int maxH = 0;
-
+    int totalW = 0, maxH = 0;
     for (char c : s) {
         Glyph& g = font->glyphs[(int)c];
         totalW += g.w;
         maxH = std::max(maxH, g.h);
     }
+    const int padding = 1;
+    int bx = (x - totalW / 2) - padding;
+    int by = (y - maxH / 2) - padding;
+    SDL_Rect border = { bx - 2, by - 2, totalW + padding * 2 + 4, maxH + padding * 2 + 4 };
+    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+    SDL_RenderDrawRect(renderer, &border);
+}
 
+inline void renderArmy(SDL_Renderer* renderer, World& world, const std::string& fontId, int x, int y, const Army& army) {
+    Font* font = nullptr;
+    for (auto& f : world.fonts) {
+        if (f.id == fontId) { font = &f; break; }
+    }
+    if (!font) return;
+    std::string s = std::to_string(army.power);
+    int totalW = 0, maxH = 0;
+    for (char c : s) {
+        Glyph& g = font->glyphs[(int)c];
+        totalW += g.w;
+        maxH = std::max(maxH, g.h);
+    }
     x -= totalW / 2;
     y -= maxH / 2;
-
     const int padding = 1;
-
-    SDL_Rect bg = {
-        x - padding,
-        y - padding,
-        totalW + padding * 2,
-        maxH + padding * 2
-    };
-
+    SDL_Rect bg = { x - padding, y - padding, totalW + padding * 2, maxH + padding * 2 };
     SDL_SetRenderDrawColor(renderer, army.color.r, army.color.g, army.color.b, 180);
     SDL_RenderFillRect(renderer, &bg);
-
-    if (selected) {
-        SDL_Rect border = {
-            bg.x - 2,
-            bg.y - 2,
-            bg.w + 4,
-            bg.h + 4
-        };
-
-        SDL_SetRenderDrawColor(renderer, 255,255,0,255);
-        SDL_RenderDrawRect(renderer, &border);
-    }
-
     for (char c : s) {
-
         Glyph& g = font->glyphs[(int)c];
-
-        SDL_Rect dst = {
-            x,
-            y,
-            g.w,
-            g.h
-        };
-
+        SDL_Rect dst = { x, y, g.w, g.h };
         SDL_RenderCopy(renderer, g.tex, nullptr, &dst);
-
         x += g.w;
     }
 }
 
-// ===============================================================================================================
-// armies
-// ===============================================================================================================
 inline void renderArmies(World& world, SDL_Renderer* renderer, SDL_FRect destRect, int screenW, int screenH) {
     for (const auto& army : world.armies) {
-        Province* p = provinceFindById(world.provinces, army.position);
-        if (!p) continue;
-        float sx = destRect.x + p->center.x * world.finalScale;
-        float sy = destRect.y + p->center.y * world.finalScale;
+        Province* province = provinceFindById(world.provinces, army.position);
+        if (!province) continue;
+        float sx = destRect.x + province->center.x * world.finalScale;
+        float sy = destRect.y + province->center.y * world.finalScale;
         if (sx < 0 || sy < 0 || sx > screenW || sy > screenH) continue;
-        bool selected = (world.selectedProvince == army.position);
-        renderArmy(renderer, world, "simple", (int)sx, (int)sy, army, selected);
+        renderArmy(renderer, world, "simple", (int)sx, (int)sy, army);
+    }
+    for (Army* army : world.selectedArmies) {
+        if (!army) continue;
+        Province* province = provinceFindById(world.provinces, army->position);
+        if (!province) continue;
+        float sx = destRect.x + province->center.x * world.finalScale;
+        float sy = destRect.y + province->center.y * world.finalScale;
+        if (sx < 0 || sy < 0 || sx > screenW || sy > screenH) continue;
+        renderSelectedOverlay(renderer, world, (int)sx, (int)sy, *army);
     }
 }
+
+// ============================================================
+// army path
+// ============================================================
+
 inline std::optional<Army> findArmy(World& world, int selectedProvince) {
     for (const auto& army : world.armies) {
         if (army.position == selectedProvince)
@@ -214,24 +202,14 @@ inline std::optional<Army> findArmy(World& world, int selectedProvince) {
     }
     return std::nullopt;
 }
-
-// ============================================================
-// army path
-// ============================================================
-
-inline void showSelectedArmyPath(World& world, SDL_Renderer* renderer, SDL_FRect destRect) {
-    auto selectedArmy = findArmy(world, world.selectedProvince);
-    if (!selectedArmy || selectedArmy->path.empty()) return;
-
+inline void drawPath(Army* army, World& world, SDL_Renderer* renderer, SDL_FRect destRect) {
+    if (!army || army->path.empty()) return;
     SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
-
-    Province* from = provinceFindById(world.provinces, selectedArmy->position);
+    Province* from = provinceFindById(world.provinces, army->position);
     if (!from) return;
-
     float px = destRect.x + from->center.x * world.finalScale;
     float py = destRect.y + from->center.y * world.finalScale;
-
-    for (int provinceId : selectedArmy->path) {
+    for (int provinceId : army->path) {
         Province* p = provinceFindById(world.provinces, provinceId);
         if (!p) continue;
         float cx = destRect.x + p->center.x * world.finalScale;
@@ -239,6 +217,12 @@ inline void showSelectedArmyPath(World& world, SDL_Renderer* renderer, SDL_FRect
         SDL_RenderDrawLineF(renderer, px, py, cx, cy);
         px = cx;
         py = cy;
+    }
+}
+
+inline void showSelectedArmiesPaths(World& world, SDL_Renderer* renderer, SDL_FRect destRect) {
+    for (Army* army : world.selectedArmies) {
+        drawPath(army, world, renderer, destRect);
     }
 }
 
@@ -289,7 +273,7 @@ inline void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, 
         renderFrontiers(world, renderer, destRect, {0, 0, 0, 220}, winWidth, winHeight, world.countryFrontiers, 1);
         markProvinceFrontiers(world, renderer, destRect, {255, 255, 0, 240}, world.selectedProvince);
         renderArmies(world, renderer, destRect, winWidth, winHeight);
-        showSelectedArmyPath(world, renderer, destRect);
+        showSelectedArmiesPaths(world, renderer, destRect);
     }
     auto t7 = std::chrono::high_resolution_clock::now();
 

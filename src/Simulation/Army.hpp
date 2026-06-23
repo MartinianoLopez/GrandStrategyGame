@@ -5,7 +5,7 @@
 #include <queue>
 #include <unordered_map>
 #include <algorithm>
-#include <iostream>
+//#include <iostream>
 
 // ============================================================
 // PATH PLANNING
@@ -13,7 +13,7 @@
 
 
 inline std::vector<int> calculatePath(World& world, std::string ownerTag, int from, int to) {
-    std::cout << "try calculate\n";
+    //std::cout << "try calculate\n";
 
     // national accessiblity
     const std::map<int, std::vector<int>>* adjacency = &countryTagFind(world.countries, ownerTag)->accessibilityGraph;
@@ -34,7 +34,7 @@ inline std::vector<int> calculatePath(World& world, std::string ownerTag, int fr
 
         auto it = adjacency->find(current);
         if (it == adjacency->end()) {
-            std::cout << "Province " << current << " not found in adjacency\n";
+            // std::cout << "Province " << current << " not found in adjacency\n";
             continue;
         }
 
@@ -53,7 +53,7 @@ inline std::vector<int> calculatePath(World& world, std::string ownerTag, int fr
         path.push_back(p);
     std::reverse(path.begin(), path.end());
     path.erase(path.begin());
-      std::cout << "end of calculus\n";
+      // std::cout << "end of calculus\n";
     return path;
 }
 
@@ -77,12 +77,12 @@ inline void updateArmyMovement(World& world) {
     for (auto& army : world.armies) {
         if (army.path.empty()) continue;
         army.movementStage += world.armyMovementSpeed;
-        std::cout << "[" << army.name << "] stage: " << army.movementStage << " path size: " << army.path.size() << "\n";
+        // std::cout << "[" << army.name << "] stage: " << army.movementStage << " path size: " << army.path.size() << "\n";
         if (army.movementStage >= 100) {
             army.movementStage -= 100;
             army.position = army.path.front();
             army.path.erase(army.path.begin());
-            std::cout << "[" << army.name << "] moved to: " << army.position << "\n";
+            // std::cout << "[" << army.name << "] moved to: " << army.position << "\n";
         }
     }
 }
@@ -133,7 +133,7 @@ inline void moveArmy(Army& army, int toProvinceId) {
     army.position = toProvinceId;
 }
 
-inline Army* armyPositionFind(const std::list<Army>& list, int provinceId) {
+inline Army* FindArmyOnProvinceId(const std::list<Army>& list, int provinceId) {
     for (auto& army : list)
         if (army.position == provinceId)
             return const_cast<Army*>(&army);

@@ -101,57 +101,81 @@ struct GameWindow {
             clampToBounds(world);
     }
 
-    void onRightClick(World& world, const SDL_Event& e) {
+
+
+    void onLeftClick(World& world, const SDL_Event& e) {        
         world.dragging = true;
         world.lastX    = e.button.x;
         world.lastY    = e.button.y;
 
-        Province* target = pickProvince(world, e.button.x, e.button.y);
-        if (!target) return;
-        if (target->id == world.selectedProvince) return;
-
-        Army* army = armyPositionFind(world.armies, world.selectedProvince);
-        if (!army) return; 
-        
-        world.objectiveProvince = target->id;
-        std::cout << "try start\n";
-        createArmyMovement(world, army, world.selectedProvince, world.objectiveProvince);
-        //army->position          = target->id;
-    }
-
-    void onLeftClick(World& world, const SDL_Event& e) {        
-
         int w, h;
         getScreenSize(w, h);
 
-        // primero UI
+        // Try click on UI Layer
         for (auto it = world.uiElements.rbegin(); it != world.uiElements.rend(); ++it) {
             if (it->contains(e.button.x, e.button.y, w, h)) {
                 if (it->onClick) it->onClick();
-                return; // consumido
+                return; // consumed
             }
         }
 
-        // luego mapa
+        // click on map layer
         Province* target = pickProvince(world, e.button.x, e.button.y);
         if (!target) {
             int texX, texY;
             screenToTexture(world, e.button.x, e.button.y, texX, texY);
-            std::cerr << "No province at color: "
-                    << colorToString(getPixelColor(world.provincesBmp, texX, texY)) << "\n";
+            std::cerr << "No province at color: " << colorToString(getPixelColor(world.provincesBmp, texX, texY)) << "\n"; 
             return;
         }        
         
         world.selectedProvince = target->id;
+        
+        // ====================== army selection ============================================
 
-        if(world.place == MenuPlace::CountrySelection ){
+        if (world.place == MenuPlace::InGame){
+
+            world.selectedArmies.clear();
+            
+            Army* army = FindArmyOnProvinceId(world.armies, world.selectedProvince);
+
+            if (!army)                                 return;
+            if (!(army->owner == world.playerCountry)) return;
+
+            world.selectedArmies.push_back(army);
+
+        }
+
+        // ====================== menu country selection ====================================
+
+        if (world.place == MenuPlace::CountrySelection){
+
             Province* p = provinceFindById(world.provinces, world.selectedProvince);
             Country* c = countryTagFind(world.countries, p->owner);
+
             if (c) world.playerCountry = c->tag;
+
             std::string path = "assets/flags/" + world.playerCountry + ".tga";
             world.flagTex = IMG_LoadTexture(renderer, path.c_str());
+
             if (world.flagTex) world.flagTex = world.flagTex;
         }
+    }    
+    
+    void onRightClick(World& world, const SDL_Event& e) {
+        
+        Province* clickedProvince = pickProvince(world, e.button.x, e.button.y);
+
+        // ====================== army movement ========================
+        if (!clickedProvince) return;
+
+        world.objectiveProvince = clickedProvince->id;
+        
+        if (world.selectedArmies.empty() || world.selectedArmies[0] == nullptr) return;
+        for (Army* army : world.selectedArmies) {
+            createArmyMovement(world, army, army->position, world.objectiveProvince);
+        }
+        // instant movement army->position = target->id;
+
     }
 
     // =========================================================================
@@ -204,7 +228,7 @@ struct GameWindow {
                 break;
 
             case SDL_MOUSEBUTTONUP:
-                if (e.button.button == SDL_BUTTON_RIGHT) {
+                if (e.button.button == SDL_BUTTON_LEFT) {
                     world.dragging = false;
                 }
                 break;
