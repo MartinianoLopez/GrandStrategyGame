@@ -11,7 +11,6 @@
 // PATH PLANNING
 // ============================================================
 
-// I should calculate the path searching for a posible accesible path or return none
 
 inline std::vector<int> calculatePath(World& world, std::string ownerTag, int from, int to) {
     std::cout << "try calculate\n";
@@ -19,9 +18,10 @@ inline std::vector<int> calculatePath(World& world, std::string ownerTag, int fr
     // national accessiblity
     const std::map<int, std::vector<int>>* adjacency = &countryTagFind(world.countries, ownerTag)->accessibilityGraph;
 
-    // world accesibility
-    if (!adjacency->count(from))
-        adjacency = &world.adjacencyGraph; 
+    // exiled armies
+    //if (army.exiled == true){
+    //    adjacency = &world.adjacencyGraph; 
+    //}
     
     std::unordered_map<int, int> parent;
     std::queue<int> queue;

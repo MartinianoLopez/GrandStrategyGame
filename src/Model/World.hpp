@@ -169,7 +169,7 @@ struct World {
     float offsetY = 0.0f; 
     bool dragging = false;
     int lastX = 0, lastY = 0;
-    int frameDelay = 1000 / 60;
+    int frameDelay = 0;
     float fps = 0.0f;
     float finalScale = 0.0f;
     bool running = true;

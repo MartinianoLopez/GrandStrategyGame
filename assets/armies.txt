@@ -6,3 +6,4 @@ ProvinceId;name;owner;power
 219;First Army;CAS;8000
 214;First Army;ARA;4000
 210;First Army;NAV;2000
+1931;First Army;EFR;2000
