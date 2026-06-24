@@ -15,7 +15,7 @@
 // ===============================================================================================================
 
 struct UIRegistry {
-    std::unordered_map<std::string, std::function<std::string(World&)>> endpoints;
+    std::unordered_map<std::string, std::function<std::string(World&)>> informationPoints;
     std::unordered_map<std::string, std::function<void(World&)>>        actions;
     std::unordered_map<std::string, SDL_Texture**>                      textures;
 };
@@ -23,30 +23,30 @@ struct UIRegistry {
 // ===============================================================================================================
 // Hooks
 // ===============================================================================================================
-inline void registerEndpoints(UIRegistry& reg, World& world) {
+inline void uiInformation(UIRegistry& ui, World& world) {
 
-    reg.endpoints["player_money"] = [](World& w) {
+    ui.informationPoints["player_money"] = [](World& w) {
         Country* p = countryTagFind(w.countries, w.playerCountry);
         return p ? "$" + std::to_string(p->money) : "$0";
     };
 
-    reg.endpoints["army_count"] = [](World& w) {
+    ui.informationPoints["army_count"] = [](World& w) {
         int count = 0;
         for (auto& a : w.armies)
             if (a.owner == w.playerCountry) count++;
         return std::to_string(count);
     };
 
-    reg.endpoints["date"] = [](World& w) {
+    ui.informationPoints["date"] = [](World& w) {
         return w.date;
     };
 
-    reg.endpoints["selected_province"] = [](World& w) {
+    ui.informationPoints["selected_province"] = [](World& w) {
         Province* p = provinceFindById(w.provinces, w.selectedProvince);
         return p ? p->name : "None";
     };
 
-    reg.endpoints["selected_country"] = [](World& w) {
+    ui.informationPoints["selected_country"] = [](World& w) {
         Province* p = provinceFindById(w.provinces, w.selectedProvince);
         if (!p) return std::string("Select your Kingdom");
         Country* c = countryTagFind(w.countries, p->owner);
@@ -57,36 +57,63 @@ inline void registerEndpoints(UIRegistry& reg, World& world) {
 // ===============================================================================================================
 // calls
 // ===============================================================================================================
-inline void registerActions(UIRegistry& reg, World& world) {
+inline void registerActions(UIRegistry& ui, World& world) {
 
-    reg.actions["exit"] = [](World& w) {
+    ui.actions["exit"] = [](World& w) {
         w.running = false;
     };
 
-    reg.actions["save"] = [](World& w) {
+    ui.actions["save"] = [](World& w) {
         saveGame(w);
         refreshSaveFiles(w);
     };
 
-    reg.actions["play_if_selected"] = [](World& w) {
+    ui.actions["play_if_selected"] = [](World& w) {
         if (!w.playerCountry.empty())
             w.place = MenuPlace::InGame;
     };
 
-    reg.actions["goto:MainMenu"] = [](World& w) {
+    ui.actions["goto:MainMenu"] = [](World& w) {
         w.place = MenuPlace::MainMenu;
     };
 
-    reg.actions["goto:CountrySelection"] = [](World& w) {
+    ui.actions["goto:CountrySelection"] = [](World& w) {
         w.place = MenuPlace::CountrySelection;
     };
 
-    reg.actions["goto:LoadGame"] = [](World& w) {
+    ui.actions["goto:LoadGame"] = [](World& w) {
         w.place = MenuPlace::LoadGame;
     };
 
-    reg.actions["goto:InGame"] = [](World& w) {
+    ui.actions["goto:InGame"] = [](World& w) {
         w.place = MenuPlace::InGame;
+    };
+    ui.actions["timeSpeed0"] = [](World& w) {
+        w.timeSpeed = 0;
+    };
+    ui.actions["timeSpeed1"] = [](World& w) {
+        w.timeSpeed = 2;
+    };
+    ui.actions["timeSpeed2"] = [](World& w) {
+        w.timeSpeed = 5;
+    };
+    ui.actions["timeSpeed3"] = [](World& w) {
+        w.timeSpeed = 10;
+    };
+    ui.actions["mapModeAccess"] = [](World& w) {
+        if(w.mapMode != "access"){
+            w.mapMode = "access";
+        }else{
+            w.mapMode = "normal";
+        };
+    };
+    ui.actions["mapModeTerrain"] = [](World& w) {
+        if(w.mapMode != "terrain"){
+            w.mapMode = "terrain";
+        }else{
+            w.mapMode = "normal";
+        };
+        
     };
 }
 // ===============================================================================================================
@@ -106,7 +133,7 @@ inline void registerTextures(UIRegistry& reg, World& world) {
 // Init
 // ===============================================================================================================
 inline void initRegistry(UIRegistry& reg, World& world) {
-    registerEndpoints(reg, world);
+    uiInformation(reg, world);
     registerActions(reg, world);
     registerTextures(reg, world);
 }
@@ -193,8 +220,8 @@ inline void loadUIFromFile(
             ss >> x >> y >> w >> h >> font >> z >> endpointKey;
 
             std::function<std::string()> getText = nullptr;
-            if (reg.endpoints.count(endpointKey)) {
-                auto fn = reg.endpoints[endpointKey];
+            if (reg.informationPoints.count(endpointKey)) {
+                auto fn = reg.informationPoints[endpointKey];
                 getText = [fn, &world]() { return fn(world); };
             }
 
@@ -237,6 +264,29 @@ inline void loadUIFromFile(
                 2,
                 onClick,
                 [label]() { return label; },
+                "simple"
+            });
+        }else if (token == "GROUPBUTTON") {
+            // GROUPBUTTON 96 80 2 2 terrainButton mapModeTerrain MapModeBootons
+            int x, y, w, h;
+            std::string texture;
+            std::string action;
+            std::string group;
+            ss >> x >> y >> w >> h >> texture >> action >> group;
+
+            std::function<void()> onClick = nullptr;
+            if (reg.actions.count(action)) {
+                auto fn = reg.actions[action];
+                onClick = [fn, &world]() { fn(world); };
+            }
+            // push ----------------------------------------------------
+            world.uiElements.push_back({
+                {x, y, w, h},
+                world.Textures[texture],
+                {},
+                2,
+                onClick,
+                nullptr,
                 "simple"
             });
         }

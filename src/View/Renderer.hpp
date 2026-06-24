@@ -259,8 +259,20 @@ inline void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, 
     displayTexture(renderer, world.terrain,      destRect, 200);
     auto t3 = std::chrono::high_resolution_clock::now();
 
-    displayTexture(renderer, world.countriesTex, destRect, 245);
-    auto t4 = std::chrono::high_resolution_clock::now();
+    if (world.mapMode == "normal") {
+        displayTexture(renderer, world.countriesTex, destRect, 245);
+        auto t4 = std::chrono::high_resolution_clock::now();
+    }
+    if (world.mapMode == "access") {
+        // displayTexture(renderer, world.countriesTex, destRect, 245); display texture access
+        // auto t4 = std::chrono::high_resolution_clock::now();
+    }
+    
+    if (world.mapMode == "diplomatic") {
+        // generate and cache diplomatic texture for the designated country
+        // displayTexture(renderer, world.countriesTex, destRect, 245); display diplomatic texture
+        // auto t4 = std::chrono::high_resolution_clock::now();
+    }
 
     if (world.scale > 6.0f)
         renderFrontiers(world, renderer, destRect, {0, 0, 0, 120}, winWidth, winHeight, world.provinceFrontiers, 1);

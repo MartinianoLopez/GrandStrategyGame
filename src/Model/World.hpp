@@ -180,8 +180,9 @@ struct World {
     SDL_Texture* flagTex = nullptr;
     SDL_Texture* bootonTex = nullptr;
     MenuPlace place = MenuPlace::MainMenu;
-    std::vector<SDL_Texture*> uiTextures;
-    std::vector<UIElement>    uiElements;
+    std::vector<SDL_Texture*> uiTextures; // should be the same
+    std::vector<UIElement> uiElements;
+    std::map<std::string, SDL_Texture*> Textures; // should be the same 
 
     SDL_Texture* texStone = nullptr;
     SDL_Texture* statusBarTexture = nullptr;
@@ -191,5 +192,7 @@ struct World {
     std::vector<std::string> saveFiles;
     std::string selectedSave;
 
+    std::string mapMode = "normal";
+    
 };
 

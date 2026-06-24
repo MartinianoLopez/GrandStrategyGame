@@ -11,10 +11,16 @@ PANEL  20 0  60 10 statusBarTexture  26  26  26  220 1
 TEXT   42 2  5  4  fancy             2   player_money
 TEXT   56 2  5  4  fancy             2   army_count
 PANEL  84 -1  16  10  timeFrameTexture  26  26  26  200 1
+GROUPBUTTON 85 8 6 6 0speed timeSpeed0 TimeBootons
+GROUPBUTTON 88 8 6 6 1speed timeSpeed1 TimeBootons
+GROUPBUTTON 91 8 6 6 2speed timeSpeed2 TimeBootons
+GROUPBUTTON 94 8 6 6 3speed timeSpeed3 TimeBootons
 TEXT   88 2  8  4  fancy            2  date
 PANEL  35 92 30 6  bootonTex         26  26  26  200 1
 TEXT   36 93 28 4  simple            2   selected_province
 PANEL  68 50 50 50 texStone          0   0   0   0   1
+GROUPBUTTON 90 90 6 6 accessButton mapModeAccess MapModeBootons
+GROUPBUTTON 93 90 6 6 terrainButton mapModeTerrain MapModeBootons
 BUTTON 85 68 16 6  60  90  160 240   save SAVE GAME
 BUTTON 85 76 16 6  160 40  40  240   goto:MainMenu BACK
 

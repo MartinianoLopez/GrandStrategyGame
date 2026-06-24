@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include "SDL_render.h"
 #include "World.hpp"
 #include <fstream>
 #include <sstream>
@@ -9,6 +10,8 @@
 #include "../utils.hpp"
 #include <chrono>
 #include <unordered_set>
+#include <filesystem>
+#include <SDL2/SDL_image.h>
 
 // ===============================================================================================================
 // frontiers
@@ -94,10 +97,8 @@ inline void buildAccessibilityGraphsPerCountry(World& world)
     }
 }
 
-inline std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFrontiersBetweenCountries(
-    World& world,
-    const std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>>& frontiers)
-{
+inline std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFrontiersBetweenCountries( World& world, const std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>>& frontiers) {
+    
     std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> filteredFrontiers;
 
     for (const auto& [key, points] : frontiers) {
@@ -465,6 +466,21 @@ inline void buildProvinceIdMap(World& world) {
         world.provinceById[province.id] = &province;
 }
 
+
+inline void loadAllUITextures(World& world, SDL_Renderer* renderer) {
+    namespace fs = std::filesystem;
+    
+    for (const auto& entry : fs::recursive_directory_iterator("assets/ui")) {
+        if (entry.is_regular_file() && entry.path().extension() == ".png") {
+            std::string key = entry.path().stem().string(); // filename sin extensión
+            SDL_Texture* tex = IMG_LoadTexture(renderer, entry.path().string().c_str());
+            if (tex) {
+                world.Textures[key] = tex;
+                //std::cout << "Loaded: " << key << "\n";
+            }
+        }
+    }
+}
 // ===============================================================================================================
 // LOAD ALL
 // ===============================================================================================================
@@ -503,6 +519,7 @@ inline void loadAssets(World& world, SDL_Renderer* renderer) {
     world.statusBarTexture = IMG_LoadTexture(renderer, "assets/ui/statusBar.png");
     world.timeFrameTexture = IMG_LoadTexture(renderer, "assets/ui/timeFrame.png");
     world.flagFrameTexture = IMG_LoadTexture(renderer, "assets/ui/flagFrame.png");
+    loadAllUITextures(world, renderer);
 
     if (TTF_Init() == -1) {
         SDL_Log("TTF init error: %s", TTF_GetError());
