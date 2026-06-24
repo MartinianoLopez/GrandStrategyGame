@@ -56,7 +56,7 @@ inline void setPixel(SDL_Surface* surface, int x, int y, uint32_t color) {
 // country finder
 // ===============================================================================================================
 
-inline Country* countryTagFind(const std::list<Country>& list, const std::string& tag) {
+inline Country* findCountryByTag(const std::list<Country>& list, const std::string& tag) {
     for (auto& country : list)
         if (country.tag == tag)
             return const_cast<Country*>(&country);

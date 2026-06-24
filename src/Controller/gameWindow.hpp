@@ -129,7 +129,7 @@ struct GameWindow {
         }        
         
         world.selectedProvince = target->id;
-        
+        world.selectedCountry = provinceFindById(world.provinces, world.selectedProvince) -> owner;
         // ====================== army selection ============================================
 
         if (world.place == MenuPlace::InGame){
@@ -150,7 +150,7 @@ struct GameWindow {
         if (world.place == MenuPlace::CountrySelection){
 
             Province* p = provinceFindById(world.provinces, world.selectedProvince);
-            Country* c = countryTagFind(world.countries, p->owner);
+            Country* c = findCountryByTag(world.countries, p->owner);
 
             if (c) world.playerCountry = c->tag;
 

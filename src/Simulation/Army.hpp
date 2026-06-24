@@ -16,7 +16,7 @@ inline std::vector<int> calculatePath(World& world, std::string ownerTag, int fr
     //std::cout << "try calculate\n";
 
     // national accessiblity
-    const std::map<int, std::vector<int>>* adjacency = &countryTagFind(world.countries, ownerTag)->accessibilityGraph;
+    const std::map<int, std::vector<int>>* adjacency = &findCountryByTag(world.countries, ownerTag)->accessibilityGraph;
 
     // exiled armies
     //if (army.exiled == true){

@@ -26,7 +26,7 @@ struct UIRegistry {
 inline void uiInformation(UIRegistry& ui, World& world) {
 
     ui.informationPoints["player_money"] = [](World& w) {
-        Country* p = countryTagFind(w.countries, w.playerCountry);
+        Country* p = findCountryByTag(w.countries, w.playerCountry);
         return p ? "$" + std::to_string(p->money) : "$0";
     };
 
@@ -49,7 +49,7 @@ inline void uiInformation(UIRegistry& ui, World& world) {
     ui.informationPoints["selected_country"] = [](World& w) {
         Province* p = provinceFindById(w.provinces, w.selectedProvince);
         if (!p) return std::string("Select your Kingdom");
-        Country* c = countryTagFind(w.countries, p->owner);
+        Country* c = findCountryByTag(w.countries, p->owner);
         if (c) w.playerCountry = c->tag;
         return c ? c->name : std::string("Select your Kingdom");
     };

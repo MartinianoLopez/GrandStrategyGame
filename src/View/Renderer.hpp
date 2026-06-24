@@ -1,9 +1,12 @@
 #include "../utils.hpp"
 #include "../Model/World.hpp"
 #include "SDL_rect.h"
+#include "SDL_render.h"
 #include <algorithm>
 #include <optional>
 #include <chrono>
+#include <string>
+#include <unordered_set>
 
 
 inline void renderText(
@@ -226,7 +229,42 @@ inline void showSelectedArmiesPaths(World& world, SDL_Renderer* renderer, SDL_FR
         drawPath(army, world, renderer, destRect);
     }
 }
+inline Uint32 colorToUint32(const Color color, SDL_PixelFormat* format) {
+    return SDL_MapRGB(format, color.r, color.g, color.b);
+}
 
+inline SDL_Texture* buildAccessibilityMap(World& world, SDL_Renderer* renderer, const std::vector<std::string>& accessibleCountries) {
+    SDL_Surface* src = world.countriesImg;
+    if (!src || !src->format) return nullptr;
+
+    std::unordered_set<Uint32> accessibleColors;
+    for (const auto& tag : accessibleCountries) {
+        Country* c = findCountryByTag(world.countries, tag);
+        if (c) accessibleColors.insert(colorToUint32(c->color, src->format));
+    }
+
+    SDL_Surface* dst = SDL_CreateRGBSurfaceWithFormat(0, src->w, src->h, 32, src->format->format);
+    if (!dst) return nullptr;
+
+    SDL_LockSurface(src);
+    SDL_LockSurface(dst);
+
+    Uint32* srcPixels = static_cast<Uint32*>(src->pixels);
+    Uint32* dstPixels = static_cast<Uint32*>(dst->pixels);
+    int totalPixels = src->w * src->h;
+    Uint32 green       = SDL_MapRGB(dst->format, 0, 255, 0);
+    Uint32 transparent = SDL_MapRGBA(dst->format, 255, 0, 0, 0);
+
+    for (int i = 0; i < totalPixels; ++i)
+        dstPixels[i] = accessibleColors.count(srcPixels[i]) ? green : transparent;
+
+    SDL_UnlockSurface(dst);
+    SDL_UnlockSurface(src);
+
+    SDL_Texture* result = SDL_CreateTextureFromSurface(renderer, dst);
+    SDL_FreeSurface(dst);
+    return result;
+}
 // ===============================================================================================================
 // render
 // ===============================================================================================================
@@ -263,10 +301,22 @@ inline void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, 
         displayTexture(renderer, world.countriesTex, destRect, 245);
         auto t4 = std::chrono::high_resolution_clock::now();
     }
+    
     if (world.mapMode == "access") {
-        // displayTexture(renderer, world.countriesTex, destRect, 245); display texture access
-        // auto t4 = std::chrono::high_resolution_clock::now();
+
+        if (!world.activeAccessibilityMap || world.selectedCountry != world.countryoftheAccesibilityMap) {
+            
+            SDL_DestroyTexture(world.activeAccessibilityMap);
+            Country* country = findCountryByTag(world.countries, world.selectedCountry);
+            if (country) {
+                world.activeAccessibilityMap = buildAccessibilityMap(world, renderer, country->accessibleCountries);
+            }
+            world.countryoftheAccesibilityMap = world.selectedCountry;
+        }
+        if (world.activeAccessibilityMap)
+            displayTexture(renderer, world.activeAccessibilityMap, destRect, 245);
     }
+    
     
     if (world.mapMode == "diplomatic") {
         // generate and cache diplomatic texture for the designated country

@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <string>
 #include "SDL_render.h"
 #include "World.hpp"
@@ -44,6 +45,9 @@ inline std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFron
     return frontierList;
 }
 
+// ===============================================================================================================
+// Adjacency Graph
+// ===============================================================================================================
 
 inline std::map<int, std::vector<int>> buildAdjacency(
     const std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>>& provinceFrontiers,
@@ -90,12 +94,17 @@ inline std::map<int, std::vector<int>> buildAdjacencyPerCountry(
     return adjacency;
 }
 
+
 inline void buildAccessibilityGraphsPerCountry(World& world)
 {
     for (auto& country : world.countries) {
         country.accessibilityGraph = buildAdjacencyPerCountry(world, country.accessibleCountries);
     }
 }
+
+// ===============================================================================================================
+// Frontiers
+// ===============================================================================================================
 
 inline std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFrontiersBetweenCountries( World& world, const std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>>& frontiers) {
     
@@ -347,7 +356,7 @@ inline std::list<Army> loadArmies(const std::string& path, World& world) {
         };
 
         Color color = {0, 0, 0};
-        Country* c = countryTagFind(world.countries, parts[2]);
+        Country* c = findCountryByTag(world.countries, parts[2]);
         if (c) color = c->color;
 
         armies.emplace_back(
@@ -400,7 +409,7 @@ inline SDL_Surface* prepareCountries(SDL_Renderer* renderer,const World& world) 
                 continue;
             }
 
-            Country* c = countryTagFind(world.countries, p->owner);
+            Country* c = findCountryByTag(world.countries, p->owner);
             if (!c) {
                 colorToCountryColor[pixelColor] = 0;
                 continue;
@@ -456,9 +465,9 @@ inline SDL_Texture* surfaceToTexture(SDL_Renderer* renderer, SDL_Surface* surfac
     if (!surface) return nullptr;
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
     SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-    SDL_FreeSurface(surface);
     return texture;
 }
+
 // optimization
 inline void buildProvinceIdMap(World& world) {
     world.provinceById.clear();
@@ -512,6 +521,7 @@ inline void loadAssets(World& world, SDL_Renderer* renderer) {
     world.adjacencyGraph = buildAdjacency(world.provinceFrontiers, world.provinces);
     buildProvinceIdMap(world);
     buildAccessibilityGraphsPerCountry(world);
+    //buildAccessibilityMapsPerCountry(world, renderer);
     
 
     world.texStone = IMG_LoadTexture(renderer, "assets/ui/table.png");

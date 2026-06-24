@@ -39,8 +39,6 @@ struct Country {
     std::vector<std::string> accessibleCountries;
     std::map<int, std::vector<int>> accessibilityGraph;
 
-    Country(std::string tag, std::string name, Color color)
-        : tag(tag), name(name), color(color), money(100), accessibleCountries{tag, "NONE"} {}
     Country(std::string tag, std::string name, Color color, int money)
         : tag(tag), name(name), color(color), money(money), accessibleCountries{tag, "NONE"} {}
 };
@@ -158,6 +156,7 @@ struct World {
 
     int selectedProvince = 0;
     int objectiveProvince = 0;
+    std::string selectedCountry = "";
     std::vector<Army*> selectedArmies;
 
     std::list<Font> fonts;
@@ -193,6 +192,8 @@ struct World {
     std::string selectedSave;
 
     std::string mapMode = "normal";
+    SDL_Texture* activeAccessibilityMap = nullptr;
+    std::string countryoftheAccesibilityMap = "";
     
 };
 
