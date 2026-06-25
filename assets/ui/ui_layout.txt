@@ -5,11 +5,11 @@
 
 SCREEN InGame
 
-PANEL  2  1  6  8  flagTex           0   0   0   0   1
-PANEL  0  0  10 10 flagFrameTexture  0   0   0   0   1
+PANEL  0  0  10 18 flagFrameTexture  0   0   0   0   1
+PANEL  1  1  8  17  flagTex           0   0   0   0   1
 PANEL  20 0  60 10 statusBarTexture  26  26  26  220 1
-TEXT   42 2  5  4  fancy             2   player_money
-TEXT   56 2  5  4  fancy             2   army_count
+GROUPBUTTON  40 3  3 3 coins 
+TEXT   42 3  5  4  fancy             2   player_money
 PANEL  84 -1  16  10  timeFrameTexture  26  26  26  200 1
 GROUPBUTTON 85 8 6 6 0speed timeSpeed0 TimeBootons
 GROUPBUTTON 88 8 6 6 1speed timeSpeed1 TimeBootons

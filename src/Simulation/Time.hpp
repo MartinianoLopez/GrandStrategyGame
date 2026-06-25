@@ -2,6 +2,7 @@
 #include <string>
 #include "../Model/World.hpp"
 #include "Army.hpp"
+#include "Taxes.hpp"
 
 static constexpr int DAYS_IN_MONTH[] = {31,28,31,30,31,30,31,31,30,31,30,31};
 static constexpr const char* months[] = {"January","February","March","April","May","June","July","August","September","October","November","December"};
@@ -15,7 +16,7 @@ inline void onNewDay(World& world)   {
 }
 
 inline void onNewMonth(World& world) { 
-        /* ... */ 
+        collectTaxes(world);
 }
 
 

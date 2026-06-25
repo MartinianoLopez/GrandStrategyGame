@@ -28,7 +28,7 @@ inline void uiInformation(UIRegistry& ui, World& world) {
 
     ui.informationPoints["player_money"] = [](World& w) {
         Country* p = findCountryByTag(w.countries, w.playerCountry);
-        return p ? "$" + std::to_string(p->money) : "$0";
+        return p ? std::to_string(p->money) : "0";
     };
 
     ui.informationPoints["army_count"] = [](World& w) {

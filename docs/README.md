@@ -9,27 +9,25 @@ This is a fully 2D, real-time grand strategy game inspired by Europa Universalis
 The project follows a strict **MVC (Model-View-Controller)** pattern to keep concerns cleanly separated and the codebase maintainable as it scales.
 
 ```
+┌───────────────┐     
+│  CONTROLLER   │     
+│  Event Mgmt   │     
+│  Input Handle │     
+└───────┬───────┘     
+        │             
+        ▼             
 ┌───────────────┐     ┌───────────────┐
-│  CONTROLLER   │     │  SIMULATION   │
-│  Event Mgmt   │     │ Time Tracking │
-│  Input Handle │     │  Game Events  │
-└───────┬───────┘     └───────┬───────┘
-        │                     │
-        └──────────┬──────────┘
-                   │
-                   ▼
-        ┌─────────────────┐
-        │      MODEL      │
-        │   World State   │
-        │   Game Data     │
-        └────────┬────────┘
-                 │
-                 ▼
-        ┌────────────────┐
-        │      VIEW      │
-        │    Renderer    │
-        │  Layer System  │
-        └────────────────┘
+│     MODEL     │     │  SIMULATION   │
+│  World State  │ <---│ Time Tracking │
+│  Game Data    │     │  Game Events  │
+└───────┬───────┘     └───────────────┘
+        │             
+        ▼             
+┌───────────────┐     
+│     VIEW      │     
+│   Renderer    │     
+│  Layer System │     
+└───────────────┘
 ```
 
 | Layer | Class | Responsibility |
@@ -38,7 +36,6 @@ The project follows a strict **MVC (Model-View-Controller)** pattern to keep con
 | **Simulation** | `Simulation` | Mutates the model driven by time and game events |
 | **Model** | `World` | Single source of truth — nations, provinces, armies, relations |
 | **View** | `Renderer` | Draws all visual layers in order; no game logic |
-| **Utils** | `Utils` | Functions that don't belong to any domain |
 
 ---
 
