@@ -208,5 +208,6 @@ struct World {
     std::string mapMode = "normal";
     SDL_Texture* activeAccessibilityMap = nullptr;
     std::string countryoftheAccesibilityMap = "";
+    bool recluitOneUnit = false;
 };
 

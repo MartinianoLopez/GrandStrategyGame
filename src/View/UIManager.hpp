@@ -116,6 +116,9 @@ inline void registerActions(UIRegistry& ui, World& world) {
         };
         
     };
+    ui.actions["recluit"] = [](World& world) {
+        world.recluitOneUnit = true;
+    };
 }
 // ===============================================================================================================
 // Textures

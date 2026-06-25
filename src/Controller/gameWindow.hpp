@@ -164,12 +164,20 @@ struct GameWindow {
     void onRightClick(World& world, const SDL_Event& e) {
         
         Province* clickedProvince = pickProvince(world, e.button.x, e.button.y);
-
-        // ====================== army movement ========================
         if (!clickedProvince) return;
-
         world.objectiveProvince = clickedProvince->id;
-        
+
+        // ====================== army recluitment =====================
+        if(world.recluitOneUnit == true){
+
+            Country* country = findCountryByTag(world.countries, world.playerCountry);
+            if(country -> money >= 100){
+                country -> money -= 100;
+                world.armies.push_back(Army(world.objectiveProvince, "Recluits", world.playerCountry, 1000,country->color));
+            }
+            world.recluitOneUnit = false;
+        }
+        // ====================== army movement ========================
         if (world.selectedArmies.empty() || world.selectedArmies[0] == nullptr) return;
         for (Army* army : world.selectedArmies) {
             createArmyMovement(world, army, army->position, world.objectiveProvince);
