@@ -9,6 +9,7 @@
 #include "../Model/World.hpp"
 #include "../utils.hpp"
 #include "../Model/saves.hpp"
+#include "../Simulation/Time.hpp"
 
 // ===============================================================================================================
 // REGISTRY
@@ -37,8 +38,8 @@ inline void uiInformation(UIRegistry& ui, World& world) {
         return std::to_string(count);
     };
 
-    ui.informationPoints["date"] = [](World& w) {
-        return w.date;
+    ui.informationPoints["date"] = [](World& world) {
+        return dateToString(world);
     };
 
     ui.informationPoints["selected_province"] = [](World& w) {
@@ -89,16 +90,16 @@ inline void registerActions(UIRegistry& ui, World& world) {
         w.place = MenuPlace::InGame;
     };
     ui.actions["timeSpeed0"] = [](World& w) {
-        w.timeSpeed = 0;
+        w.time.speed = 0;
     };
     ui.actions["timeSpeed1"] = [](World& w) {
-        w.timeSpeed = 2;
+        w.time.speed = 2;
     };
     ui.actions["timeSpeed2"] = [](World& w) {
-        w.timeSpeed = 5;
+        w.time.speed = 5;
     };
     ui.actions["timeSpeed3"] = [](World& w) {
-        w.timeSpeed = 10;
+        w.time.speed = 10;
     };
     ui.actions["mapModeAccess"] = [](World& w) {
         if(w.mapMode != "access"){

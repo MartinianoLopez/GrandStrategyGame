@@ -61,10 +61,11 @@ int main() {
             eventManager.route(world, event, mainWin, debugWin);
 
         // ── Simulation ───────────────────────────────────
-        if (!world.timePaused)
-            timeRun(world, deltaTime);
+
+        tick(world, deltaTime);
 
         // ── UI ───────────────────────────────────────────
+        
         bool placeChanged = world.place != lastPlace;
         bool timerFired   = (frameStart - lastUIReload) >= 2000;
 

@@ -7,6 +7,7 @@
 #include <utility>
 #include <SDL2/SDL_ttf.h>
 #include <functional>
+
 struct Color {
     int r;
     int g;
@@ -131,12 +132,25 @@ enum class MenuPlace {
     LoadGame
 };
 
+
+struct Date { 
+    int year, month, day;
+
+    Date(int year, int month, int day)
+        : year(year), month(month), day(day) {}
+};
+
+struct Time {
+    Date date;
+    float accumulator = 0.0f;
+    float speed = 1.0f;
+
+Time(int year, int month, int day)
+    : date(year, month, day) {}
+};
+
 struct World {
-    int days = -180000;
-    std::string date = "";
-    float timeAccumulator = 0;
-    float timeSpeed = 5;
-    bool timePaused = false;
+    Time time = Time(1444, 11, 1);
     int armyMovementSpeed = 25;
     
     SDL_Surface* provincesBmp = nullptr;
@@ -194,6 +208,5 @@ struct World {
     std::string mapMode = "normal";
     SDL_Texture* activeAccessibilityMap = nullptr;
     std::string countryoftheAccesibilityMap = "";
-    
 };
 

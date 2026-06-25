@@ -90,9 +90,6 @@ inline void updateArmyMovement(World& world) {
 
 
 
-
-
-
 /*
 // ============================================================
 // COLLISION & COMBAT RESOLUTION
