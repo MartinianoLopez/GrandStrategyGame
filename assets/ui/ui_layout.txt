@@ -1,49 +1,50 @@
-# UI Layout
-# PANEL  x y w h texture r g b a zOrder
-# TEXT   x y w h font zOrder endpoint
-# BUTTON x y w h r g b a action label
+# UI Layout #
+# PANEL  name x y w h texture r g b a zOrder
+# TEXT   name x y w h font zOrder endpoint
+# BUTTON name x y w h r g b a action label
 
 SCREEN InGame
 
-PANEL  0  0  10 18 flagFrameTexture  0   0   0   0   1
-PANEL  1  1  8  17  flagTex           0   0   0   0   1
-PANEL  20 0  60 10 statusBarTexture  26  26  26  220 1
-GROUPBUTTON  40 3  3 3 coins 
-GROUPBUTTON  82 92  6 6 1speed recluit
-TEXT   42 3  5  4  fancy             2   player_money
-PANEL  84 -1  16  10  timeFrameTexture  26  26  26  200 1
-GROUPBUTTON 85 8 6 6 0speed timeSpeed0 TimeBootons
-GROUPBUTTON 88 8 6 6 1speed timeSpeed1 TimeBootons
-GROUPBUTTON 91 8 6 6 2speed timeSpeed2 TimeBootons
-GROUPBUTTON 94 8 6 6 3speed timeSpeed3 TimeBootons
-TEXT   88 2  8  4  fancy            2  date
-PANEL  35 92 30 6  bootonTex         26  26  26  200 1
-TEXT   36 93 28 4  simple            2   selected_province
-PANEL  68 50 50 50 texStone          0   0   0   0   1
-GROUPBUTTON 90 90 6 6 accessButton mapModeAccess MapModeBootons
-GROUPBUTTON 93 90 6 6 terrainButton mapModeTerrain MapModeBootons
-BUTTON 85 68 16 6  60  90  160 240   save SAVE GAME
-BUTTON 85 76 16 6  160 40  40  240   goto:MainMenu BACK
+PANEL  flagFrame        0  0  10 18 flagFrameTexture  0   0   0   0   1
+PANEL  flagTex          1  1  8  17  flagTexture       0   0   0   0   1
+PANEL  statusBar        20 0  60 10 statusBarTexture  26  26  26  220 1
+GROUPBUTTON  coinsBtn         40 3  3 3 coins
+GROUPBUTTON  recluitBtn       82 92  6 6 1speed recluit
+TEXT   moneyText        42 3  5  4  fancy             2   player_money
+PANEL  timeFrame        84 -1  16  10  timeFrameTexture  26  26  26  200 1
+GROUPBUTTON speed0Btn        85 8 6 6 0speed timeSpeed0 TimeBootons
+GROUPBUTTON speed1Btn        88 8 6 6 1speed timeSpeed1 TimeBootons
+GROUPBUTTON speed2Btn        91 8 6 6 2speed timeSpeed2 TimeBootons
+GROUPBUTTON speed3Btn        94 8 6 6 3speed timeSpeed3 TimeBootons
+TEXT   dateText         88 2  8  4  fancy            2  date
+PANEL  provinceBar      35 92 30 6  bootonTex         26  26  26  200 1
+TEXT   provinceText     36 93 28 4  simple            2   selected_province
+PANEL  stonePanel       68 50 50 50 texStone          0   0   0   0   1
+GROUPBUTTON accessBtn        90 90 6 6 accessButton mapModeAccess MapModeBootons
+GROUPBUTTON terrainBtn       93 90 6 6 terrainButton mapModeTerrain MapModeBootons
+BUTTON saveBtn          85 68 16 6  60  90  160 240   save SAVE GAME
+BUTTON menuBtn          85 76 16 6  160 40  40  240   goto:MainMenu BACK
+PANEL  countryFlagFrame 3  54  8 11 flagFrameTexture  0   0   0   0   1
+PANEL  countryFlagTex   3  56  8  8  selectedCountryFlagTexture  0   0   0   0   1
+PANEL  sidePanel        0 50 14 50 texStone          0   0   0   0   1
+BUTTON declareWarBtn    2 66 10 6  160 40  40  240   declareWar Declare War
 
 SCREEN MainMenu
 
-PANEL  25 50 50 50 texStone 0   0   0   0   1
-BUTTON 35 63 30 7  34  139 34  240   goto:CountrySelection PLAY
-BUTTON 35 73 30 7  60  90  160 240   goto:LoadGame LOAD
-BUTTON 35 83 30 7  160 40  40  240   exit EXIT
+PANEL  mainPanel        25 50 50 50 texStone 0   0   0   0   1
+BUTTON playBtn          35 63 30 7  34  139 34  240   goto:CountrySelection PLAY
+BUTTON loadBtn          35 73 30 7  60  90  160 240   goto:LoadGame LOAD
+BUTTON exitBtn          35 83 30 7  160 40  40  240   exit EXIT
 
 SCREEN LoadGame
 
-PANEL  25 15 50 70 texStone 0 0 0 0 1
-
-# load list to fix
-
-BUTTON 30 78 40 6  160 40 40 240 goto:MainMenu BACK
+PANEL  loadPanel        25 15 50 70 texStone 0 0 0 0 1
+BUTTON backBtn          30 78 40 6  160 40 40 240 goto:MainMenu BACK
 
 SCREEN CountrySelection
 
-PANEL  76 20 22 65 texStone  0 0 0 0 1
-TEXT   76 22 22 5  fancy     2 selected_country
-PANEL  77 28 20 22 flagTex   0 0 0 0 2
-BUTTON 79 68 16 6  34  139 34  240 play_if_selected PLAY
-BUTTON 79 74 16 6  160 40  40  240 goto:MainMenu BACK
+PANEL  selectionPanel   76 20 22 65 texStone  0 0 0 0 1
+TEXT   countryText      76 22 22 5  fancy     2 selected_country
+PANEL  countryFlagTex      77 28 20 22 selectedCountryFlagTexture  0 0 0 0 2
+BUTTON playBtn          79 68 16 6  34  139 34  240 play_if_selected PLAY
+BUTTON backBtn          79 74 16 6  160 40  40  240 goto:MainMenu BACK

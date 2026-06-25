@@ -130,6 +130,11 @@ struct GameWindow {
         
         world.selectedProvince = target->id;
         world.selectedCountry = provinceFindById(world.provinces, world.selectedProvince) -> owner;
+        
+        if( world.selectedCountry != "NONE" ){
+            world.selectedCountryFlagTex = findCountryByTag(world.countries, world.selectedCountry) -> flag;
+        }
+        
         // ====================== army selection ============================================
 
         if (world.place == MenuPlace::InGame){
@@ -152,12 +157,11 @@ struct GameWindow {
             Province* p = provinceFindById(world.provinces, world.selectedProvince);
             Country* c = findCountryByTag(world.countries, p->owner);
 
-            if (c) world.playerCountry = c->tag;
-
-            std::string path = "assets/flags/" + world.playerCountry + ".tga";
-            world.flagTex = IMG_LoadTexture(renderer, path.c_str());
-
-            if (world.flagTex) world.flagTex = world.flagTex;
+            if (c){
+                world.playerCountry = c->tag;
+                world.flagTex = c->flag;
+                world.selectedCountryFlagTex = c->flag;
+            }
         }
     }    
     

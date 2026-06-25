@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include "SDL_render.h"
@@ -252,7 +253,7 @@ inline std::list<Province> loadProvinces(World& world, const std::string& path) 
 
 // ===============================================================================================================
 
-inline std::list<Country> loadCountries() {
+inline std::list<Country> loadCountries(SDL_Renderer* renderer) {
 
     std::list<Country> countries;
 
@@ -295,11 +296,14 @@ inline std::list<Country> loadCountries() {
 
         int money = std::stoi(parts[5]);
 
+        std::string path = "assets/flags/" + tag + ".tga";
+        SDL_Texture* flag = IMG_LoadTexture(renderer, path.c_str());
         countries.emplace_back(
             tag,
             name,
             Color(r, g, b),
-            money
+            money,
+            flag
         );
     }
 
@@ -509,7 +513,7 @@ inline void loadAssets(World& world, SDL_Renderer* renderer) {
     world.texHeight = world.provincesBmp->h;
 
     world.provinces = loadProvinces(world, "assets/provinces.txt");
-    world.countries = loadCountries();
+    world.countries = loadCountries(renderer);
     desaturateCountries(world.countries, 0.3, 5);
     world.armies    = loadArmies("assets/armies.txt", world);
     world.countriesImg = prepareCountries(renderer,world);

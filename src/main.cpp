@@ -74,6 +74,7 @@ int main() {
             lastPlace    = world.place;
             lastUIReload = frameStart;
         }
+        reloadFlagTextures(reg, world);
 
         // ── Render ───────────────────────────────────────
         renderGame(world, mainWin.renderer, mainWin.window);

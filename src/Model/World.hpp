@@ -1,4 +1,5 @@
 #pragma once
+#include "SDL_render.h"
 #include <SDL2/SDL.h>
 #include <map>
 #include <list>
@@ -39,9 +40,10 @@ struct Country {
     int money;
     std::vector<std::string> accessibleCountries;
     std::map<int, std::vector<int>> accessibilityGraph;
+    SDL_Texture* flag;
 
-    Country(std::string tag, std::string name, Color color, int money)
-        : tag(tag), name(name), color(color), money(money), accessibleCountries{tag, "NONE"} {}
+    Country(std::string tag, std::string name, Color color, int money, SDL_Texture* flag)
+        : tag(tag), name(name), color(color), money(money), accessibleCountries{tag, "NONE"}, flag(flag) {}
 };
 
 struct Province {
@@ -82,6 +84,7 @@ struct Font {
 struct UIRect { int x, y, w, h; };
 
 struct UIElement {
+   
     UIRect boundsNorm;
     SDL_Texture* texture;
     SDL_Color color;
@@ -89,7 +92,8 @@ struct UIElement {
     std::function<void()> onClick;
     std::function<std::string()> getText;
     std::string font = "simple";
-
+    std::string name;
+    
     SDL_FRect calculateBase(int w, int h) const {
 
         SDL_FRect base = { boundsNorm.x/100.f * w, boundsNorm.y/100.f * h,
@@ -149,6 +153,7 @@ Time(int year, int month, int day)
     : date(year, month, day) {}
 };
 
+
 struct World {
     Time time = Time(1444, 11, 1);
     int armyMovementSpeed = 25;
@@ -191,6 +196,7 @@ struct World {
     
     std::string playerCountry;
     SDL_Texture* flagTex = nullptr;
+    SDL_Texture* selectedCountryFlagTex = nullptr;
     SDL_Texture* bootonTex = nullptr;
     MenuPlace place = MenuPlace::MainMenu;
     std::vector<SDL_Texture*> uiTextures; // should be the same

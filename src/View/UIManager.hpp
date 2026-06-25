@@ -119,13 +119,17 @@ inline void registerActions(UIRegistry& ui, World& world) {
     ui.actions["recluit"] = [](World& world) {
         world.recluitOneUnit = true;
     };
+    ui.actions["declareWar"] = [](World& world) {
+        
+    };
 }
 // ===============================================================================================================
 // Textures
 // ===============================================================================================================
 inline void registerTextures(UIRegistry& reg, World& world) {
-    //reg.textures["flagTexture"]      = &world.flagTexture;
-    reg.textures["flagTex"]          = &world.flagTex;
+    // runs once every few ms, it should do that only on devmode
+    reg.textures["SelectedCountryflagTexture"] = &world.selectedCountryFlagTex;
+    reg.textures["flagTexture"] = &world.flagTex;
     reg.textures["flagFrameTexture"] = &world.flagFrameTexture;
     reg.textures["statusBarTexture"] = &world.statusBarTexture;
     reg.textures["timeFrameTexture"] = &world.timeFrameTexture;
@@ -156,6 +160,12 @@ inline std::string screenName(MenuPlace place) {
     return "";
 }
 
+inline void reloadFlagTextures(UIRegistry& reg, World& world){
+    for (auto& component : world.uiElements)
+        if(component.name == "countryFlagTex"){
+            component.texture = world.selectedCountryFlagTex;
+        }
+}
 // ===============================================================================================================
 // Register
 // ===============================================================================================================
@@ -192,36 +202,27 @@ inline void loadUIFromFile(
 
         if (!inTarget) continue;
 
-        // ===============================================================================================================
-        // Panel
-        // ===============================================================================================================
         if (token == "PANEL") {
+            std::string name;
             int x, y, w, h, r, g, b, a, z;
             std::string texName;
-            ss >> x >> y >> w >> h >> texName >> r >> g >> b >> a >> z;
+            ss >> name >> x >> y >> w >> h >> texName >> r >> g >> b >> a >> z;
 
             SDL_Texture* tex = nullptr;
             if (reg.textures.count(texName) && reg.textures[texName])
                 tex = *reg.textures[texName];
-
             
-            // push ----------------------------------------------------
             world.uiElements.push_back({
-                {x, y, w, h},
-                tex,
+                {x, y, w, h}, tex,
                 {(Uint8)r,(Uint8)g,(Uint8)b,(Uint8)a},
-                z,
-                nullptr,
-                nullptr,
-                "fancy"
+                z, nullptr, nullptr, "fancy", name
             });
-        // ===============================================================================================================
-        // Text
-        // ===============================================================================================================
+
         } else if (token == "TEXT") {
+            std::string name;
             int x, y, w, h, z;
             std::string font, endpointKey;
-            ss >> x >> y >> w >> h >> font >> z >> endpointKey;
+            ss >> name >> x >> y >> w >> h >> font >> z >> endpointKey;
 
             std::function<std::string()> getText = nullptr;
             if (reg.informationPoints.count(endpointKey)) {
@@ -229,26 +230,17 @@ inline void loadUIFromFile(
                 getText = [fn, &world]() { return fn(world); };
             }
 
-            
-            // push ----------------------------------------------------
             world.uiElements.push_back({
-                {x, y, w, h},
-                nullptr,
-                {0,0,0,0},
-                z,
-                nullptr,
-                getText,
-                font
+                {x, y, w, h}, nullptr, {0,0,0,0},
+                z, nullptr, getText, font, name
             });
-        // ===============================================================================================================
-        // Button
-        // ===============================================================================================================
+
         } else if (token == "BUTTON") {
+            std::string name;
             int x, y, w, h, r, g, b, a;
             std::string actionKey;
-            ss >> x >> y >> w >> h >> r >> g >> b >> a >> actionKey;
+            ss >> name >> x >> y >> w >> h >> r >> g >> b >> a >> actionKey;
 
-            // label es el resto de la linea
             std::string label;
             std::getline(ss, label);
             if (!label.empty() && label[0] == ' ') label = label.substr(1);
@@ -259,48 +251,35 @@ inline void loadUIFromFile(
                 onClick = [fn, &world]() { fn(world); };
             }
 
-
-            // push ----------------------------------------------------
             world.uiElements.push_back({
-                {x, y, w, h},
-                world.bootonTex,
+                {x, y, w, h}, world.bootonTex,
                 {(Uint8)r,(Uint8)g,(Uint8)b,(Uint8)a},
-                2,
-                onClick,
-                [label]() { return label; },
-                "simple"
+                2, onClick, [label]() { return label; }, "simple", name
             });
-        }else if (token == "GROUPBUTTON") {
-            // GROUPBUTTON 96 80 2 2 terrainButton mapModeTerrain MapModeBootons
+
+        } else if (token == "GROUPBUTTON") {
+            std::string name;
             int x, y, w, h;
-            std::string texture;
-            std::string action;
-            std::string group;
-            ss >> x >> y >> w >> h >> texture >> action >> group;
+            std::string texture, action, group;
+            ss >> name >> x >> y >> w >> h >> texture >> action >> group;
 
             std::function<void()> onClick = nullptr;
             if (reg.actions.count(action)) {
                 auto fn = reg.actions[action];
                 onClick = [fn, &world]() { fn(world); };
             }
-            // push ----------------------------------------------------
+
             world.uiElements.push_back({
-                {x, y, w, h},
-                world.Textures[texture],
-                {},
-                2,
-                onClick,
-                nullptr,
-                "simple"
+                {x, y, w, h}, world.Textures[texture],
+                {}, 2, onClick, nullptr, "simple", name
             });
         }
+        std::sort(
+            world.uiElements.begin(),
+            world.uiElements.end(),
+            [](const UIElement& a, const UIElement& b) {
+                return a.zOrder < b.zOrder;
+            }
+        );
     }
-
-    std::sort(
-        world.uiElements.begin(),
-        world.uiElements.end(),
-        [](const UIElement& a, const UIElement& b) {
-            return a.zOrder < b.zOrder;
-        }
-    );
 }
