@@ -32,7 +32,18 @@ struct Color {
         return !(*this == other);
     }
 };
+enum class TypeOfRelation { 
+    PEACE,
+    WAR,
+    ALLIANCE,
+};
+struct Relationship {
+    std::string tag;
+    enum TypeOfRelation typeOfRelation;
 
+    Relationship(std::string tag, TypeOfRelation typeOfRelation)
+        : tag(tag), typeOfRelation(typeOfRelation) {}
+};
 struct Country {
     std::string tag;
     std::string name;
@@ -41,10 +52,26 @@ struct Country {
     std::vector<std::string> accessibleCountries;
     std::map<int, std::vector<int>> accessibilityGraph;
     SDL_Texture* flag;
+    std::vector<Relationship> relationships;
 
     Country(std::string tag, std::string name, Color color, int money, SDL_Texture* flag)
         : tag(tag), name(name), color(color), money(money), accessibleCountries{tag, "NONE"}, flag(flag) {}
+
+    void addRelationship(Relationship relationship){
+        relationships.push_back(relationship);
+    }
+    void addAccesibleCountries(std::string tag){
+        accessibleCountries.push_back(tag);
+    }
+    std::vector<Relationship> getWarRelations() {
+        std::vector<Relationship> wars;
+        for (const Relationship& r : relationships)
+            if (r.typeOfRelation == TypeOfRelation::WAR)
+                wars.push_back(r);
+        return wars;
+    }
 };
+
 
 struct Province {
     int id;
@@ -214,6 +241,6 @@ struct World {
     std::string mapMode = "normal";
     SDL_Texture* activeAccessibilityMap = nullptr;
     std::string countryoftheAccesibilityMap = "";
-    bool recluitOneUnit = false;
+    bool recruitOneUnit = false;
 };
 

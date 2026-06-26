@@ -9,7 +9,7 @@ PANEL  flagFrame        0  0  10 18 flagFrameTexture  0   0   0   0   1
 PANEL  flagTex          1  1  8  17  flagTexture       0   0   0   0   1
 PANEL  statusBar        20 0  60 10 statusBarTexture  26  26  26  220 1
 GROUPBUTTON  coinsBtn         40 3  3 3 coins
-GROUPBUTTON  recluitBtn       82 92  6 6 1speed recluit
+GROUPBUTTON  recruitBtn       82 92  6 6 1speed recruit
 TEXT   moneyText        42 3  5  4  fancy             2   player_money
 PANEL  timeFrame        84 -1  16  10  timeFrameTexture  26  26  26  200 1
 GROUPBUTTON speed0Btn        85 8 6 6 0speed timeSpeed0 TimeBootons

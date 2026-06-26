@@ -171,15 +171,9 @@ struct GameWindow {
         if (!clickedProvince) return;
         world.objectiveProvince = clickedProvince->id;
 
-        // ====================== army recluitment =====================
-        if(world.recluitOneUnit == true){
-
-            Country* country = findCountryByTag(world.countries, world.playerCountry);
-            if(country -> money >= 100){
-                country -> money -= 100;
-                world.armies.push_back(Army(world.objectiveProvince, "Recluits", world.playerCountry, 1000,country->color));
-            }
-            world.recluitOneUnit = false;
+        // ====================== army recruitment =====================
+        if(world.recruitOneUnit == true){
+            tryToRecruitArmy(world);
         }
         // ====================== army movement ========================
         if (world.selectedArmies.empty() || world.selectedArmies[0] == nullptr) return;

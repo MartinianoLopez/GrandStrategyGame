@@ -1,16 +1,29 @@
 #pragma once
 #include "../Model/World.hpp"
 #include "../utils.hpp"
+#include <cstdio>
 #include <vector>
 #include <queue>
 #include <unordered_map>
 #include <algorithm>
-//#include <iostream>
+#include <iostream>
 
 // ============================================================
 // PATH PLANNING
 // ============================================================
-
+inline Army* FindArmyOnProvinceId(const std::list<Army>& list, int provinceId) {
+    for (auto& army : list)
+        if (army.position == provinceId)
+            return const_cast<Army*>(&army);
+    return nullptr;
+}
+inline std::vector<Army*> findArmiesOnProvinceId(std::list<Army>& armies, int provinceId) {
+    std::vector<Army*> result;
+    for (auto& army : armies)
+        if (army.position == provinceId)
+            result.push_back(&army);
+    return result;
+}
 
 inline std::vector<int> calculatePath(World& world, std::string ownerTag, int from, int to) {
     //std::cout << "try calculate\n";
@@ -68,25 +81,83 @@ inline void createArmyMovement(World& world,Army* army, int from, int to) {
        army -> path = path; 
     return;
 }
+// ============================================================
+// Recruitment
+// ============================================================
+inline void recruitArmy(World& world) {
+    Country* country = findCountryByTag(world.countries, world.playerCountry);
+    if (!country) { std::cerr << "ERROR: country not found!\n"; return; }
+    world.armies.emplace_back(world.objectiveProvince, "Recruits", world.playerCountry, 1000, country->color);
+}
+
+inline void tryToRecruitArmy(World& world) {
+    Country* country = findCountryByTag(world.countries, world.playerCountry);
+    if (country->money >= 100) {
+        country->money -= 100;
+        recruitArmy(world);
+    }
+    world.recruitOneUnit = false;
+}
 
 // ============================================================
-// DAILY SIMULATION TICK
+// Battles
 // ============================================================
+inline void removeArmy(std::list<Army>& armies, Army& army) {
+    for (auto it = armies.begin(); it != armies.end(); ++it) {
+        if (&(*it) == &army) {
+            armies.erase(it);
+            return;
+        }
+    }
+}
+inline void remove0Armies(std::list<Army>& armies) {
+    for (auto it = armies.begin(); it != armies.end();) {
+        if (it->power == 0) it = armies.erase(it);
+        else ++it;
+    }
+}
+
+inline void fight(Army& a, Army& b) {
+    int aTroops = a.power - b.power;
+    int bTroops = b.power - a.power;
+    a.power = std::max(0, aTroops);
+    b.power = std::max(0, bTroops);
+}
+
+inline bool isAtWar(std::vector<Relationship>& warRelations, const std::string& owner) {
+    for (Relationship& r : warRelations)
+        if (r.tag == owner) return true;
+    return false;
+}
+
+inline void scanForEnemies(World& world, Army& army) {
+    std::vector<Army*> armiesInProvince = findArmiesOnProvinceId(world.armies, army.position);
+    Country* country = findCountryByTag(world.countries, army.owner);
+    if (!country) return;
+    std::vector<Relationship> warRelations = country->getWarRelations();
+
+    for (Army* other : armiesInProvince) {
+        if (other == &army) continue;
+        if (isAtWar(warRelations, other->owner))
+            fight(army, *other);
+    }
+    
+}
 
 inline void updateArmyMovement(World& world) {
     for (auto& army : world.armies) {
         if (army.path.empty()) continue;
         army.movementStage += world.armyMovementSpeed;
-        // std::cout << "[" << army.name << "] stage: " << army.movementStage << " path size: " << army.path.size() << "\n";
         if (army.movementStage >= 100) {
             army.movementStage -= 100;
             army.position = army.path.front();
             army.path.erase(army.path.begin());
+            scanForEnemies(world,army);
             // std::cout << "[" << army.name << "] moved to: " << army.position << "\n";
         }
     }
+    remove0Armies(world.armies);
 }
-
 
 
 
@@ -130,9 +201,3 @@ inline void moveArmy(Army& army, int toProvinceId) {
     army.position = toProvinceId;
 }
 
-inline Army* FindArmyOnProvinceId(const std::list<Army>& list, int provinceId) {
-    for (auto& army : list)
-        if (army.position == provinceId)
-            return const_cast<Army*>(&army);
-    return nullptr;
-}

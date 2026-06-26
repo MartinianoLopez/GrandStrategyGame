@@ -10,6 +10,7 @@
 #include "../utils.hpp"
 #include "../Model/saves.hpp"
 #include "../Simulation/Time.hpp"
+#include "../Simulation/Diplomacy.hpp"
 
 // ===============================================================================================================
 // REGISTRY
@@ -116,11 +117,11 @@ inline void registerActions(UIRegistry& ui, World& world) {
         };
         
     };
-    ui.actions["recluit"] = [](World& world) {
-        world.recluitOneUnit = true;
+    ui.actions["recruit"] = [](World& world) {
+        world.recruitOneUnit = true;
     };
     ui.actions["declareWar"] = [](World& world) {
-        
+        declareWar(world,world.playerCountry, world.selectedCountry);
     };
 }
 // ===============================================================================================================

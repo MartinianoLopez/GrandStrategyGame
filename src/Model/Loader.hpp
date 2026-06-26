@@ -65,7 +65,7 @@ inline std::map<int, std::vector<int>> buildAdjacency(
     return adjacency;
 }
 
-inline std::map<int, std::vector<int>> buildAdjacencyPerCountry(
+inline std::map<int, std::vector<int>> buildAccessibilityGraph(
     const World& world,
     const std::vector<std::string>& accessibleCountryTags)
 {
@@ -96,11 +96,15 @@ inline std::map<int, std::vector<int>> buildAdjacencyPerCountry(
 }
 
 
-inline void buildAccessibilityGraphsPerCountry(World& world)
+inline void InitAllAccesibiltyGraphs(World& world)
 {
     for (auto& country : world.countries) {
-        country.accessibilityGraph = buildAdjacencyPerCountry(world, country.accessibleCountries);
+        country.accessibilityGraph = buildAccessibilityGraph(world, country.accessibleCountries);
     }
+}
+inline void rechargeAccesibilityGraph(World& world, Country* country)
+{
+        country -> accessibilityGraph = buildAccessibilityGraph(world, country -> accessibleCountries);
 }
 
 // ===============================================================================================================
@@ -524,7 +528,7 @@ inline void loadAssets(World& world, SDL_Renderer* renderer) {
 
     world.adjacencyGraph = buildAdjacency(world.provinceFrontiers, world.provinces);
     buildProvinceIdMap(world);
-    buildAccessibilityGraphsPerCountry(world);
+    InitAllAccesibiltyGraphs(world);
     //buildAccessibilityMapsPerCountry(world, renderer);
     
 
