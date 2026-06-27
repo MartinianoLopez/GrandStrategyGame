@@ -3,7 +3,52 @@
 #include <string>
 #include <SDL2/SDL.h>
 #include "Model/World.hpp"
+#include <chrono>
+#include <iostream>
+// ===============================================================================================================
+// Time measure
+// ===============================================================================================================
+template<typename Func>
+void measureTime(const std::string& label, Func&& function) {
+    auto start = std::chrono::high_resolution_clock::now();
+    function();
+    auto end = std::chrono::high_resolution_clock::now();
+    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+    std::cout << label << ": " << ms << "ms\n";
+}
+// ===============================================================================================================
+// surface → texture
+// ===============================================================================================================
+inline SDL_Texture* surfaceToTexture(SDL_Renderer* renderer, SDL_Surface* surface) {
+    if (!surface) return nullptr;
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
+    return texture;
+}
 
+inline SDL_Color getPixel(SDL_Surface* surface, int x, int y) {
+    int bpp = surface->format->BytesPerPixel;
+    Uint8* p = (Uint8*)surface->pixels + y * surface->pitch + x * bpp;
+
+    uint32_t pixel;
+    switch (bpp) {
+        case 1: pixel = *p; break;
+        case 2: pixel = *(uint16_t*)p; break;
+        case 3:
+            if (SDL_BYTEORDER == SDL_BIG_ENDIAN)
+                pixel = p[0] << 16 | p[1] << 8 | p[2];
+            else
+                pixel = p[0] | p[1] << 8 | p[2] << 16;
+            break;
+        case 4: pixel = *(uint32_t*)p; break;
+        default: pixel = 0;
+    }
+
+    SDL_Color color;
+    SDL_GetRGB(pixel, surface->format, &color.r, &color.g, &color.b);
+    color.a = 255;
+    return color;
+}
 // ===============================================================================================================
 // color (used only for debuging)
 // ===============================================================================================================

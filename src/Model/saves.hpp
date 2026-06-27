@@ -262,8 +262,8 @@ inline void loadGame(
 
     if (saveName.size() >= 3)
         world.playerCountry = saveName.substr(0, 3);
-
-    world.provinces = loadProvinces(world, (savePath / "provinces.txt").string());
+    
+    //world.provinces = loadProvinces(world, (savePath / "provinces.txt").string());
     world.armies    = loadArmies((savePath / "armies.txt").string(), world);
 
     std::cout << "[LOAD] " << saveName << "\n";

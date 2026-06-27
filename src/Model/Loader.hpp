@@ -1,7 +1,7 @@
 #pragma once
-#include <cstddef>
 #include <cstdint>
 #include <string>
+#include "SDL_pixels.h"
 #include "SDL_render.h"
 #include "World.hpp"
 #include <fstream>
@@ -18,6 +18,7 @@
 // ===============================================================================================================
 // frontiers
 // ===============================================================================================================
+
 inline std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFrontiers(SDL_Surface* img) {   
     std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> frontierList;
     int imgW = img->w;
@@ -135,7 +136,9 @@ inline std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFron
     return filteredFrontiers;
 }
 
-
+// ===============================================================================================================
+// Provinces
+// ===============================================================================================================
 
 inline std::map<uint32_t, SDL_Point> initProvincesCenters(const World& world) {
 
@@ -178,83 +181,92 @@ inline std::map<uint32_t, SDL_Point> initProvincesCenters(const World& world) {
     return centerList;
 }
 
-// ===============================================================================================================
-// helpers
-// ===============================================================================================================
-inline std::string extractValue(const std::string& line, const std::string& key) {
-    // busca "key": "value" o "key": number
-    size_t pos = line.find("\"" + key + "\"");
-    if (pos == std::string::npos) return "";
-    pos = line.find(":", pos);
-    if (pos == std::string::npos) return "";
-    pos++;
-    while (pos < line.size() && (line[pos] == ' ' || line[pos] == '\t')) pos++;
-    if (line[pos] == '"') {
-        pos++;
-        size_t end = line.find('"', pos);
-        return line.substr(pos, end - pos);
-    } else {
-        size_t end = pos;
-        while (end < line.size() && line[end] != ',' && line[end] != '}') end++;
-        std::string val = line.substr(pos, end - pos);
-        val.erase(val.find_last_not_of(" \t\r\n") + 1);
-        return val;
-    }
-}
 
-// ===============================================================================================================
-// loaders
-// ===============================================================================================================
-inline std::list<Province> loadProvinces(World& world, const std::string& path) {
+inline void loadProvincesTxt(World& world) {
+    std::ifstream file("assets/provinces.txt");
+    if (!file.is_open()) return;
 
-    auto centerList = initProvincesCenters(world);
-    std::list<Province> provinces;
-    std::ifstream file(path);
-
-    if (!file.is_open()) {
-        std::cerr << "Error: could not open provinces file\n";
-        return provinces;
-    }
-
-    auto toInt = [](const std::string& s, int fallback = 0) -> int {
-        try { return s.empty() ? fallback : std::stoi(s); }
-        catch (...) { return fallback; }
-    };
-
+    std::vector<ProvinceData> provincesData;
     std::string line;
     while (std::getline(file, line)) {
-
         std::istringstream ss(line);
         std::vector<std::string> parts;
         std::string token;
-
         while (std::getline(ss, token, ';'))
             parts.push_back(token);
-
         if (parts.size() < 6) continue;
 
-        int id = toInt(parts[0]);
-        int r  = toInt(parts[1]);
-        int g  = toInt(parts[2]);
-        int b  = toInt(parts[3]);
+        try {
+            ProvinceData pd;
+            pd.id      = std::stoi(parts[0]);
+            pd.color.r = std::stoi(parts[1]);
+            pd.color.g = std::stoi(parts[2]);
+            pd.color.b = std::stoi(parts[3]);
+            pd.color.a = 255;
+            pd.name    = parts[4];
+            pd.owner   = parts[5];
+            provincesData.push_back(pd);
+        } catch (...) { continue; }
+    }
+    world.provincesData = provincesData;
+}
 
-        Province p(id, parts[4].empty() ? "Unknown" : parts[4],
-                       parts[5].empty() ? "UNK"     : parts[5],
-                       Color(r, g, b));
+inline std::unordered_map<int, std::vector<std::pair<uint16_t, uint16_t>>> buildShapes(World& world) {
+    SDL_Surface* surface = world.provincesBmp;
 
-        uint32_t key = ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
-        auto it = centerList.find(key);
-        if (it != centerList.end())
-            p.center = it->second;
-
-        provinces.push_back(p);
+    std::unordered_map<uint32_t, int> colorToId;
+    for (const auto& pd : world.provincesData) {
+        uint32_t key = ((uint32_t)pd.color.r << 16) | ((uint32_t)pd.color.g << 8) | pd.color.b;
+        colorToId[key] = pd.id;
     }
 
-    return provinces;
+    std::unordered_map<int, std::vector<std::pair<uint16_t, uint16_t>>> shapeMap;
+
+    SDL_LockSurface(surface);
+    for (int y = 0; y < surface->h; y++) {
+        for (int x = 0; x < surface->w; x++) {
+            SDL_Color c = getPixel(surface, x, y);
+            uint32_t key = ((uint32_t)c.r << 16) | ((uint32_t)c.g << 8) | c.b;
+
+            auto it = colorToId.find(key);
+            if (it != colorToId.end())
+                shapeMap[it->second].emplace_back(x, y);
+        }
+    }
+    SDL_UnlockSurface(surface);
+    return shapeMap;
 }
 
 
+inline void loadProvinces(World& world) {
+    loadProvincesTxt(world);
+    auto shapes = buildShapes(world);
+    // check that they exit here
+    auto centers = initProvincesCenters(world);
 
+    std::list<Province> provinces;
+    for (const auto& pd : world.provincesData) {
+        Color color(pd.color.r, pd.color.g, pd.color.b);
+        Province p(pd.id, pd.name, pd.owner, color);
+
+        uint32_t key = ((uint32_t)pd.color.r << 16) | ((uint32_t)pd.color.g << 8) | pd.color.b;
+
+        auto it = shapes.find(pd.id);
+        if (it != shapes.end())
+            p.shape = it->second;
+
+        auto ic = centers.find(key);
+        if (ic != centers.end())
+            p.center = ic->second;
+
+        provinces.push_back(p);
+    }
+    world.provinces = provinces;
+}
+
+
+// ===============================================================================================================
+// Countries
 // ===============================================================================================================
 
 inline std::list<Country> loadCountries(SDL_Renderer* renderer) {
@@ -333,53 +345,6 @@ inline void desaturateCountries(std::list<Country>& countries, double k = 0.3, i
     }
 }
 
-
-// ===============================================================================================================
-
-inline std::list<Army> loadArmies(const std::string& path, World& world) {
-
-    std::list<Army> armies;
-    std::ifstream file(path);
-
-    if (!file.is_open()) {
-        std::cerr << "Error: could not open: " << path << "\n";
-        return armies;
-    }
-
-    std::string line;
-    while (std::getline(file, line)) {
-
-        std::istringstream ss(line);
-        std::vector<std::string> parts;
-        std::string token;
-
-        while (std::getline(ss, token, ';'))
-            parts.push_back(token);
-
-        if (parts.size() < 4) continue;
-
-        auto toInt = [](const std::string& s, int fallback = 0) -> int {
-            try { return s.empty() ? fallback : std::stoi(s); }
-            catch (...) { return fallback; }
-        };
-
-        Color color = {0, 0, 0};
-        Country* c = findCountryByTag(world.countries, parts[2]);
-        if (c) color = c->color;
-
-        armies.emplace_back(
-            toInt(parts[0]),
-            parts[1],
-            parts[2],
-            toInt(parts[3]),
-            color
-        );
-    }
-    return armies;
-}
-
-// ===============================================================================================================
-
 inline SDL_Surface* prepareCountries(SDL_Renderer* renderer,const World& world) {
     auto start = std::chrono::high_resolution_clock::now();
 
@@ -440,6 +405,53 @@ inline SDL_Surface* prepareCountries(SDL_Renderer* renderer,const World& world) 
 }
 
 // ===============================================================================================================
+// armies
+// ===============================================================================================================
+inline std::list<Army> loadArmies(const std::string& path, World& world) {
+
+    std::list<Army> armies;
+    std::ifstream file(path);
+
+    if (!file.is_open()) {
+        std::cerr << "Error: could not open: " << path << "\n";
+        return armies;
+    }
+
+    std::string line;
+    while (std::getline(file, line)) {
+
+        std::istringstream ss(line);
+        std::vector<std::string> parts;
+        std::string token;
+
+        while (std::getline(ss, token, ';'))
+            parts.push_back(token);
+
+        if (parts.size() < 4) continue;
+
+        auto toInt = [](const std::string& s, int fallback = 0) -> int {
+            try { return s.empty() ? fallback : std::stoi(s); }
+            catch (...) { return fallback; }
+        };
+
+        Color color = {0, 0, 0};
+        Country* c = findCountryByTag(world.countries, parts[2]);
+        if (c) color = c->color;
+
+        armies.emplace_back(
+            toInt(parts[0]),
+            parts[1],
+            parts[2],
+            toInt(parts[3]),
+            color
+        );
+    }
+    return armies;
+}
+
+// ===============================================================================================================
+// font
+// ===============================================================================================================
 
 inline Font initFont(SDL_Renderer* renderer, const std::string& id, const char* fontPath, SDL_Color color, int fontSize) {
     Font font;
@@ -466,23 +478,10 @@ inline Font initFont(SDL_Renderer* renderer, const std::string& id, const char* 
     TTF_CloseFont(ttf);
     return font;
 }
-// ===============================================================================================================
-// surface → texture
-// ===============================================================================================================
-inline SDL_Texture* surfaceToTexture(SDL_Renderer* renderer, SDL_Surface* surface) {
-    if (!surface) return nullptr;
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
-    return texture;
-}
 
-// optimization
-inline void buildProvinceIdMap(World& world) {
-    world.provinceById.clear();
-    for (auto& province : world.provinces)
-        world.provinceById[province.id] = &province;
-}
-
+// ===============================================================================================================
+// UI
+// ===============================================================================================================
 
 inline void loadAllUITextures(World& world, SDL_Renderer* renderer) {
     namespace fs = std::filesystem;
@@ -498,27 +497,37 @@ inline void loadAllUITextures(World& world, SDL_Renderer* renderer) {
         }
     }
 }
+
+
+// ===============================================================================================================
+// optimization
+// ===============================================================================================================
+inline void buildProvinceIdMap(World& world) {
+    world.provinceById.clear();
+    for (auto& province : world.provinces)
+        world.provinceById[province.id] = &province;
+}
 // ===============================================================================================================
 // LOAD ALL
 // ===============================================================================================================
 inline void loadAssets(World& world, SDL_Renderer* renderer) {
+
     auto start = std::chrono::high_resolution_clock::now();
+
     std::string folderpath = "assets/terrainCustom/";
     world.provincesBmp = IMG_Load((folderpath + "provinces.bmp").c_str());
-    if (!world.provincesBmp) {
-        std::cerr << "Error loading provinces.bmp: " << IMG_GetError() << "\n";
-        return;
-    }
-
     world.terrain = surfaceToTexture(renderer, IMG_Load((folderpath + "terrain.bmp").c_str()));
     world.height  = surfaceToTexture(renderer, IMG_Load((folderpath + "heightmap.bmp").c_str()));
 
     world.texWidth  = world.provincesBmp->w;
     world.texHeight = world.provincesBmp->h;
 
-    world.provinces = loadProvinces(world, "assets/provinces.txt");
+    measureTime("Provinces", [&]() { loadProvinces(world); });
+
     world.countries = loadCountries(renderer);
+
     desaturateCountries(world.countries, 0.3, 5);
+
     world.armies    = loadArmies("assets/armies.txt", world);
     world.countriesImg = prepareCountries(renderer,world);
     world.countriesTex = surfaceToTexture(renderer, world.countriesImg);
@@ -527,16 +536,16 @@ inline void loadAssets(World& world, SDL_Renderer* renderer) {
     world.countryFrontiers  = findFrontiersBetweenCountries(world, world.provinceFrontiers);
 
     world.adjacencyGraph = buildAdjacency(world.provinceFrontiers, world.provinces);
+
     buildProvinceIdMap(world);
     InitAllAccesibiltyGraphs(world);
-    //buildAccessibilityMapsPerCountry(world, renderer);
-    
 
     world.texStone = IMG_LoadTexture(renderer, "assets/ui/table.png");
     world.bootonTex = IMG_LoadTexture(renderer, "assets/ui/booton.png");
     world.statusBarTexture = IMG_LoadTexture(renderer, "assets/ui/statusBar.png");
     world.timeFrameTexture = IMG_LoadTexture(renderer, "assets/ui/timeFrame.png");
     world.flagFrameTexture = IMG_LoadTexture(renderer, "assets/ui/flagFrame.png");
+
     loadAllUITextures(world, renderer);
 
     if (TTF_Init() == -1) {

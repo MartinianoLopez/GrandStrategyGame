@@ -1,7 +1,6 @@
 #pragma once
 #include "../Model/World.hpp"
 #include "../utils.hpp"
-#include <cstdio>
 #include <vector>
 #include <queue>
 #include <unordered_map>
@@ -143,6 +142,14 @@ inline void scanForEnemies(World& world, Army& army) {
     }
     
 }
+inline void occupyProvince(World& world, Army& army) {
+    Country* country = findCountryByTag(world.countries, army.owner);
+    Province* province = provinceFindById(world.provinces, army.position);
+    std::vector<Relationship> warRelations = country->getWarRelations();
+    if (isAtWar(warRelations, province->owner)){
+        province->controller = army.owner;
+    }
+}
 
 inline void updateArmyMovement(World& world) {
     for (auto& army : world.armies) {
@@ -153,6 +160,7 @@ inline void updateArmyMovement(World& world) {
             army.position = army.path.front();
             army.path.erase(army.path.begin());
             scanForEnemies(world,army);
+            occupyProvince(world, army);
             // std::cout << "[" << army.name << "] moved to: " << army.position << "\n";
         }
     }

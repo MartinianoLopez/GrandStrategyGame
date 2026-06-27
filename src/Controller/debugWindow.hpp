@@ -83,6 +83,7 @@ struct DebugWindow {
                 ImGui::Text("ID      %d", p->id);
                 ImGui::Text("Name    %s", p->name.c_str());
                 ImGui::Text("Owner   %s", p->owner.empty() ? "none" : p->owner.c_str());
+                ImGui::Text("Controller   %s", p->controller.empty() ? "none" : p->controller.c_str());
                 ImGui::Text("Color   %d %d %d", p->color.r, p->color.g, p->color.b);
                 ImGui::Text("Center  %d, %d", p->center.x, p->center.y);
             } else {

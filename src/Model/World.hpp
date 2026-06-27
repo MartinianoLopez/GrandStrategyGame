@@ -73,13 +73,22 @@ struct Country {
 };
 
 
+struct ProvinceData {
+    int id;
+    SDL_Color color;
+    std::string name;
+    std::string owner;
+};
+
 struct Province {
     int id;
     std::string name;
     std::string owner;
-    std::string controller;
     Color color;
+
+    std::string controller;
     SDL_Point center;
+    std::vector<std::pair<uint16_t, uint16_t>> shape;
 
     Province(int id, std::string name, std::string owner, Color color)
         : id(id), name(name), owner(owner), controller(""), color(color) {}
@@ -180,7 +189,6 @@ Time(int year, int month, int day)
     : date(year, month, day) {}
 };
 
-
 struct World {
     Time time = Time(1444, 11, 1);
     int armyMovementSpeed = 25;
@@ -190,7 +198,7 @@ struct World {
     SDL_Texture* height = nullptr;
     SDL_Surface* countriesImg = nullptr;
     SDL_Texture* countriesTex = nullptr;
-    
+    std::vector<ProvinceData> provincesData;
     std::list<Province> provinces;
     std::list<Country> countries;
     std::list<Army> armies;
