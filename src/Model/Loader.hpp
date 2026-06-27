@@ -531,6 +531,8 @@ inline void loadAssets(World& world, SDL_Renderer* renderer) {
     world.armies    = loadArmies("assets/armies.txt", world);
     world.countriesImg = prepareCountries(renderer,world);
     world.countriesTex = surfaceToTexture(renderer, world.countriesImg);
+    world.controlSur = SDL_CreateRGBSurfaceWithFormat(0, world.provincesBmp->w, world.provincesBmp->h, 32, SDL_PIXELFORMAT_RGBA32);
+    world.controlTex = surfaceToTexture(renderer, world.controlSur);
 
     world.provinceFrontiers = findFrontiers(world.provincesBmp);
     world.countryFrontiers  = findFrontiersBetweenCountries(world, world.provinceFrontiers);

@@ -190,6 +190,7 @@ Time(int year, int month, int day)
 };
 
 struct World {
+    SDL_Renderer* renderer;
     Time time = Time(1444, 11, 1);
     int armyMovementSpeed = 25;
     
@@ -198,6 +199,8 @@ struct World {
     SDL_Texture* height = nullptr;
     SDL_Surface* countriesImg = nullptr;
     SDL_Texture* countriesTex = nullptr;
+    SDL_Surface* controlSur = nullptr;
+    SDL_Texture* controlTex = nullptr;
     std::vector<ProvinceData> provincesData;
     std::list<Province> provinces;
     std::list<Country> countries;
@@ -250,5 +253,9 @@ struct World {
     SDL_Texture* activeAccessibilityMap = nullptr;
     std::string countryoftheAccesibilityMap = "";
     bool recruitOneUnit = false;
+
+    
+    World(SDL_Renderer* renderer) : renderer(renderer) {}
+
 };
 

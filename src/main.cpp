@@ -29,7 +29,7 @@ int main() {
     
     std::cerr << "LOADING...\n";
 
-    World world;
+    World world = World(mainWin.renderer);
     loadAssets(world, mainWin.renderer);
 
     UIRegistry reg;

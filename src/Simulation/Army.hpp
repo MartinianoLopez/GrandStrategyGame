@@ -142,13 +142,33 @@ inline void scanForEnemies(World& world, Army& army) {
     }
     
 }
-inline void occupyProvince(World& world, Army& army) {
+inline void reloadControlTex(World& world){
+    world.controlTex = surfaceToTexture(world.renderer, world.controlSur);
+}
+
+inline void occupyProvince(World& world, Province* province, Country* country) {
+    province->controller = country->tag;
+    uint32_t color = SDL_MapRGB(world.controlSur->format, country->color.r, country->color.g, country->color.b);
+    Uint8* pixels = (Uint8*)world.controlSur->pixels;
+    int pitch = world.controlSur->pitch;
+    int bpp = world.controlSur->format->BytesPerPixel;
+
+    SDL_LockSurface(world.controlSur);
+    for (const auto& [x, y] : province->shape)
+        *(Uint32*)(pixels + y * pitch + x * bpp) = color;
+    SDL_UnlockSurface(world.controlSur);
+
+    reloadControlTex(world);
+}
+
+inline void tryOccupyProvince(World& world, Army& army) {
     Country* country = findCountryByTag(world.countries, army.owner);
     Province* province = provinceFindById(world.provinces, army.position);
+    if (!country || !province) return;
+
     std::vector<Relationship> warRelations = country->getWarRelations();
-    if (isAtWar(warRelations, province->owner)){
-        province->controller = army.owner;
-    }
+    if (isAtWar(warRelations, province->owner))
+        occupyProvince(world, province, country);
 }
 
 inline void updateArmyMovement(World& world) {
@@ -160,7 +180,7 @@ inline void updateArmyMovement(World& world) {
             army.position = army.path.front();
             army.path.erase(army.path.begin());
             scanForEnemies(world,army);
-            occupyProvince(world, army);
+            tryOccupyProvince(world, army);
             // std::cout << "[" << army.name << "] moved to: " << army.position << "\n";
         }
     }

@@ -300,6 +300,7 @@ inline void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, 
     if (world.mapMode == "normal") {
         displayTexture(renderer, world.countriesTex, destRect, 245);
         auto t4 = std::chrono::high_resolution_clock::now();
+        displayTexture(renderer, world.controlTex, destRect, 245);
     }
     
     if (world.mapMode == "access") {
