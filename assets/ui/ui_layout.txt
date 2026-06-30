@@ -22,6 +22,7 @@ TEXT   provinceText     36 93 28 4  simple            2   selected_province
 GROUPBUTTON  recruitBtn 95 65  6 6 recruit recruit
 GROUPBUTTON accessBtn        95 84 6 6 accessButton mapModeAccess MapModeBootons
 GROUPBUTTON terrainBtn       95 90 6 6 terrainButton mapModeTerrain MapModeBootons
+GROUPBUTTON diplomacyBtn     95 78 6 6 diplomacy mapModeDiplomacy MapModeBootons
 //BUTTON saveBtn          85 68 16 6  60  90  160 240   save SAVE GAME
 //BUTTON menuBtn          85 76 16 6  160 40  40  240   goto:MainMenu BACK
 PANEL  countryFlagFrame 3  54  8 11 flagFrameTexture  0   0   0   0   22

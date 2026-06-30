@@ -265,6 +265,39 @@ inline SDL_Texture* buildAccessibilityMap(World& world, SDL_Renderer* renderer, 
     SDL_FreeSurface(dst);
     return result;
 }
+// only war relations
+inline SDL_Texture* buildDiplomaticMap(World& world, SDL_Renderer* renderer, const std::vector<Relationship> relationships) {
+    SDL_Surface* src = world.countriesImg;
+    if (!src || !src->format) return nullptr;
+
+    SDL_Surface* dst = SDL_CreateRGBSurfaceWithFormat(0, src->w, src->h, 32, src->format->format);
+    if (!dst) return nullptr;
+
+    std::unordered_set<Uint32> countriesAtWar;
+
+    for (const auto& relation : relationships) {
+        Country* c = findCountryByTag(world.countries, relation.tag);
+        if (c) countriesAtWar.insert(colorToUint32(c->color, src->format));
+    }
+    SDL_LockSurface(src);
+    SDL_LockSurface(dst);
+
+    Uint32* srcPixels = static_cast<Uint32*>(src->pixels);
+    Uint32* dstPixels = static_cast<Uint32*>(dst->pixels);
+    int totalPixels = src->w * src->h;
+    Uint32 red       = SDL_MapRGB(dst->format, 255, 0, 0);
+    Uint32 transparent = SDL_MapRGBA(dst->format, 0, 0, 0, 0);
+
+    for (int i = 0; i < totalPixels; ++i)
+        dstPixels[i] = countriesAtWar.count(srcPixels[i]) ? red : transparent;
+
+    SDL_UnlockSurface(dst);
+    SDL_UnlockSurface(src);
+
+    SDL_Texture* result = SDL_CreateTextureFromSurface(renderer, dst);
+    SDL_FreeSurface(dst);
+    return result;
+}
 // ===============================================================================================================
 // render
 // ===============================================================================================================
@@ -304,7 +337,7 @@ inline void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, 
     }
     
     if (world.mapMode == "access") {
-
+        displayTexture(renderer, world.countriesTex, destRect, 100);
         if (!world.activeAccessibilityMap || world.selectedCountry != world.countryoftheAccesibilityMap) {
             
             SDL_DestroyTexture(world.activeAccessibilityMap);
@@ -320,9 +353,18 @@ inline void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, 
     
     
     if (world.mapMode == "diplomatic") {
-        // generate the diplomatic map and display it
-        // displayTexture(renderer, world.countriesTex, destRect, 245); display diplomatic texture
-        // auto t4 = std::chrono::high_resolution_clock::now();
+        displayTexture(renderer, world.countriesTex, destRect, 100);
+        if (!world.activeDiplomaticMap || world.selectedCountry != world.countryoftheAccesibilityMap) {
+            
+            SDL_DestroyTexture(world.activeDiplomaticMap);
+            Country* country = findCountryByTag(world.countries, world.selectedCountry);
+            if (country) {
+                world.activeDiplomaticMap = buildDiplomaticMap(world, renderer, country->relationships);
+            }
+            world.countryoftheAccesibilityMap = world.selectedCountry;
+        }
+        if (world.activeDiplomaticMap)
+            displayTexture(renderer, world.activeDiplomaticMap, destRect, 245);
     }
 
     if (world.scale > 6.0f)

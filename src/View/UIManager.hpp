@@ -117,6 +117,14 @@ inline void registerActions(UIRegistry& ui, World& world) {
         };
         
     };
+        ui.actions["mapModeDiplomacy"] = [](World& w) {
+        if(w.mapMode != "diplomatic"){
+            w.mapMode = "diplomatic";
+        }else{
+            w.mapMode = "normal";
+        };
+        
+    };
     ui.actions["recruit"] = [](World& world) {
         world.recruitOneUnit = true;
     };

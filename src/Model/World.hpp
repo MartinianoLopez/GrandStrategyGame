@@ -251,6 +251,7 @@ struct World {
 
     std::string mapMode = "normal";
     SDL_Texture* activeAccessibilityMap = nullptr;
+    SDL_Texture* activeDiplomaticMap = nullptr;
     std::string countryoftheAccesibilityMap = "";
     bool recruitOneUnit = false;
 
