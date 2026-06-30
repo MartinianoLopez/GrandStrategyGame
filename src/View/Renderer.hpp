@@ -320,7 +320,7 @@ inline void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, 
     
     
     if (world.mapMode == "diplomatic") {
-        // generate and cache diplomatic texture for the designated country
+        // generate the diplomatic map and display it
         // displayTexture(renderer, world.countriesTex, destRect, 245); display diplomatic texture
         // auto t4 = std::chrono::high_resolution_clock::now();
     }
@@ -361,6 +361,13 @@ inline void renderUI(SDL_Renderer* renderer, World& world, SDL_Window* window) {
     for (auto& el : world.uiElements) {
         SDL_FRect rect = el.calculateBase(w, h);
 
+        if(el.name == "declareWarBtn" && world.selectedCountry == world.playerCountry){
+            continue;
+        }
+        if(world.selectedCountry == "NONE" && (el.name == "countryFlagFrame" || el.name == "countryFlagTex" || el.name == "sidePanel"|| el.name == "declareWarBtn")){
+            continue;
+        }
+        
         if (el.texture) {
             SDL_RenderCopyF(renderer, el.texture, nullptr, &rect);
         } else {

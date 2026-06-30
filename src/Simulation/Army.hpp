@@ -91,10 +91,11 @@ inline void recruitArmy(World& world) {
 
 inline void tryToRecruitArmy(World& world) {
     Country* country = findCountryByTag(world.countries, world.playerCountry);
-    if (country->money >= 100) {
-        country->money -= 100;
-        recruitArmy(world);
-    }
+    Province* province = provinceFindById(world.provinces, world.objectiveProvince);
+    if (country->tag != province->owner) return;
+    if (country->money < 100) return;  
+    country->money -= 100;
+    recruitArmy(world);
     world.recruitOneUnit = false;
 }
 

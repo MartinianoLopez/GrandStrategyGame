@@ -5,28 +5,28 @@
 
 SCREEN InGame
 
-PANEL  flagFrame        0  0  10 18 flagFrameTexture  0   0   0   0   1
+PANEL  flagFrame        0  0  10 18 flagFrameTexture  0   0   0   0   2
 PANEL  flagTex          1  1  8  17  flagTexture       0   0   0   0   1
-PANEL  statusBar        20 0  60 10 statusBarTexture  26  26  26  220 1
-GROUPBUTTON  coinsBtn         40 3  3 3 coins
-GROUPBUTTON  recruitBtn       82 92  6 6 1speed recruit
-TEXT   moneyText        42 3  5  4  fancy             2   player_money
-PANEL  timeFrame        84 -1  16  10  timeFrameTexture  26  26  26  200 1
-GROUPBUTTON speed0Btn        85 8 6 6 0speed timeSpeed0 TimeBootons
-GROUPBUTTON speed1Btn        88 8 6 6 1speed timeSpeed1 TimeBootons
-GROUPBUTTON speed2Btn        91 8 6 6 2speed timeSpeed2 TimeBootons
-GROUPBUTTON speed3Btn        94 8 6 6 3speed timeSpeed3 TimeBootons
-TEXT   dateText         88 2  8  4  fancy            2  date
+PANEL  statusBar        10 0  45 10 statusBarTexture  26  26  26  220 1
+GROUPBUTTON  coinsBtn         14 3  3 3 coins
+TEXT   moneyText        16 3  5  4  fancy             2   player_money
+PANEL  timeFrame        79 0  21  10  timeFrameTexture  26  26  26  200 1
+GROUPBUTTON speed0Btn        86 10 5 5 0speed timeSpeed0 TimeBootons
+GROUPBUTTON speed1Btn        89 10 5 5 1speed timeSpeed1 TimeBootons
+GROUPBUTTON speed2Btn        92 10 5 5 2speed timeSpeed2 TimeBootons
+GROUPBUTTON speed3Btn        95 10 5 5 3speed timeSpeed3 TimeBootons
+TEXT   dateText         86 3  8  4  fancy            2  date
 PANEL  provinceBar      35 92 30 6  bootonTex         26  26  26  200 1
 TEXT   provinceText     36 93 28 4  simple            2   selected_province
-PANEL  stonePanel       68 50 50 50 texStone          0   0   0   0   1
-GROUPBUTTON accessBtn        90 90 6 6 accessButton mapModeAccess MapModeBootons
-GROUPBUTTON terrainBtn       93 90 6 6 terrainButton mapModeTerrain MapModeBootons
-BUTTON saveBtn          85 68 16 6  60  90  160 240   save SAVE GAME
-BUTTON menuBtn          85 76 16 6  160 40  40  240   goto:MainMenu BACK
-PANEL  countryFlagFrame 3  54  8 11 flagFrameTexture  0   0   0   0   1
+//PANEL  stonePanel       68 50 50 50 texStone          0   0   0   0   1
+GROUPBUTTON  recruitBtn 95 65  6 6 recruit recruit
+GROUPBUTTON accessBtn        95 84 6 6 accessButton mapModeAccess MapModeBootons
+GROUPBUTTON terrainBtn       95 90 6 6 terrainButton mapModeTerrain MapModeBootons
+//BUTTON saveBtn          85 68 16 6  60  90  160 240   save SAVE GAME
+//BUTTON menuBtn          85 76 16 6  160 40  40  240   goto:MainMenu BACK
+PANEL  countryFlagFrame 3  54  8 11 flagFrameTexture  0   0   0   0   22
 PANEL  countryFlagTex   3  56  8  8  selectedCountryFlagTexture  0   0   0   0   1
-PANEL  sidePanel        0 50 14 50 texStone          0   0   0   0   1
+PANEL  sidePanel        -18 50 50 50 texStone          0   0   0   0   1
 BUTTON declareWarBtn    2 66 10 6  160 40  40  240   declareWar Declare War
 
 SCREEN MainMenu

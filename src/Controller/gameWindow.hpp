@@ -1,6 +1,7 @@
 #pragma once
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <cstddef>
 #include <iostream>
 #include <algorithm>
 #include "../Model/World.hpp"
@@ -133,6 +134,8 @@ struct GameWindow {
         
         if( world.selectedCountry != "NONE" ){
             world.selectedCountryFlagTex = findCountryByTag(world.countries, world.selectedCountry) -> flag;
+        }else{
+            world.selectedCountryFlagTex = NULL;
         }
         
         // ====================== army selection ============================================
