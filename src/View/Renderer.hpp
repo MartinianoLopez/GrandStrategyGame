@@ -182,7 +182,7 @@ inline void renderArmies(World& world, SDL_Renderer* renderer, SDL_FRect destRec
         float sx = destRect.x + province->center.x * world.finalScale;
         float sy = destRect.y + province->center.y * world.finalScale;
         if (sx < 0 || sy < 0 || sx > screenW || sy > screenH) continue;
-        renderArmy(renderer, world, "simple", (int)sx, (int)sy, army);
+        renderArmy(renderer, world, "army", (int)sx, (int)sy, army);
     }
     for (Army* army : world.selectedArmies) {
         if (!army) continue;

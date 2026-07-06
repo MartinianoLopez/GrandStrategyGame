@@ -1,5 +1,6 @@
 #pragma once
 #include <cstdint>
+#include <cstdlib>
 #include <string>
 #include "SDL_pixels.h"
 #include "SDL_render.h"
@@ -184,8 +185,7 @@ inline std::map<uint32_t, SDL_Point> initProvincesCenters(const World& world) {
 
 inline void loadProvincesTxt(World& world) {
     std::ifstream file("assets/provinces.txt");
-    if (!file.is_open()) return;
-
+    if (!file.is_open()) { std::cerr << "NO ABRE provinces.txt\n"; return; }
     std::vector<ProvinceData> provincesData;
     std::string line;
     while (std::getline(file, line)) {
@@ -198,10 +198,10 @@ inline void loadProvincesTxt(World& world) {
 
         try {
             ProvinceData pd;
-            pd.id      = std::stoi(parts[0]);
-            pd.color.r = std::stoi(parts[1]);
-            pd.color.g = std::stoi(parts[2]);
-            pd.color.b = std::stoi(parts[3]);
+            pd.id      = std::atoi(parts[0].c_str());
+            pd.color.r = std::atoi(parts[1].c_str());
+            pd.color.g = std::atoi(parts[2].c_str());
+            pd.color.b = std::atoi(parts[3].c_str());
             pd.color.a = 255;
             pd.name    = parts[4];
             pd.owner   = parts[5];
@@ -306,11 +306,13 @@ inline std::list<Country> loadCountries(SDL_Renderer* renderer) {
         std::string tag = parts[0];
         std::string name = parts[1];
 
-        int r = std::stoi(parts[2]);
-        int g = std::stoi(parts[3]);
-        int b = std::stoi(parts[4]);
-
-        int money = std::stoi(parts[5]);
+        int r = 0, g = 0, b = 0, money = 0;
+        try {
+            r = std::atoi(parts[2].c_str());
+            g = std::atoi(parts[3].c_str());
+            b = std::atoi(parts[4].c_str());
+            money = std::atoi(parts[5].c_str());
+        } catch (...) { continue; }
 
         std::string path = "assets/flags/" + tag + ".tga";
         SDL_Texture* flag = IMG_LoadTexture(renderer, path.c_str());
@@ -430,7 +432,7 @@ inline std::list<Army> loadArmies(const std::string& path, World& world) {
         if (parts.size() < 4) continue;
 
         auto toInt = [](const std::string& s, int fallback = 0) -> int {
-            try { return s.empty() ? fallback : std::stoi(s); }
+            try { return s.empty() ? fallback : std::atoi(s.c_str()); }
             catch (...) { return fallback; }
         };
 
@@ -515,7 +517,7 @@ inline void loadAssets(World& world, SDL_Renderer* renderer) {
     auto start = std::chrono::high_resolution_clock::now();
 
     std::string folderpath = "assets/terrainCustom/";
-    world.provincesBmp = IMG_Load((folderpath + "provinces.bmp").c_str());
+    world.provincesBmp = IMG_Load("assets/terrainCustom/provinces.bmp");
     world.terrain = surfaceToTexture(renderer, IMG_Load((folderpath + "terrain.bmp").c_str()));
     world.height  = surfaceToTexture(renderer, IMG_Load((folderpath + "heightmap.bmp").c_str()));
 
@@ -554,9 +556,9 @@ inline void loadAssets(World& world, SDL_Renderer* renderer) {
         SDL_Log("TTF init error: %s", TTF_GetError());
         return;
     }
-    
-    world.fonts.push_back(initFont(renderer, "simple", "assets/fonts/Nunito/Nunito-VariableFont_wght.ttf", {0, 0, 0, 255}, 11));
-    world.fonts.push_back(initFont(renderer, "fancy", "assets/fonts/Cinzel/Cinzel-VariableFont_wght.ttf", {220, 220, 220, 255}, 15));
+    world.fonts.push_back(initFont(renderer, "army", "assets/fonts/Nunito/Nunito-VariableFont_wght.ttf", {0, 0, 0, 255}, 12));
+    world.fonts.push_back(initFont(renderer, "simple", "assets/fonts/Cinzel/static/Cinzel-Medium.ttf", {0, 0, 0, 255}, 18));
+    world.fonts.push_back(initFont(renderer, "fancy", "assets/fonts/Cinzel/Cinzel-VariableFont_wght.ttf", {220, 220, 220, 255}, 22));
     
 
     auto end = std::chrono::high_resolution_clock::now();

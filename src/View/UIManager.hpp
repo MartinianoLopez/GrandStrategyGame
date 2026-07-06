@@ -50,10 +50,10 @@ inline void uiInformation(UIRegistry& ui, World& world) {
 
     ui.informationPoints["selected_country"] = [](World& w) {
         Province* p = provinceFindById(w.provinces, w.selectedProvince);
-        if (!p) return std::string("Select your Kingdom");
+        if (!p) return std::string("Select a Kingdom");
         Country* c = findCountryByTag(w.countries, p->owner);
         if (c) w.playerCountry = c->tag;
-        return c ? c->name : std::string("Select your Kingdom");
+        return c ? c->name : std::string("Select a Kingdom");
     };
 }
 // ===============================================================================================================

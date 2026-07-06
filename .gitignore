@@ -6,3 +6,6 @@ saves/
 # Build
 app
 *.o
+
+# Web Assembly
+webAssembly

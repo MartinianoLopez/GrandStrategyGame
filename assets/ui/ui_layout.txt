@@ -26,7 +26,7 @@ GROUPBUTTON diplomacyBtn     95 78 6 6 diplomacy mapModeDiplomacy MapModeBootons
 //BUTTON saveBtn          85 68 16 6  60  90  160 240   save SAVE GAME
 //BUTTON menuBtn          85 76 16 6  160 40  40  240   goto:MainMenu BACK
 PANEL  countryFlagFrame 3  54  8 11 flagFrameTexture  0   0   0   0   22
-PANEL  countryFlagTex   3  56  8  8  selectedCountryFlagTexture  0   0   0   0   1
+PANEL  countryFlagTex   3  56  8  8  selectedCountryFlagTexture  0   0   0   0   2
 PANEL  sidePanel        -18 50 50 50 texStone          0   0   0   0   1
 BUTTON declareWarBtn    2 66 10 6  160 40  40  240   declareWar Declare War
 
@@ -34,7 +34,7 @@ SCREEN MainMenu
 
 PANEL  mainPanel        25 50 50 50 texStone 0   0   0   0   1
 BUTTON playBtn          35 63 30 7  34  139 34  240   goto:CountrySelection PLAY
-BUTTON loadBtn          35 73 30 7  60  90  160 240   goto:LoadGame LOAD
+//BUTTON loadBtn          35 73 30 7  60  90  160 240   goto:LoadGame LOAD
 BUTTON exitBtn          35 83 30 7  160 40  40  240   exit EXIT
 
 SCREEN LoadGame
@@ -45,7 +45,9 @@ BUTTON backBtn          30 78 40 6  160 40 40 240 goto:MainMenu BACK
 SCREEN CountrySelection
 
 PANEL  selectionPanel   76 20 22 65 texStone  0 0 0 0 1
-TEXT   countryText      76 22 22 5  fancy     2 selected_country
-PANEL  countryFlagTex      77 28 20 22 selectedCountryFlagTexture  0 0 0 0 2
+PANEL  countryText      76 20 22 10  timeFrameTexture 26  26  26  200 3
+TEXT   countryText      76 20 22 10  fancy 4 selected_country
+PANEL  countryFlagFrame 73 32 28 28 flagFrameTexture  0   0   0   0   22
+PANEL  countryFlagTex   77 35 20 22 selectedCountryFlagTexture  0 0 0 0 2
 BUTTON playBtn          79 68 16 6  34  139 34  240 play_if_selected PLAY
 BUTTON backBtn          79 74 16 6  160 40  40  240 goto:MainMenu BACK

@@ -31,6 +31,8 @@ inline std::vector<int> calculatePath(World& world, std::string ownerTag, int fr
     const std::map<int, std::vector<int>>* adjacency = &findCountryByTag(world.countries, ownerTag)->accessibilityGraph;
 
     // exiled armies
+    // add a flag of exiled to not engage in battles
+    // take it off if the province is equal itself tag
     //if (army.exiled == true){
     //    adjacency = &world.adjacencyGraph; 
     //}

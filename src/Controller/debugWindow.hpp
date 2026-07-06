@@ -1,10 +1,26 @@
 #pragma once
+#include "../Model/World.hpp"
+#include "../utils.hpp"
+
+#ifdef __EMSCRIPTEN__
+
+struct DebugWindow {
+    SDL_Window*   window   = nullptr;
+    SDL_Renderer* renderer = nullptr;
+    bool visible = false;
+
+    void init() {}
+    void hide() {}
+    void processEvent(const SDL_Event&) {}
+    void render(const World&) {}
+    void shutdown() {}
+};
+
+#else
 
 #include "imgui.h" 
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_sdlrenderer2.h"
-#include "../Model/World.hpp"
-#include "../utils.hpp"
 
 #ifdef name
 #undef name
@@ -57,7 +73,6 @@ struct DebugWindow {
             ImGuiWindowFlags_NoMove
         );
 
-        // ── General ──────────────────────────────────────────────────────────
         if (ImGui::CollapsingHeader("General")) {
             ImGui::Text("FPS         %.1f", world.fps);
             ImGui::Text("Scale       %.3f  (final %.3f)", world.scale, world.finalScale);
@@ -68,7 +83,6 @@ struct DebugWindow {
             ImGui::Text("Player      %s", world.playerCountry.c_str());
         }
 
-        // ── Assets ───────────────────────────────────────────────────────────
         if (ImGui::CollapsingHeader("Assets")) {
             auto ok = [](bool v){ return v ? "OK" : "null"; };
             ImGui::Text("provincesBmp  %s", ok(world.provincesBmp));
@@ -76,7 +90,6 @@ struct DebugWindow {
             ImGui::Text("height        %s", ok(world.height));
         }
 
-        // ── Selected Province ─────────────────────────────────────────────────
         if (ImGui::CollapsingHeader("Selected Province")) {
             const Province* p = provinceFindById(world.provinces, world.selectedProvince);
             if (p) {
@@ -91,7 +104,6 @@ struct DebugWindow {
             }
         }
 
-        // ── Secondary Selected Province ───────────────────────────────────────
         if (ImGui::CollapsingHeader("Secondary Province")) {
             const Province* p = provinceFindById(world.provinces, world.objectiveProvince);
             if (p) {
@@ -105,7 +117,6 @@ struct DebugWindow {
             }
         }
 
-        // ── Provinces ─────────────────────────────────────────────────────────
         if (ImGui::CollapsingHeader("Provinces")) {
             ImGui::Text("Total: %zu", world.provinces.size());
             ImGui::Separator();
@@ -122,7 +133,6 @@ struct DebugWindow {
             }
         }
 
-        // ── Countries ─────────────────────────────────────────────────────────
         if (ImGui::CollapsingHeader("Countries")) {
             ImGui::Text("Total: %zu", world.countries.size());
             ImGui::Separator();
@@ -136,7 +146,6 @@ struct DebugWindow {
             }
         }
 
-        // ── Armies ────────────────────────────────────────────────────────────
         if (ImGui::CollapsingHeader("Armies")) {
             ImGui::Text("Total: %zu", world.armies.size());
             ImGui::Separator();
@@ -150,7 +159,6 @@ struct DebugWindow {
             }
         }
 
-        // ── Frontiers ─────────────────────────────────────────────────────────
         if (ImGui::CollapsingHeader("Frontiers")) {
             ImGui::Text("Province frontiers:  %zu", world.provinceFrontiers.size());
             ImGui::Text("Country frontiers:   %zu", world.countryFrontiers.size());
@@ -173,3 +181,5 @@ struct DebugWindow {
         SDL_DestroyWindow(window);
     }
 };
+
+#endif
