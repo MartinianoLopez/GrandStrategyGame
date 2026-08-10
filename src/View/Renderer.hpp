@@ -445,8 +445,8 @@ inline void renderUI(SDL_Renderer* renderer, World& world, SDL_Window* window) {
 inline void renderGame(World& world, SDL_Renderer* renderer, SDL_Window* window) {
     SDL_SetRenderDrawColor(renderer, 30, 30, 30, 255);
     SDL_RenderClear(renderer);
-    renderMap(world, renderer, window, false); // mapa principal
-    renderMap(world, renderer, window, true);  // copia desplazada (wrapping)
+    renderMap(world, renderer, window, false); 
+    renderMap(world, renderer, window, true);
     renderUI(renderer, world, window);  
     SDL_RenderPresent(renderer);
 }

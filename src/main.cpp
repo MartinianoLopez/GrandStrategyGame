@@ -6,8 +6,6 @@
 #include "Model/World.hpp"
 #include "View/Renderer.hpp"
 #include "Controller/gameWindow.hpp"
-#include "Controller/debugWindow.hpp"
-#include "Controller/eventRouter.hpp"
 #include "Model/Loader.hpp"
 #include "View/UIManager.hpp"
 #include "Simulation/Time.hpp"
@@ -19,8 +17,6 @@
 GameWindow*  mainWinPtr  = nullptr;
 World*       worldPtr    = nullptr;
 UIRegistry*  regPtr      = nullptr;
-EventRouter* eventMgrPtr = nullptr;
-DebugWindow* debugWinPtr = nullptr;
 bool debugging = true;
 
 Uint32 lastTicks    = 0;
@@ -31,8 +27,6 @@ void main_loop() {
     World&       world      = *worldPtr;
     GameWindow&  mainWin    = *mainWinPtr;
     UIRegistry&  reg        = *regPtr;
-    EventRouter& eventManager = *eventMgrPtr;
-    DebugWindow& debugWin   = *debugWinPtr;
 
     Uint32 frameStart = SDL_GetTicks();
     float deltaTime   = (frameStart - lastTicks) / 1000.0f;
@@ -40,7 +34,7 @@ void main_loop() {
 
     SDL_Event event;
     while (SDL_PollEvent(&event))
-        eventManager.route(world, event, mainWin, debugWin);
+        mainWin.processEvent(world, event);
 
     tick(world, deltaTime);
 
@@ -53,9 +47,7 @@ void main_loop() {
         lastUIReload = frameStart;
     }
     reloadFlagTextures(reg, world);
-
     renderGame(world, mainWin.renderer, mainWin.window);
-    if (debugging) debugWin.render(world);
 
     Uint32 frameTime = SDL_GetTicks() - frameStart;
     world.fps = 1000.0f / (frameTime > 0 ? frameTime : 1);
@@ -74,14 +66,6 @@ void main_loop() {
 int main() {
     GameWindow mainWin = GameWindow();
     mainWinPtr = &mainWin;
-
-    DebugWindow debugWin;
-    debugWin.init();
-    if (!debugging) debugWin.hide();
-    debugWinPtr = &debugWin;
-
-    EventRouter eventManager;
-    eventMgrPtr = &eventManager;
 
     std::cerr << "LOADING...\n";
 
@@ -110,7 +94,6 @@ int main() {
 
     TTF_Quit();
     IMG_Quit();
-    debugWin.shutdown();
     SDL_DestroyRenderer(mainWin.renderer);
     SDL_DestroyWindow(mainWin.window);
     SDL_Quit();

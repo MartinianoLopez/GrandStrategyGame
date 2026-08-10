@@ -9,12 +9,9 @@
 #include "../Simulation/Army.hpp"
 
 struct GameWindow {
-    SDL_Window*   window   = nullptr;
-    SDL_Renderer* renderer = nullptr;
-
+    SDL_Window*   window   = SDL_CreateWindow("Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1920, 1080, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     GameWindow() {
-        window   = SDL_CreateWindow("Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1920, 1080, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
-        renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     }
 
@@ -186,7 +183,7 @@ struct GameWindow {
         // instant movement army->position = target->id;
 
     }
-
+    
     // =========================================================================
     // event dispatch
     // =========================================================================
