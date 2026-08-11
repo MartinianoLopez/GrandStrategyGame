@@ -35,7 +35,7 @@ SCREEN MainMenu
 PANEL  mainPanel        25 50 50 50 texStone 0   0   0   0   1
 BUTTON playBtn          35 63 30 7  34  139 34  240   goto:CountrySelection PLAY
 //BUTTON loadBtn          35 73 30 7  60  90  160 240   goto:LoadGame LOAD
-BUTTON exitBtn          35 83 30 7  160 40  40  240   exit EXIT
+//BUTTON exitBtn          35 83 30 7  160 40  40  240   exit EXIT
 
 SCREEN LoadGame
 

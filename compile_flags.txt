@@ -1,3 +1,1 @@
--Ivendor/imgui
--Ivendor/imgui/backends
 -I/usr/include/SDL2

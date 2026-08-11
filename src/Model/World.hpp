@@ -201,6 +201,7 @@ struct World {
     SDL_Texture* countriesTex = nullptr;
     SDL_Surface* controlSur = nullptr;
     SDL_Texture* controlTex = nullptr;
+    
     std::vector<ProvinceData> provincesData;
     std::list<Province> provinces;
     std::list<Country> countries;
@@ -216,45 +217,53 @@ struct World {
     std::string selectedCountry = "";
     std::vector<Army*> selectedArmies;
 
-    std::list<Font> fonts;
-
     int texWidth = 0;
     int texHeight = 0;
 
     float scale = 5.0f;
+    float finalScale = 0.0f; 
+
     float offsetX = 0.0f;
     float offsetY = 0.0f; 
-    bool dragging = false;
-    int lastX = 0, lastY = 0;
+
+    int lastX = 0;
+    int lastY = 0;
+
     int frameDelay = 0;
     float fps = 0.0f;
-    float finalScale = 0.0f;
+   
+    bool dragging = false;
     bool running = true;
     bool freecamera = false; 
     
+    // player
     std::string playerCountry;
     SDL_Texture* flagTex = nullptr;
+
     SDL_Texture* selectedCountryFlagTex = nullptr;
     SDL_Texture* bootonTex = nullptr;
     MenuPlace place = MenuPlace::MainMenu;
+    //====================================================================
+    // ui
+    //====================================================================
     std::vector<SDL_Texture*> uiTextures; // should be the same
     std::vector<UIElement> uiElements;
     std::map<std::string, SDL_Texture*> Textures; // should be the same 
-
+    std::list<Font> fonts;
     SDL_Texture* texStone = nullptr;
     SDL_Texture* statusBarTexture = nullptr;
     SDL_Texture* timeFrameTexture = nullptr;
     SDL_Texture* flagFrameTexture = nullptr;
 
-    std::vector<std::string> saveFiles;
-    std::string selectedSave;
-
+    //====================================================================
+    // Map modes
+    //====================================================================
     std::string mapMode = "normal";
     SDL_Texture* activeAccessibilityMap = nullptr;
     SDL_Texture* activeDiplomaticMap = nullptr;
     std::string countryoftheAccesibilityMap = "";
-    bool recruitOneUnit = false;
 
+    bool recruitOneUnit = false;
     
     World(SDL_Renderer* renderer) : renderer(renderer) {}
 

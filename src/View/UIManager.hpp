@@ -8,7 +8,6 @@
 #include <SDL2/SDL.h>
 #include "../Model/World.hpp"
 #include "../utils.hpp"
-#include "../Model/saves.hpp"
 #include "../Simulation/Time.hpp"
 #include "../Simulation/Diplomacy.hpp"
 
@@ -65,11 +64,6 @@ inline void registerActions(UIRegistry& ui, World& world) {
         w.running = false;
     };
 
-    ui.actions["save"] = [](World& w) {
-        saveGame(w);
-        refreshSaveFiles(w);
-    };
-
     ui.actions["play_if_selected"] = [](World& w) {
         if (!w.playerCountry.empty())
             w.place = MenuPlace::InGame;
@@ -90,6 +84,7 @@ inline void registerActions(UIRegistry& ui, World& world) {
     ui.actions["goto:InGame"] = [](World& w) {
         w.place = MenuPlace::InGame;
     };
+
     ui.actions["timeSpeed0"] = [](World& w) {
         w.time.speed = 0;
     };
