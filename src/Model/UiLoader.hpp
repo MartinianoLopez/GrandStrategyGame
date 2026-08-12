@@ -3,51 +3,42 @@
 #include <string>
 #include <fstream>
 #include <sstream>
-#include <unordered_map>
 #include <functional>
+#include <algorithm>
 #include <SDL2/SDL.h>
 #include "../Model/World.hpp"
 #include "../utils.hpp"
 #include "../Simulation/Time.hpp"
 #include "../Simulation/Diplomacy.hpp"
+#include <filesystem>
 
 // ===============================================================================================================
-// REGISTRY
+// Hooks 
 // ===============================================================================================================
+inline void uiInformation(World& world) {
 
-struct UIRegistry {
-    std::unordered_map<std::string, std::function<std::string(World&)>> informationPoints;
-    std::unordered_map<std::string, std::function<void(World&)>>        actions;
-    std::unordered_map<std::string, SDL_Texture**>                      textures;
-};
-
-// ===============================================================================================================
-// Hooks
-// ===============================================================================================================
-inline void uiInformation(UIRegistry& ui, World& world) {
-
-    ui.informationPoints["player_money"] = [](World& w) {
+    world.ui.hooks["player_money"] = [](World& w) {
         Country* p = findCountryByTag(w.countries, w.playerCountry);
         return p ? std::to_string(p->money) : "0";
     };
 
-    ui.informationPoints["army_count"] = [](World& w) {
+    world.ui.hooks["army_count"] = [](World& w) {
         int count = 0;
         for (auto& a : w.armies)
             if (a.owner == w.playerCountry) count++;
         return std::to_string(count);
     };
 
-    ui.informationPoints["date"] = [](World& world) {
-        return dateToString(world);
+    world.ui.hooks["date"] = [](World& w) {
+        return dateToString(w);
     };
 
-    ui.informationPoints["selected_province"] = [](World& w) {
+    world.ui.hooks["selected_province"] = [](World& w) {
         Province* p = provinceFindById(w.provinces, w.selectedProvince);
         return p ? p->name : "None";
     };
 
-    ui.informationPoints["selected_country"] = [](World& w) {
+    world.ui.hooks["selected_country"] = [](World& w) {
         Province* p = provinceFindById(w.provinces, w.selectedProvince);
         if (!p) return std::string("Select a Kingdom");
         Country* c = findCountryByTag(w.countries, p->owner);
@@ -58,101 +49,97 @@ inline void uiInformation(UIRegistry& ui, World& world) {
 // ===============================================================================================================
 // calls
 // ===============================================================================================================
-inline void registerActions(UIRegistry& ui, World& world) {
+inline void registerActions(World& world) {
 
-    ui.actions["exit"] = [](World& w) {
+    world.ui.actions["exit"] = [](World& w) {
         w.running = false;
     };
 
-    ui.actions["play_if_selected"] = [](World& w) {
+    world.ui.actions["play_if_selected"] = [](World& w) {
         if (!w.playerCountry.empty())
             w.place = MenuPlace::InGame;
     };
 
-    ui.actions["goto:MainMenu"] = [](World& w) {
+    world.ui.actions["goto:MainMenu"] = [](World& w) {
         w.place = MenuPlace::MainMenu;
     };
 
-    ui.actions["goto:CountrySelection"] = [](World& w) {
+    world.ui.actions["goto:CountrySelection"] = [](World& w) {
         w.place = MenuPlace::CountrySelection;
     };
 
-    ui.actions["goto:LoadGame"] = [](World& w) {
+    world.ui.actions["goto:LoadGame"] = [](World& w) {
         w.place = MenuPlace::LoadGame;
     };
 
-    ui.actions["goto:InGame"] = [](World& w) {
+    world.ui.actions["goto:InGame"] = [](World& w) {
         w.place = MenuPlace::InGame;
     };
 
-    ui.actions["timeSpeed0"] = [](World& w) {
+    world.ui.actions["timeSpeed0"] = [](World& w) {
         w.time.speed = 0;
     };
-    ui.actions["timeSpeed1"] = [](World& w) {
+    world.ui.actions["timeSpeed1"] = [](World& w) {
         w.time.speed = 2;
     };
-    ui.actions["timeSpeed2"] = [](World& w) {
+    world.ui.actions["timeSpeed2"] = [](World& w) {
         w.time.speed = 5;
     };
-    ui.actions["timeSpeed3"] = [](World& w) {
+    world.ui.actions["timeSpeed3"] = [](World& w) {
         w.time.speed = 10;
     };
-    ui.actions["mapModeAccess"] = [](World& w) {
-        if(w.mapMode != "access"){
+    world.ui.actions["mapModeAccess"] = [](World& w) {
+        if (w.mapMode != "access") {
             w.mapMode = "access";
-        }else{
+        } else {
             w.mapMode = "normal";
         };
     };
-    ui.actions["mapModeTerrain"] = [](World& w) {
-        if(w.mapMode != "terrain"){
+    world.ui.actions["mapModeTerrain"] = [](World& w) {
+        if (w.mapMode != "terrain") {
             w.mapMode = "terrain";
-        }else{
+        } else {
             w.mapMode = "normal";
         };
-        
     };
-        ui.actions["mapModeDiplomacy"] = [](World& w) {
-        if(w.mapMode != "diplomatic"){
+    world.ui.actions["mapModeDiplomacy"] = [](World& w) {
+        if (w.mapMode != "diplomatic") {
             w.mapMode = "diplomatic";
-        }else{
+        } else {
             w.mapMode = "normal";
         };
-        
     };
-    ui.actions["recruit"] = [](World& world) {
-        world.recruitOneUnit = true;
+    world.ui.actions["recruit"] = [](World& w) {
+        w.recruitOneUnit = true;
     };
-    ui.actions["declareWar"] = [](World& world) {
-        declareWar(world,world.playerCountry, world.selectedCountry);
+    world.ui.actions["declareWar"] = [](World& w) {
+        declareWar(w, w.playerCountry, w.selectedCountry);
     };
 }
 // ===============================================================================================================
-// Textures
+// Textures 
 // ===============================================================================================================
-inline void registerTextures(UIRegistry& reg, World& world) {
-    // runs once every few ms, it should do that only on devmode
-    reg.textures["SelectedCountryflagTexture"] = &world.selectedCountryFlagTex;
-    reg.textures["flagTexture"] = &world.flagTex;
-    reg.textures["flagFrameTexture"] = &world.flagFrameTexture;
-    reg.textures["statusBarTexture"] = &world.statusBarTexture;
-    reg.textures["timeFrameTexture"] = &world.timeFrameTexture;
-    reg.textures["bootonTex"]        = &world.bootonTex;
-    reg.textures["texStone"]         = &world.texStone;
-    reg.textures["none"]             = nullptr;
-}
-// ===============================================================================================================
-// Init
-// ===============================================================================================================
-inline void initRegistry(UIRegistry& reg, World& world) {
-    uiInformation(reg, world);
-    registerActions(reg, world);
-    registerTextures(reg, world);
+inline void registerTextures(World& world) {
+    world.ui.textures["SelectedCountryflagTexture"] = &world.selectedCountryFlagTex;
+    world.ui.textures["flagTexture"]                = &world.flagTex;
+    world.ui.textures["flagFrameTexture"]            = &world.flagFrameTexture;
+    world.ui.textures["statusBarTexture"]            = &world.statusBarTexture;
+    world.ui.textures["timeFrameTexture"]            = &world.timeFrameTexture;
+    world.ui.textures["bootonTex"]                   = &world.bootonTex;
+    world.ui.textures["texStone"]                    = &world.texStone;
+    world.ui.textures["none"]                        = nullptr;
 }
 
 // ===============================================================================================================
-// Router
+// Init model
 // ===============================================================================================================
+
+inline void reloadFlagTextures(World& world) {
+    for (auto& component : world.uiElements)
+        if (component.name == "countryFlagTex") {
+            component.texture = world.selectedCountryFlagTex;
+        }
+}
 
 inline std::string screenName(MenuPlace place) {
     switch (place) {
@@ -164,18 +151,12 @@ inline std::string screenName(MenuPlace place) {
     return "";
 }
 
-inline void reloadFlagTextures(UIRegistry& reg, World& world){
-    for (auto& component : world.uiElements)
-        if(component.name == "countryFlagTex"){
-            component.texture = world.selectedCountryFlagTex;
-        }
-}
 // ===============================================================================================================
-// Register
+// Ui Layout 
 // ===============================================================================================================
+
 inline void loadUIFromFile(
     World& world,
-    UIRegistry& reg,
     const std::string& path,
     SDL_Renderer* renderer
 ) {
@@ -213,9 +194,9 @@ inline void loadUIFromFile(
             ss >> name >> x >> y >> w >> h >> texName >> r >> g >> b >> a >> z;
 
             SDL_Texture* tex = nullptr;
-            if (reg.textures.count(texName) && reg.textures[texName])
-                tex = *reg.textures[texName];
-            
+            if (world.ui.textures.count(texName) && world.ui.textures[texName])
+                tex = *world.ui.textures[texName];
+
             world.uiElements.push_back({
                 {x, y, w, h}, tex,
                 {(Uint8)r,(Uint8)g,(Uint8)b,(Uint8)a},
@@ -229,8 +210,8 @@ inline void loadUIFromFile(
             ss >> name >> x >> y >> w >> h >> font >> z >> endpointKey;
 
             std::function<std::string()> getText = nullptr;
-            if (reg.informationPoints.count(endpointKey)) {
-                auto fn = reg.informationPoints[endpointKey];
+            if (world.ui.hooks.count(endpointKey)) {
+                auto fn = world.ui.hooks[endpointKey];
                 getText = [fn, &world]() { return fn(world); };
             }
 
@@ -250,8 +231,8 @@ inline void loadUIFromFile(
             if (!label.empty() && label[0] == ' ') label = label.substr(1);
 
             std::function<void()> onClick = nullptr;
-            if (reg.actions.count(actionKey)) {
-                auto fn = reg.actions[actionKey];
+            if (world.ui.actions.count(actionKey)) {
+                auto fn = world.ui.actions[actionKey];
                 onClick = [fn, &world]() { fn(world); };
             }
 
@@ -268,13 +249,13 @@ inline void loadUIFromFile(
             ss >> name >> x >> y >> w >> h >> texture >> action >> group;
 
             std::function<void()> onClick = nullptr;
-            if (reg.actions.count(action)) {
-                auto fn = reg.actions[action];
+            if (world.ui.actions.count(action)) {
+                auto fn = world.ui.actions[action];
                 onClick = [fn, &world]() { fn(world); };
             }
 
             world.uiElements.push_back({
-                {x, y, w, h}, world.Textures[texture],
+                {x, y, w, h}, world.ui.Textures[texture],
                 {}, 2, onClick, nullptr, "simple", name
             });
         }
@@ -286,4 +267,25 @@ inline void loadUIFromFile(
             }
         );
     }
+}
+inline void loadAllUITextures(World& world, SDL_Renderer* renderer) {
+    namespace fs = std::filesystem;
+    
+    for (const auto& entry : fs::recursive_directory_iterator("assets/ui")) {
+        if (entry.is_regular_file() && entry.path().extension() == ".png") {
+            std::string key = entry.path().stem().string(); // filename sin extensión
+            SDL_Texture* tex = IMG_LoadTexture(renderer, entry.path().string().c_str());
+            if (tex) {
+                world.ui.Textures[key] = tex;
+                //std::cout << "Loaded: " << key << "\n";
+            }
+        }
+    }
+}
+
+inline void initRegistry(World& world) {
+    uiInformation(world);
+    registerActions(world);
+    registerTextures(world);
+    loadAllUITextures(world, world.renderer);
 }

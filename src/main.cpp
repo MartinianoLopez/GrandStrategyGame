@@ -7,7 +7,7 @@
 #include "View/Renderer.hpp"
 #include "Controller/gameWindow.hpp"
 #include "Model/Loader.hpp"
-#include "View/UIManager.hpp"
+#include "Model/UiLoader.hpp"
 #include "Simulation/Time.hpp"
 
 #ifdef __EMSCRIPTEN__
@@ -16,7 +16,6 @@
 
 GameWindow*  mainWinPtr  = nullptr;
 World*       worldPtr    = nullptr;
-UIRegistry*  regPtr      = nullptr;
 bool debugging = true;
 
 Uint32 lastTicks    = 0;
@@ -26,7 +25,6 @@ MenuPlace lastPlace;
 void main_loop() {
     World&       world      = *worldPtr;
     GameWindow&  mainWin    = *mainWinPtr;
-    UIRegistry&  reg        = *regPtr;
 
     Uint32 frameStart = SDL_GetTicks();
     float deltaTime   = (frameStart - lastTicks) / 1000.0f;
@@ -42,11 +40,11 @@ void main_loop() {
     bool timerFired   = (frameStart - lastUIReload) >= 2000;
 
     if (placeChanged || (debugging && timerFired)) {
-        loadUIFromFile(world, reg, "assets/ui/ui_layout.txt", mainWin.renderer);
+        loadUIFromFile(world, "assets/ui/ui_layout.txt", mainWin.renderer);
         lastPlace    = world.place;
         lastUIReload = frameStart;
     }
-    reloadFlagTextures(reg, world);
+    reloadFlagTextures(world);
     renderGame(world, mainWin.renderer, mainWin.window);
 
     Uint32 frameTime = SDL_GetTicks() - frameStart;
@@ -73,10 +71,8 @@ int main() {
     worldPtr = &world;
     loadAssets(world, mainWin.renderer);
 
-    UIRegistry reg;
-    regPtr = &reg;
-    initRegistry(reg, world);
-    loadUIFromFile(world, reg, "assets/ui/ui_layout.txt", mainWin.renderer);
+    initRegistry(world);
+    loadUIFromFile(world, "assets/ui/ui_layout.txt", mainWin.renderer);
 
     lastTicks    = SDL_GetTicks();
     lastUIReload = SDL_GetTicks();

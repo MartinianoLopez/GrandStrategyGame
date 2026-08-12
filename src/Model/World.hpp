@@ -122,7 +122,7 @@ struct UIRect { int x, y, w, h; };
 struct UIElement {
    
     UIRect boundsNorm;
-    SDL_Texture* texture;
+    SDL_Texture* texture; // 4
     SDL_Color color;
     int zOrder;
     std::function<void()> onClick;
@@ -188,8 +188,15 @@ struct Time {
 Time(int year, int month, int day)
     : date(year, month, day) {}
 };
-
+struct World;
+struct Ui{
+    std::unordered_map<std::string, std::function<std::string(World&)>> hooks;
+    std::unordered_map<std::string, std::function<void(World&)>>        actions;
+    std::unordered_map<std::string, SDL_Texture**>                      textures;// 1
+    std::map<std::string, SDL_Texture*> Textures; // 2 this is the proper one
+};
 struct World {
+    Ui ui = Ui();
     SDL_Renderer* renderer;
     Time time = Time(1444, 11, 1);
     int armyMovementSpeed = 25;
@@ -235,22 +242,25 @@ struct World {
     bool dragging = false;
     bool running = true;
     bool freecamera = false; 
-    
+
+    std::list<Font> fonts;
     // player
     std::string playerCountry;
     SDL_Texture* flagTex = nullptr;
 
     SDL_Texture* selectedCountryFlagTex = nullptr;
-    SDL_Texture* bootonTex = nullptr;
-    MenuPlace place = MenuPlace::MainMenu;
+    
+    
     //====================================================================
     // ui
     //====================================================================
-    std::vector<SDL_Texture*> uiTextures; // should be the same
+    
+    SDL_Texture* bootonTex = nullptr;
+    MenuPlace place = MenuPlace::MainMenu;
     std::vector<UIElement> uiElements;
-    std::map<std::string, SDL_Texture*> Textures; // should be the same 
-    std::list<Font> fonts;
-    SDL_Texture* texStone = nullptr;
+    
+    
+    SDL_Texture* texStone = nullptr;    // 3
     SDL_Texture* statusBarTexture = nullptr;
     SDL_Texture* timeFrameTexture = nullptr;
     SDL_Texture* flagFrameTexture = nullptr;

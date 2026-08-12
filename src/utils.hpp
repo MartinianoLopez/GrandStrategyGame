@@ -59,6 +59,9 @@ inline std::string colorToString(uint32_t color) {
     uint8_t b = (color)       & 0xFF;
     return std::to_string(r) + ", " + std::to_string(g) + ", " + std::to_string(b);
 }
+inline Uint32 colorToUint32(const Color color, SDL_PixelFormat* format) {
+    return SDL_MapRGB(format, color.r, color.g, color.b);
+}
 
 // ===============================================================================================================
 // pixels (used for loading assets and for province picking)
@@ -134,4 +137,19 @@ inline Province* provinceFindByColor(const std::list<Province>& list, uint32_t c
         }
     }
     return nullptr;
+}
+
+inline void displayTexture(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRect& destRect, Uint8 alpha) {
+    if (!texture) return;
+    SDL_SetTextureAlphaMod(texture, alpha);
+    SDL_RenderCopyF(renderer, texture, nullptr, &destRect);
+}
+
+inline SDL_Texture* convertSurfaceToTexture(SDL_Renderer* renderer, SDL_Surface* surface) {
+    if (!surface) return nullptr;
+    SDL_Surface* converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA32, 0);
+    if (!converted) return nullptr;
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, converted);
+    SDL_FreeSurface(converted);
+    return texture;
 }
