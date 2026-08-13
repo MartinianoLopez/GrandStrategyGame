@@ -11,7 +11,6 @@
 #include "SDL_rect.h"
 #include "SDL_render.h"
 #include <algorithm>
-#include <chrono>
 #include <string>
 #include <unordered_set>
 
@@ -25,8 +24,8 @@ inline void renderFrontiers(
     int screenW,
     int screenH,
     const std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>>& frontierList,
-    float size)
-{
+    float size
+){
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
     for (const auto& [colorPair, points] : frontierList) {
         for (const auto& point : points) {
@@ -38,8 +37,6 @@ inline void renderFrontiers(
         }
     }
 }
-
-
 
 inline void markProvinceFrontiers(World& world, SDL_Renderer* renderer, SDL_FRect destRect, SDL_Color color, int provinceId) {
     Province* p = provinceFindById(world.provinces, provinceId);
@@ -56,8 +53,6 @@ inline void markProvinceFrontiers(World& world, SDL_Renderer* renderer, SDL_FRec
         }
     }
 }
-
-
 
 inline SDL_Texture* buildAccessibilityMap(World& world, SDL_Renderer* renderer, const std::vector<std::string>& accessibleCountries) {
     SDL_Surface* src = world.countriesImg;
@@ -92,8 +87,6 @@ inline SDL_Texture* buildAccessibilityMap(World& world, SDL_Renderer* renderer, 
     return result;
 }
 
-
-
 inline SDL_Texture* buildDiplomaticMap(World& world, SDL_Renderer* renderer, const std::vector<Relationship> relationships) {
     SDL_Surface* src = world.countriesImg;
     if (!src || !src->format) return nullptr;
@@ -127,10 +120,11 @@ inline SDL_Texture* buildDiplomaticMap(World& world, SDL_Renderer* renderer, con
     return result;
 }
 
+//=============================
 
-
-inline void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, bool isSecondMap) {
-    auto t0 = std::chrono::high_resolution_clock::now();
+inline void renderMap(World& world, bool isSecondMap) {
+    SDL_Renderer* renderer = world.renderer;
+    SDL_Window* window = world.window;
 
     int winWidth, winHeight;
     SDL_GetWindowSize(window, &winWidth, &winHeight);
@@ -150,17 +144,13 @@ inline void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, 
     if (isSecondMap) {
         destRect.x = world.offsetX - world.texWidth * world.finalScale; 
     }
-    auto t1 = std::chrono::high_resolution_clock::now();
 
     displayTexture(renderer, world.height,       destRect, 255);
-    auto t2 = std::chrono::high_resolution_clock::now();
 
     displayTexture(renderer, world.terrain,      destRect, 200);
-    auto t3 = std::chrono::high_resolution_clock::now();
 
     if (world.mapMode == "normal") {
         displayTexture(renderer, world.countriesTex, destRect, 245);
-        auto t4 = std::chrono::high_resolution_clock::now();
         displayTexture(renderer, world.controlTex, destRect, 245);
     }
     
@@ -197,11 +187,9 @@ inline void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, 
 
     if (world.scale > 6.0f)
         renderFrontiers(world, renderer, destRect, {0, 0, 0, 120}, winWidth, winHeight, world.provinceFrontiers, 1);
-    auto t5 = std::chrono::high_resolution_clock::now();
 
     if (world.scale < 5.0f)
         renderFrontiers(world, renderer, destRect,{0, 0, 0, 220}, winWidth, winHeight, world.countryFrontiers, 6 / world.scale);
-    auto t6 = std::chrono::high_resolution_clock::now();
 
     if (world.scale > 4.0f) {
         renderFrontiers(world, renderer, destRect, {0, 0, 0, 220}, winWidth, winHeight, world.countryFrontiers, 1);
@@ -209,17 +197,4 @@ inline void renderMap(World& world, SDL_Renderer* renderer, SDL_Window* window, 
         renderArmies(world, renderer, destRect, winWidth, winHeight);
         showSelectedArmiesPaths(world, renderer, destRect);
     }
-    auto t7 = std::chrono::high_resolution_clock::now();
-
-    auto ms = [](auto a, auto b){ return std::chrono::duration<float, std::milli>(b - a).count(); };
-    /*
-    std::cerr << "[map" << (offset ? "_wrap" : "") << "]\n"
-              << "  setup: "       << ms(t0,t1) << " ms\n"
-              << "  height: "      << ms(t1,t2) << " ms\n"
-              << "  terrain: "     << ms(t2,t3) << " ms\n"
-              << "  countries: "   << ms(t3,t4) << " ms\n"
-              << "  provFront: "   << ms(t4,t5) << " ms\n"
-              << "  countryFront1: " << ms(t5,t6) << " ms\n"
-              << "  countryFront2/marks/armies: " << ms(t6,t7) << " ms\n";
-    */
 }

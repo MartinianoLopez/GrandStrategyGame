@@ -70,6 +70,7 @@ inline std::string colorToString(uint32_t color) {
     uint8_t b = (color)       & 0xFF;
     return std::to_string(r) + ", " + std::to_string(g) + ", " + std::to_string(b);
 }
+
 inline Uint32 colorToUint32(const Color color, SDL_PixelFormat* format) {
     return SDL_MapRGB(format, color.r, color.g, color.b);
 }
@@ -150,6 +151,7 @@ inline Province* provinceFindByColor(const std::list<Province>& list, uint32_t c
     }
     return nullptr;
 }
+
 // ===============================================================================================================
 // Texture helpers
 // ===============================================================================================================

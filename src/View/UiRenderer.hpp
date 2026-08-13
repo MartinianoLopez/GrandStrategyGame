@@ -12,8 +12,11 @@
 #include <algorithm>
 #include <string>
 
+//===========================
 
-inline void renderUI(SDL_Renderer* renderer, World& world, SDL_Window* window) {
+inline void renderUI(World& world) {
+    SDL_Window* window = world.window;
+    SDL_Renderer* renderer = world.renderer;
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
 

@@ -12,20 +12,20 @@
 
 //=============================
 
-inline void renderMapLayer(World& world, SDL_Renderer* renderer, SDL_Window* window){
+inline void renderMapLayer(World& world){
 
-    renderMap(world, renderer, window, false); 
-    renderMap(world, renderer, window, true);
+    renderMap(world, false); 
+    renderMap(world, true);
 
 }
 
-inline void renderGame(World& world, SDL_Renderer* renderer, SDL_Window* window) {
+inline void renderGame(World& world) {
 
-    SDL_RenderClear(renderer);
+    SDL_RenderClear(world.renderer);
 
-    renderMapLayer( world, renderer, window);
-    renderUI(renderer, world, window);  
+    renderMapLayer( world);
+    renderUI(world);  
 
-    SDL_RenderPresent(renderer);
+    SDL_RenderPresent(world.renderer);
     
 }

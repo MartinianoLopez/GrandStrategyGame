@@ -1,4 +1,9 @@
 #pragma once
+
+//=========================
+
+//=========================
+
 #include "SDL_render.h"
 #include <SDL2/SDL.h>
 #include <map>
@@ -8,6 +13,8 @@
 #include <utility>
 #include <SDL2/SDL_ttf.h>
 #include <functional>
+
+//=========================
 
 struct Color {
     int r;
@@ -32,11 +39,15 @@ struct Color {
         return !(*this == other);
     }
 };
+
+//=========================
+
 enum class TypeOfRelation { 
     PEACE,
     WAR,
     ALLIANCE,
 };
+
 struct Relationship {
     std::string tag;
     enum TypeOfRelation typeOfRelation;
@@ -44,6 +55,7 @@ struct Relationship {
     Relationship(std::string tag, TypeOfRelation typeOfRelation)
         : tag(tag), typeOfRelation(typeOfRelation) {}
 };
+
 struct Country {
     std::string tag;
     std::string name;
@@ -71,7 +83,6 @@ struct Country {
         return wars;
     }
 };
-
 
 struct ProvinceData {
     int id;
@@ -108,15 +119,21 @@ struct Army {
         : position(position), name(name), owner(owner), power(power), color(color), movementStage(0) {}
 };
 
+//==================================
+
 struct Glyph {
     SDL_Texture* tex = nullptr;
     int w = 0;
     int h = 0;
 };
+
 struct Font {
     std::string id;
     Glyph glyphs[128];
 };
+
+//==================================
+
 struct UIRect { int x, y, w, h; };
 
 struct UIElement {
@@ -165,13 +182,7 @@ struct UIElement {
     }
 };
 
-enum class MenuPlace { 
-    MainMenu, 
-    CountrySelection, 
-    InGame,
-    LoadGame
-};
-
+//================================================
 
 struct Date { 
     int year, month, day;
@@ -185,10 +196,21 @@ struct Time {
     float accumulator = 0.0f;
     float speed = 1.0f;
 
-Time(int year, int month, int day)
-    : date(year, month, day) {}
+    Time(int year, int month, int day)
+        : date(year, month, day) {}
 };
+
+//==================================
+
 struct World;
+
+enum class MenuPlace { 
+    MainMenu, 
+    CountrySelection, 
+    InGame,
+    LoadGame
+};
+
 struct Ui{
     std::unordered_map<std::string, std::function<std::string(World&)>> hooks;
     std::unordered_map<std::string, std::function<void(World&)>>        actions;
@@ -268,6 +290,7 @@ struct World{
     bool freecamera = false; 
 
     std::list<Font> fonts;
+    
     // player
     std::string playerCountry;
 

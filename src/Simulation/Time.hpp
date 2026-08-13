@@ -1,8 +1,16 @@
 #pragma once
-#include <string>
+
+// ================================
+
 #include "../Model/World.hpp"
 #include "Army.hpp"
 #include "Taxes.hpp"
+
+// ================================
+
+#include <string>
+
+// ================================
 
 static constexpr int DAYS_IN_MONTH[] = {31,28,31,30,31,30,31,31,30,31,30,31};
 static constexpr const char* months[] = {"January","February","March","April","May","June","July","August","September","October","November","December"};
@@ -19,7 +27,6 @@ inline void onNewMonth(World& world) {
         collectTaxes(world);
 }
 
-
 inline void addOneDay(World& world) {
     if (world.time.date.day == DAYS_IN_MONTH[world.time.date.month - 1]) {
         world.time.date.day = 1;
@@ -35,8 +42,7 @@ inline void addOneDay(World& world) {
     onNewDay(world);
 }
 
-
-inline void tick(World& world, float dt) {
+inline void updateTime(World& world, float dt) {
     world.time.accumulator += dt * world.time.speed;
     while (world.time.accumulator >= 1.0f) {
         world.time.accumulator -= 1.0f;

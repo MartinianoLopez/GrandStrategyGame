@@ -13,7 +13,6 @@
 #include <optional>
 #include <string>
 
-
 // ===============================================================================================================
 // Armies
 // ===============================================================================================================
@@ -97,6 +96,7 @@ inline std::optional<Army> findArmy(World& world, int selectedProvince) {
     }
     return std::nullopt;
 }
+
 inline void drawPath(Army* army, World& world, SDL_Renderer* renderer, SDL_FRect destRect) {
     if (!army || army->path.empty()) return;
     SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);

@@ -6,7 +6,10 @@
 #include "../Model/DataProcessing.hpp"
 
 // ======================================
+
 #include <string>
+
+// ======================================
 
 inline void declareWar(World& world,std::string attacker, std::string defender){
     

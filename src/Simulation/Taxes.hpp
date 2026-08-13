@@ -1,7 +1,11 @@
+
+// ================================
+
 #include "../Model/World.hpp"
 
 // ================================
 
+// ================================
 inline void collectTaxes(World& world) {
     std::unordered_map<std::string, int> taxes;
 

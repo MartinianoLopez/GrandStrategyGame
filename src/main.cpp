@@ -1,3 +1,5 @@
+// ================================
+
 #include "Model/World.hpp"
 #include "View/Renderer.hpp"
 #include "Controller/InputHandler.hpp"
@@ -39,15 +41,17 @@ void update(World& world) {
     world.lastTicks   = frameStart;
 
     SDL_Event event;
-    while (SDL_PollEvent(&event))
-        processEvent(world, event);
 
-    tick(world, deltaTime);
+    while (SDL_PollEvent(&event)){
+        processEvent(world, event);
+    }
+
+    updateTime(world, deltaTime);
 
     reloadUI(world, frameStart);
     reloadFlagTextures(world);
 
-    renderGame(world, world.renderer, world.window);
+    renderGame(world);
 
     Uint32 frameTime = SDL_GetTicks() - frameStart;
     world.fps = 1000.0f / (frameTime > 0 ? frameTime : 1);

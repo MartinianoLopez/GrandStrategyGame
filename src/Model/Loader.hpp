@@ -48,7 +48,6 @@ inline std::unordered_map<int, std::vector<std::pair<uint16_t, uint16_t>>> build
     return shapeMap;
 }
 
-
 inline void loadProvinces(World& world) {
     loadProvincesTxt(world);
     auto shapes = buildShapes(world);
@@ -129,6 +128,7 @@ inline Font initFont(SDL_Renderer* renderer, const std::string& id, const char* 
 // ===============================================================================================================
 // optimization
 // ===============================================================================================================
+
 inline void buildProvinceIdMap(World& world) {
     world.provinceById.clear();
     for (auto& province : world.provinces)
@@ -138,6 +138,7 @@ inline void buildProvinceIdMap(World& world) {
 // ===============================================================================================================
 // LOAD ALL
 // ===============================================================================================================
+
 inline void loadAssets(World& world, SDL_Renderer* renderer) {
 
     auto start = std::chrono::high_resolution_clock::now();

@@ -92,8 +92,6 @@ inline void onMouseMove(World& world, const SDL_Event& e) {
     }
 }
 
-
-
 inline void onLeftClick(World& world, const SDL_Event& e) {        
     world.dragging = true;
     world.lastX    = e.button.x;

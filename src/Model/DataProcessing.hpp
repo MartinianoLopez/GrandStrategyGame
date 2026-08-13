@@ -1,6 +1,7 @@
 #pragma once
 
 //===========================
+
 #include "World.hpp"
 #include "../utils.hpp"
 
@@ -96,6 +97,7 @@ inline void InitAllAccesibiltyGraphs(World& world){
         country.accessibilityGraph = buildAccessibilityGraph(world, country.accessibleCountries);
     }
 }
+
 inline void rechargeAccesibilityGraph(World& world, Country* country){
         country -> accessibilityGraph = buildAccessibilityGraph(world, country -> accessibleCountries);
 }
