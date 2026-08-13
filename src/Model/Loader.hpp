@@ -170,12 +170,6 @@ inline void loadAssets(World& world, SDL_Renderer* renderer) {
     buildProvinceIdMap(world);
     InitAllAccesibiltyGraphs(world);
 
-    world.texStone = IMG_LoadTexture(renderer, "assets/ui/table.png");
-    world.bootonTex = IMG_LoadTexture(renderer, "assets/ui/booton.png");
-    world.statusBarTexture = IMG_LoadTexture(renderer, "assets/ui/statusBar.png");
-    world.timeFrameTexture = IMG_LoadTexture(renderer, "assets/ui/timeFrame.png");
-    world.flagFrameTexture = IMG_LoadTexture(renderer, "assets/ui/flagFrame.png");
-
     if (TTF_Init() == -1) {
         SDL_Log("TTF init error: %s", TTF_GetError());
         return;

@@ -1,51 +1,53 @@
+#include "Model/World.hpp"
+#include "View/Renderer.hpp"
+#include "Controller/InputHandler.hpp"
+#include "Model/Loader.hpp"
+#include "Model/UiLoader.hpp"
+#include "Simulation/Time.hpp"
+
+//================================
+
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
 
-#include "Model/World.hpp"
-#include "View/Renderer.hpp"
-#include "Controller/gameWindow.hpp"
-#include "Model/Loader.hpp"
-#include "Model/UiLoader.hpp"
-#include "Simulation/Time.hpp"
-
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
 
-GameWindow*  mainWinPtr  = nullptr;
-World*       worldPtr    = nullptr;
-bool debugging = true;
+//=============================================================
 
-Uint32 lastTicks    = 0;
-Uint32 lastUIReload = 0;
-MenuPlace lastPlace;
+void initWorld(World& world){
+    loadAssets(world, world.renderer);
 
-void main_loop() {
-    World&       world      = *worldPtr;
-    GameWindow&  mainWin    = *mainWinPtr;
+    initUi(world);
+
+    loadUIFromFile(world, "assets/ui/ui_layout.txt", world.renderer);
+
+    world.lastTicks    = SDL_GetTicks();
+    world.lastUIReload = SDL_GetTicks();
+    world.lastPlace    = world.ui.place;
+}
+
+//=============================================================
+
+void update(World& world) {
 
     Uint32 frameStart = SDL_GetTicks();
-    float deltaTime   = (frameStart - lastTicks) / 1000.0f;
-    lastTicks         = frameStart;
+    float deltaTime   = (frameStart - world.lastTicks) / 1000.0f;
+    world.lastTicks   = frameStart;
 
     SDL_Event event;
     while (SDL_PollEvent(&event))
-        mainWin.processEvent(world, event);
+        processEvent(world, event);
 
     tick(world, deltaTime);
 
-    bool placeChanged = world.place != lastPlace;
-    bool timerFired   = (frameStart - lastUIReload) >= 2000;
-
-    if (placeChanged || (debugging && timerFired)) {
-        loadUIFromFile(world, "assets/ui/ui_layout.txt", mainWin.renderer);
-        lastPlace    = world.place;
-        lastUIReload = frameStart;
-    }
+    reloadUI(world, frameStart);
     reloadFlagTextures(world);
-    renderGame(world, mainWin.renderer, mainWin.window);
+
+    renderGame(world, world.renderer, world.window);
 
     Uint32 frameTime = SDL_GetTicks() - frameStart;
     world.fps = 1000.0f / (frameTime > 0 ? frameTime : 1);
@@ -61,39 +63,44 @@ void main_loop() {
 #endif
 }
 
-int main() {
-    GameWindow mainWin = GameWindow();
-    mainWinPtr = &mainWin;
+//=============================================================
 
-    std::cerr << "LOADING...\n";
+void runLoop(World& world) {
+    #ifdef __EMSCRIPTEN__
+        emscripten_set_main_loop_arg([](void* arg){ main_loop(*(World*)arg); }, &world, 0, 1);
+    #else
+        while (world.running) update(world);
+    #endif
+}
 
-    World world = World(mainWin.renderer);
-    worldPtr = &world;
-    loadAssets(world, mainWin.renderer);
+//=============================================================
 
-    initRegistry(world);
-    loadUIFromFile(world, "assets/ui/ui_layout.txt", mainWin.renderer);
-
-    lastTicks    = SDL_GetTicks();
-    lastUIReload = SDL_GetTicks();
-    lastPlace    = world.place;
-
-    std::cerr << "START\n";
-
-#ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop(main_loop, 0, 1);
-#else
-    while (world.running) {
-        main_loop();
-    }
-#endif
-
+void shutdown(World& world){
     TTF_Quit();
     IMG_Quit();
-    SDL_DestroyRenderer(mainWin.renderer);
-    SDL_DestroyWindow(mainWin.window);
+    SDL_DestroyRenderer(world.renderer);
+    SDL_DestroyWindow(world.window);
     SDL_Quit();
+}
 
-    std::cerr << "END\n";
+//=============================================================
+
+int main() {
+
+    World world = World();
+
+    std::cerr << " -------- LOADING -------- \n";
+
+    initWorld(world);
+
+    std::cerr << " -------- RUNNING -------- \n";
+
+    runLoop(world);
+
+    std::cerr << " -------- TURNOFF -------- \n";
+
+    shutdown(world);
+
     return 0;
 }
+

@@ -1,16 +1,24 @@
 #pragma once
 
+//===============================
+
+#include "../Model/World.hpp"
+#include "../utils.hpp"
+#include "../Simulation/Time.hpp"
+#include "../Simulation/Diplomacy.hpp"
+#include <filesystem>
+
+//===============================
+
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <functional>
 #include <algorithm>
 #include <SDL2/SDL.h>
-#include "../Model/World.hpp"
-#include "../utils.hpp"
-#include "../Simulation/Time.hpp"
-#include "../Simulation/Diplomacy.hpp"
-#include <filesystem>
+
+//===============================
+
 
 // ===============================================================================================================
 // Hooks 
@@ -57,23 +65,23 @@ inline void registerActions(World& world) {
 
     world.ui.actions["play_if_selected"] = [](World& w) {
         if (!w.playerCountry.empty())
-            w.place = MenuPlace::InGame;
+            w.ui.place = MenuPlace::InGame;
     };
 
     world.ui.actions["goto:MainMenu"] = [](World& w) {
-        w.place = MenuPlace::MainMenu;
+        w.ui.place = MenuPlace::MainMenu;
     };
 
     world.ui.actions["goto:CountrySelection"] = [](World& w) {
-        w.place = MenuPlace::CountrySelection;
+        w.ui.place = MenuPlace::CountrySelection;
     };
 
     world.ui.actions["goto:LoadGame"] = [](World& w) {
-        w.place = MenuPlace::LoadGame;
+        w.ui.place = MenuPlace::LoadGame;
     };
 
     world.ui.actions["goto:InGame"] = [](World& w) {
-        w.place = MenuPlace::InGame;
+        w.ui.place = MenuPlace::InGame;
     };
 
     world.ui.actions["timeSpeed0"] = [](World& w) {
@@ -117,30 +125,20 @@ inline void registerActions(World& world) {
     };
 }
 // ===============================================================================================================
-// Textures 
-// ===============================================================================================================
-inline void registerTextures(World& world) {
-    world.ui.textures["SelectedCountryflagTexture"] = &world.selectedCountryFlagTex;
-    world.ui.textures["flagTexture"]                = &world.flagTex;
-    world.ui.textures["flagFrameTexture"]            = &world.flagFrameTexture;
-    world.ui.textures["statusBarTexture"]            = &world.statusBarTexture;
-    world.ui.textures["timeFrameTexture"]            = &world.timeFrameTexture;
-    world.ui.textures["bootonTex"]                   = &world.bootonTex;
-    world.ui.textures["texStone"]                    = &world.texStone;
-    world.ui.textures["none"]                        = nullptr;
-}
-
-// ===============================================================================================================
-// Init model
+// reload flag 
 // ===============================================================================================================
 
 inline void reloadFlagTextures(World& world) {
-    for (auto& component : world.uiElements)
+    for (auto& component : world.ui.uiElements){
         if (component.name == "countryFlagTex") {
-            component.texture = world.selectedCountryFlagTex;
-        }
+            component.texture = world.ui.Textures["selectedCountryFlagTex"];
+        }        
+    }
 }
 
+// ===============================================================================================================
+// Ui Layout 
+// ===============================================================================================================
 inline std::string screenName(MenuPlace place) {
     switch (place) {
         case MenuPlace::MainMenu:          return "MainMenu";
@@ -151,22 +149,107 @@ inline std::string screenName(MenuPlace place) {
     return "";
 }
 
-// ===============================================================================================================
-// Ui Layout 
-// ===============================================================================================================
+inline void parsePanel(World& world, std::istringstream& ss) {
+    std::string name;
+    int x, y, w, h, r, g, b, a, z;
+    std::string texName;
+    ss >> name >> x >> y >> w >> h >> texName >> r >> g >> b >> a >> z;
 
-inline void loadUIFromFile(
-    World& world,
-    const std::string& path,
-    SDL_Renderer* renderer
-) {
+    SDL_Texture* tex = nullptr;
+    if (world.ui.Textures.count(texName))
+        tex = world.ui.Textures[texName];
+
+    world.ui.uiElements.push_back({
+        {x, y, w, h}, tex,
+        {(Uint8)r,(Uint8)g,(Uint8)b,(Uint8)a},
+        z, nullptr, nullptr, "fancy", name
+    });
+}
+
+inline void parseText(World& world, std::istringstream& ss) {
+    std::string name;
+    int x, y, w, h, z;
+    std::string font, endpointKey;
+    ss >> name >> x >> y >> w >> h >> font >> z >> endpointKey;
+
+    std::function<std::string()> getText = nullptr;
+    if (world.ui.hooks.count(endpointKey)) {
+        auto fn = world.ui.hooks[endpointKey];
+        getText = [fn, &world]() { return fn(world); };
+    }
+
+    world.ui.uiElements.push_back({
+        {x, y, w, h}, nullptr, {0,0,0,0},
+        z, nullptr, getText, font, name
+    });
+}
+
+inline void parseButton(World& world, std::istringstream& ss) {
+    std::string name;
+    int x, y, w, h, r, g, b, a;
+    std::string actionKey, texture;
+    ss >> name >> x >> y >> w >> h >> r >> g >> b >> a >> actionKey >> texture;
+
+    std::string label;
+    std::getline(ss, label);
+    if (!label.empty() && label[0] == ' ') label = label.substr(1);
+
+    std::function<void()> onClick = nullptr;
+    if (world.ui.actions.count(actionKey)) {
+        auto fn = world.ui.actions[actionKey];
+        onClick = [fn, &world]() { fn(world); };
+    }
+
+    SDL_Texture* tex = nullptr;
+    if (world.ui.Textures.count(texture))
+        tex = world.ui.Textures[texture];
+
+    world.ui.uiElements.push_back({
+        {x, y, w, h}, tex,
+        {(Uint8)r,(Uint8)g,(Uint8)b,(Uint8)a},
+        2, onClick, [label]() { return label; }, "simple", name
+    });
+}
+
+inline void parseGroupButton(World& world, std::istringstream& ss) {
+    std::string name;
+    int x, y, w, h;
+    std::string texture, action, group;
+    ss >> name >> x >> y >> w >> h >> texture >> action >> group;
+
+    std::function<void()> onClick = nullptr;
+    if (world.ui.actions.count(action)) {
+        auto fn = world.ui.actions[action];
+        onClick = [fn, &world]() { fn(world); };
+    }
+
+    SDL_Texture* tex = nullptr;
+    if (world.ui.Textures.count(texture))
+        tex = world.ui.Textures[texture];
+
+    world.ui.uiElements.push_back({
+        {x, y, w, h}, tex,
+        {}, 2, onClick, nullptr, "simple", name
+    });
+}
+
+inline void sortUiElements(World& world) {
+    std::sort(
+        world.ui.uiElements.begin(),
+        world.ui.uiElements.end(),
+        [](const UIElement& a, const UIElement& b) {
+            return a.zOrder < b.zOrder;
+        }
+    );
+}
+
+inline void loadUIFromFile(World& world, const std::string& path, SDL_Renderer* renderer) {
     std::ifstream file(path);
     if (!file.is_open()) return;
 
-    // clear existing elements
-    world.uiElements.clear();
+    world.ui.uiElements.clear();
 
-    std::string targetScreen = screenName(world.place);
+    std::string targetScreen = screenName(world.ui.place);
     bool inTarget = false;
 
     std::string line;
@@ -187,91 +270,19 @@ inline void loadUIFromFile(
 
         if (!inTarget) continue;
 
-        if (token == "PANEL") {
-            std::string name;
-            int x, y, w, h, r, g, b, a, z;
-            std::string texName;
-            ss >> name >> x >> y >> w >> h >> texName >> r >> g >> b >> a >> z;
+        if      (token == "PANEL")       parsePanel(world, ss);
+        else if (token == "TEXT")        parseText(world, ss);
+        else if (token == "BUTTON")      parseButton(world, ss);
+        else if (token == "GROUPBUTTON") parseGroupButton(world, ss);
 
-            SDL_Texture* tex = nullptr;
-            if (world.ui.textures.count(texName) && world.ui.textures[texName])
-                tex = *world.ui.textures[texName];
-
-            world.uiElements.push_back({
-                {x, y, w, h}, tex,
-                {(Uint8)r,(Uint8)g,(Uint8)b,(Uint8)a},
-                z, nullptr, nullptr, "fancy", name
-            });
-
-        } else if (token == "TEXT") {
-            std::string name;
-            int x, y, w, h, z;
-            std::string font, endpointKey;
-            ss >> name >> x >> y >> w >> h >> font >> z >> endpointKey;
-
-            std::function<std::string()> getText = nullptr;
-            if (world.ui.hooks.count(endpointKey)) {
-                auto fn = world.ui.hooks[endpointKey];
-                getText = [fn, &world]() { return fn(world); };
-            }
-
-            world.uiElements.push_back({
-                {x, y, w, h}, nullptr, {0,0,0,0},
-                z, nullptr, getText, font, name
-            });
-
-        } else if (token == "BUTTON") {
-            std::string name;
-            int x, y, w, h, r, g, b, a;
-            std::string actionKey;
-            ss >> name >> x >> y >> w >> h >> r >> g >> b >> a >> actionKey;
-
-            std::string label;
-            std::getline(ss, label);
-            if (!label.empty() && label[0] == ' ') label = label.substr(1);
-
-            std::function<void()> onClick = nullptr;
-            if (world.ui.actions.count(actionKey)) {
-                auto fn = world.ui.actions[actionKey];
-                onClick = [fn, &world]() { fn(world); };
-            }
-
-            world.uiElements.push_back({
-                {x, y, w, h}, world.bootonTex,
-                {(Uint8)r,(Uint8)g,(Uint8)b,(Uint8)a},
-                2, onClick, [label]() { return label; }, "simple", name
-            });
-
-        } else if (token == "GROUPBUTTON") {
-            std::string name;
-            int x, y, w, h;
-            std::string texture, action, group;
-            ss >> name >> x >> y >> w >> h >> texture >> action >> group;
-
-            std::function<void()> onClick = nullptr;
-            if (world.ui.actions.count(action)) {
-                auto fn = world.ui.actions[action];
-                onClick = [fn, &world]() { fn(world); };
-            }
-
-            world.uiElements.push_back({
-                {x, y, w, h}, world.ui.Textures[texture],
-                {}, 2, onClick, nullptr, "simple", name
-            });
-        }
-        std::sort(
-            world.uiElements.begin(),
-            world.uiElements.end(),
-            [](const UIElement& a, const UIElement& b) {
-                return a.zOrder < b.zOrder;
-            }
-        );
+        sortUiElements(world);
     }
 }
+
 inline void loadAllUITextures(World& world, SDL_Renderer* renderer) {
     namespace fs = std::filesystem;
     
-    for (const auto& entry : fs::recursive_directory_iterator("assets/ui")) {
+    for (const auto& entry : fs::recursive_directory_iterator("assets/ui/textures")) {
         if (entry.is_regular_file() && entry.path().extension() == ".png") {
             std::string key = entry.path().stem().string(); // filename sin extensión
             SDL_Texture* tex = IMG_LoadTexture(renderer, entry.path().string().c_str());
@@ -283,9 +294,23 @@ inline void loadAllUITextures(World& world, SDL_Renderer* renderer) {
     }
 }
 
-inline void initRegistry(World& world) {
+// ===============================================================================================================
+// change of place in the ui
+// ===============================================================================================================
+
+inline void reloadUI(World& world, Uint32 frameStart){
+    bool placeChanged = world.ui.place != world.lastPlace;
+    bool timerFired   = (frameStart - world.lastUIReload) >= 2000;
+
+    if (placeChanged || (world.debugging && timerFired)) {
+        loadUIFromFile(world, "assets/ui/ui_layout.txt", world.renderer);
+        world.lastPlace    = world.ui.place;
+        world.lastUIReload = frameStart;
+    }
+}
+
+inline void initUi(World& world) {
     uiInformation(world);
     registerActions(world);
-    registerTextures(world);
     loadAllUITextures(world, world.renderer);
 }

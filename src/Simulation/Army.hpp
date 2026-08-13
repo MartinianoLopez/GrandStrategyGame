@@ -1,6 +1,12 @@
 #pragma once
+
+// ===============================
+
 #include "../Model/World.hpp"
 #include "../utils.hpp"
+
+// ===============================
+
 #include <vector>
 #include <queue>
 #include <unordered_map>
@@ -10,12 +16,14 @@
 // ============================================================
 // PATH PLANNING
 // ============================================================
+
 inline Army* FindArmyOnProvinceId(const std::list<Army>& list, int provinceId) {
     for (auto& army : list)
         if (army.position == provinceId)
             return const_cast<Army*>(&army);
     return nullptr;
 }
+
 inline std::vector<Army*> findArmiesOnProvinceId(std::list<Army>& armies, int provinceId) {
     std::vector<Army*> result;
     for (auto& army : armies)
@@ -72,19 +80,9 @@ inline std::vector<int> calculatePath(World& world, std::string ownerTag, int fr
 }
 
 // ============================================================
-// ARMY MOVEMENT SYSTEM
-// ============================================================
-
-
-inline void createArmyMovement(World& world,Army* army, int from, int to) {
-    std::vector<int> path = calculatePath(world, army->owner, from, to);
-    if (path.empty()) return;    
-       army -> path = path; 
-    return;
-}
-// ============================================================
 // Recruitment
 // ============================================================
+
 inline void recruitArmy(World& world) {
     Country* country = findCountryByTag(world.countries, world.playerCountry);
     if (!country) { std::cerr << "ERROR: country not found!\n"; return; }
@@ -104,6 +102,7 @@ inline void tryToRecruitArmy(World& world) {
 // ============================================================
 // Battles
 // ============================================================
+
 inline void removeArmy(std::list<Army>& armies, Army& army) {
     for (auto it = armies.begin(); it != armies.end(); ++it) {
         if (&(*it) == &army) {
@@ -112,6 +111,7 @@ inline void removeArmy(std::list<Army>& armies, Army& army) {
         }
     }
 }
+
 inline void remove0Armies(std::list<Army>& armies) {
     for (auto it = armies.begin(); it != armies.end();) {
         if (it->power == 0) it = armies.erase(it);
@@ -145,6 +145,11 @@ inline void scanForEnemies(World& world, Army& army) {
     }
     
 }
+
+// ============================================================
+// Invasion
+// ============================================================
+
 inline void reloadControlTex(World& world){
     world.controlTex = surfaceToTexture(world.renderer, world.controlSur);
 }
@@ -174,6 +179,21 @@ inline void tryOccupyProvince(World& world, Army& army) {
         occupyProvince(world, province, country);
 }
 
+// ============================================================
+// ARMY MOVEMENT SYSTEM
+// ============================================================
+
+inline void moveArmy(Army& army, int toProvinceId) {
+    army.position = toProvinceId;
+}
+
+inline void createArmyMovement(World& world,Army* army, int from, int to) {
+    std::vector<int> path = calculatePath(world, army->owner, from, to);
+    if (path.empty()) return;    
+       army -> path = path; 
+    return;
+}
+
 inline void updateArmyMovement(World& world) {
     for (auto& army : world.armies) {
         if (army.path.empty()) continue;
@@ -189,46 +209,3 @@ inline void updateArmyMovement(World& world) {
     }
     remove0Armies(world.armies);
 }
-
-
-
-/*
-// ============================================================
-// COLLISION & COMBAT RESOLUTION
-// ============================================================
-
-checkForCollisions(army){
-    for each otherArmy at same position:
-        if enemy and atWar:
-            checkForBattles(army, otherArmy)
-    if province.controller != army.owner and atWar:
-        startSiege(army, province)
-}
-
-checkForBattles(army, otherArmy){
-    if province.hasBattle:
-        joinBattle(army)
-    else:
-        startBattle(army, otherArmy)
-}
-
-startBattle(army, otherArmy){
-    // automatic battle for now
-    army.troops.multiplied by random from 1 to 2 >= otherarmy.troops multiplied by random from 1 to 2
-    winner is bigger
-    calculate engagement mortality for loser()
-    loser army.troops -> loser.troops - loser.troops*mortality
-    calculate engagement mortality for winner()
-    winer army.troops -> winner.troops - winner.troops*mortality
-}
-    
-startSiege(army, province):
-    // automatic siege for now
-    province.controller = army.owner
-    redrawCountriesImg()
-*/
-
-inline void moveArmy(Army& army, int toProvinceId) {
-    army.position = toProvinceId;
-}
-

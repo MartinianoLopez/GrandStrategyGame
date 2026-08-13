@@ -192,11 +192,35 @@ struct World;
 struct Ui{
     std::unordered_map<std::string, std::function<std::string(World&)>> hooks;
     std::unordered_map<std::string, std::function<void(World&)>>        actions;
-    std::unordered_map<std::string, SDL_Texture**>                      textures;// 1
-    std::map<std::string, SDL_Texture*> Textures; // 2 this is the proper one
+    std::map<std::string, SDL_Texture*> Textures;  
+    MenuPlace place = MenuPlace::MainMenu;
+    std::vector<UIElement> uiElements;
 };
-struct World {
+
+struct World{
+    World(){
+        window = SDL_CreateWindow(
+            "Window", 
+            SDL_WINDOWPOS_CENTERED, 
+            SDL_WINDOWPOS_CENTERED, 
+            1920, 1080, 
+            SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
+        );
+        renderer = SDL_CreateRenderer(
+            window, 
+            -1, 
+            SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
+        );
+        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
+    }
+    
+    bool debugging = false;
+    Uint32 lastTicks    = 0;
+    Uint32 lastUIReload = 0;
+    MenuPlace lastPlace;
     Ui ui = Ui();
+    SDL_Window* window;
     SDL_Renderer* renderer;
     Time time = Time(1444, 11, 1);
     int armyMovementSpeed = 25;
@@ -246,24 +270,6 @@ struct World {
     std::list<Font> fonts;
     // player
     std::string playerCountry;
-    SDL_Texture* flagTex = nullptr;
-
-    SDL_Texture* selectedCountryFlagTex = nullptr;
-    
-    
-    //====================================================================
-    // ui
-    //====================================================================
-    
-    SDL_Texture* bootonTex = nullptr;
-    MenuPlace place = MenuPlace::MainMenu;
-    std::vector<UIElement> uiElements;
-    
-    
-    SDL_Texture* texStone = nullptr;    // 3
-    SDL_Texture* statusBarTexture = nullptr;
-    SDL_Texture* timeFrameTexture = nullptr;
-    SDL_Texture* flagFrameTexture = nullptr;
 
     //====================================================================
     // Map modes
@@ -274,8 +280,5 @@ struct World {
     std::string countryoftheAccesibilityMap = "";
 
     bool recruitOneUnit = false;
-    
-    World(SDL_Renderer* renderer) : renderer(renderer) {}
-
 };
 

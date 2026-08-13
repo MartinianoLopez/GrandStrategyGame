@@ -17,29 +17,29 @@ inline void renderUI(SDL_Renderer* renderer, World& world, SDL_Window* window) {
     int w, h;
     SDL_GetWindowSize(window, &w, &h);
 
-    for (auto& el : world.uiElements) {
-        SDL_FRect rect = el.calculateBase(w, h);
+    for (auto& element : world.ui.uiElements) {
+        SDL_FRect rect = element.calculateBase(w, h);
 
-        if(el.name == "declareWarBtn" && world.selectedCountry == world.playerCountry){
+        if(element.name == "declareWarBtn" && world.selectedCountry == world.playerCountry){
             continue;
         }
-        if(world.selectedCountry == "NONE" && (el.name == "countryFlagFrame" || el.name == "countryFlagTex" || el.name == "sidePanel"|| el.name == "declareWarBtn")){
+        if(world.selectedCountry == "NONE" && (element.name == "countryFlagFrame" || element.name == "countryFlagTex" || element.name == "sidePanel"|| element.name == "declareWarBtn")){
             continue;
         }
         
-        if (el.texture) {
-            SDL_RenderCopyF(renderer, el.texture, nullptr, &rect);
+        if (element.texture) {
+            SDL_RenderCopyF(renderer, element.texture, nullptr, &rect);
         } else {
-            SDL_SetRenderDrawColor(renderer, el.color.r, el.color.g, el.color.b, el.color.a);
+            SDL_SetRenderDrawColor(renderer, element.color.r, element.color.g, element.color.b, element.color.a);
             SDL_RenderFillRectF(renderer, &rect);
         }
 
-        if (el.getText) {
-            std::string text = el.getText();
+        if (element.getText) {
+            std::string text = element.getText();
 
             Font* font = nullptr;
             for (auto& f : world.fonts) {
-                if (f.id == el.font) { font = &f; break; }
+                if (f.id == element.font) { font = &f; break; }
             }
             if (!font) continue;
 
@@ -54,7 +54,7 @@ inline void renderUI(SDL_Renderer* renderer, World& world, SDL_Window* window) {
             int tx = (int)(rect.x + (rect.w - tw) * 0.5f);
             int ty = (int)(rect.y + (rect.h - th) * 0.5f);
 
-            renderText(renderer, rect, world, el.font, tx, ty, text);
+            renderText(renderer, rect, world, element.font, tx, ty, text);
         }
     }
 }

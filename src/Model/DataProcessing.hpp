@@ -46,10 +46,10 @@ inline std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFron
 // Adjacency Graph
 // ===============================================================================================================
 
-inline std::map<int, std::vector<int>> buildAdjacency(
-    const std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>>& provinceFrontiers,
-    const std::list<Province>& provinces)
-{
+inline std::map<int, std::vector<int>> buildAdjacency( 
+    const std::map<std::pair<uint32_t, uint32_t>, 
+    std::vector<SDL_FPoint>>& provinceFrontiers,
+    const std::list<Province>& provinces){
     std::map<int, std::vector<int>> adjacency;
     for (const auto& [pair, _] : provinceFrontiers) {
         Province* a = provinceFindByColor(provinces, pair.first);
@@ -63,8 +63,7 @@ inline std::map<int, std::vector<int>> buildAdjacency(
 
 inline std::map<int, std::vector<int>> buildAccessibilityGraph(
     const World& world,
-    const std::vector<std::string>& accessibleCountryTags)
-{
+    const std::vector<std::string>& accessibleCountryTags){
     const std::unordered_set<std::string> accessible(
         accessibleCountryTags.begin(), accessibleCountryTags.end());
 
@@ -92,14 +91,12 @@ inline std::map<int, std::vector<int>> buildAccessibilityGraph(
 }
 
 
-inline void InitAllAccesibiltyGraphs(World& world)
-{
+inline void InitAllAccesibiltyGraphs(World& world){
     for (auto& country : world.countries) {
         country.accessibilityGraph = buildAccessibilityGraph(world, country.accessibleCountries);
     }
 }
-inline void rechargeAccesibilityGraph(World& world, Country* country)
-{
+inline void rechargeAccesibilityGraph(World& world, Country* country){
         country -> accessibilityGraph = buildAccessibilityGraph(world, country -> accessibleCountries);
 }
 

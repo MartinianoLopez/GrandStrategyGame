@@ -1,13 +1,21 @@
 #pragma once
+
+//=================================
+
+#include "Model/World.hpp"
+
+//=================================
+
 #include <list>
 #include <string>
 #include <SDL2/SDL.h>
-#include "Model/World.hpp"
 #include <chrono>
 #include <iostream>
+
 // ===============================================================================================================
 // Time measure
 // ===============================================================================================================
+
 template<typename Func>
 void measureTime(const std::string& label, Func&& function) {
     auto start = std::chrono::high_resolution_clock::now();
@@ -16,9 +24,11 @@ void measureTime(const std::string& label, Func&& function) {
     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
     std::cout << label << ": " << ms << "ms\n";
 }
+
 // ===============================================================================================================
 // surface → texture
 // ===============================================================================================================
+
 inline SDL_Texture* surfaceToTexture(SDL_Renderer* renderer, SDL_Surface* surface) {
     if (!surface) return nullptr;
     SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
@@ -49,6 +59,7 @@ inline SDL_Color getPixel(SDL_Surface* surface, int x, int y) {
     color.a = 255;
     return color;
 }
+
 // ===============================================================================================================
 // color (used only for debuging)
 // ===============================================================================================================
@@ -95,6 +106,7 @@ inline uint32_t getPixelColor(SDL_Surface* surface, int x, int y) {
 // ===============================================================================================================
 // used to prepare countries map
 // ===============================================================================================================
+
 inline void setPixel(SDL_Surface* surface, int x, int y, uint32_t color) {
     Uint8* p = (Uint8*)surface->pixels + y * surface->pitch + x * surface->format->BytesPerPixel;
     *(Uint32*)p = color;
@@ -138,6 +150,9 @@ inline Province* provinceFindByColor(const std::list<Province>& list, uint32_t c
     }
     return nullptr;
 }
+// ===============================================================================================================
+// Texture helpers
+// ===============================================================================================================
 
 inline void displayTexture(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRect& destRect, Uint8 alpha) {
     if (!texture) return;
