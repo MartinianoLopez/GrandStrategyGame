@@ -1,45 +1,49 @@
-# Grand Strategy Game
+# "Kingdoms, Lands and Seas" — Grand Strategy Game
 
-This is a fully 2D, real-time grand strategy game inspired by Europa Universalis IV, made in C++ and SDL2 with IMGUI for debuging info, built around the essential pillars of the genre — territorial control, diplomacy, economic management, warfare, and intelligent AI nations — with a lean, reliable, and scalable core that preserves strategic depth without unnecessary complexity.
+Kingdoms, Lands and Seas aims to be a minimalistic, easy-to-play grand strategy game for players new to the genre, who often struggle to get into this type of game. The game will be set in the 13th century, allowing the player to play as any country in the world during the feudal era, moving forward through the colonization of America and later the rest of the world.
+
+# Technology Choices
+
+The project uses only C++17 and SDL2 for rendering. For the UI, I tried other libraries like IMGUI, RmlUi, and WebView, but none of them offered a simple way to build UI based on PNG textures. So I built a simple compiler that reads a `.txt` file and translates it into UI components. It also supports hot reload, so I can tweak the UI at runtime.
+
+# The Game Engine
+
+The idea going forward is to turn this into a game engine for building any other kind of grand strategy game. Right now all the data is interchangeable, including the UI layout and textures, but the map visuals and the UI's supporting logic (the actions elements perform on click, and the text/information they display) are still deeply hardcoded.
 
 ---
 
 ## Architecture
 
-The project follows a strict **MVC (Model-View-Controller)** pattern to keep concerns cleanly separated and the codebase maintainable as it scales.
 
 ```
-┌───────────────┐     
-│  CONTROLLER   │     
-│  Event Mgmt   │     
-│  Input Handle │     
-└───────┬───────┘     
-        │             
-        ▼             
-┌───────────────┐     ┌───────────────┐
-│     MODEL     │     │  SIMULATION   │
-│  World State  │ <---│ Time Tracking │
-│  Game Data    │     │  Game Events  │
-└───────┬───────┘     └───────────────┘
-        │             
-        ▼             
-┌───────────────┐     
-│     VIEW      │     
-│   Renderer    │     
-│  Layer System │     
-└───────────────┘
+                ┌───────────────┐     
+                │  CONTROLLER   │ 
+                │ Input Handler │     
+                └───────┬───────┘     
+                        │             
+                        ▼             
+                ┌───────────────┐      ┌──────────────-┐
+                │     MODEL     │ ---> │  SIMULATION   │
+                │     World     │ <--- │    Updates    │
+                └───────┬───────┘      └──────────────-┘
+                        │             
+                        ▼             
+                ┌───────────────┐     
+                │     VIEW      │     
+                |   Rendering   |
+                └──────────────-┘
 ```
 
 | Layer | Class | Responsibility |
 |-------|-------|----------------|
-| **Controller** | `EventManager` | Handles user input and routes it to model mutations |
+| **Controller** | `EventManager` | Handles user input |
 | **Simulation** | `Simulation` | Mutates the model driven by time and game events |
-| **Model** | `World` | Single source of truth — nations, provinces, armies, relations |
-| **View** | `Renderer` | Draws all visual layers in order; no game logic |
+| **Model** | `World` | God object with all the data but no logic |
+| **View** | `Renderer` | Draws all data to the screen |
 
 ---
 
-## Screenshots
+## Screenshots on development stage
 
 | | |
 |---|---|
@@ -48,7 +52,3 @@ The project follows a strict **MVC (Model-View-Controller)** pattern to keep con
 | ![](5.png) | ![](6.png) |
 
 ---
-
-## Future Vision
-
-The long-term goal is a fully moddable grand strategy game where every system is data-driven.
