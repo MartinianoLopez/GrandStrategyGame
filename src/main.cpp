@@ -20,12 +20,11 @@
 
 //=============================================================
 
-void initWorld(World& world){
-    loadAssets(world, world.renderer);
+void loadGame(World& world){
 
-    initUi(world);
-
-    loadUIFromFile(world, "assets/ui/ui_layout.txt", world.renderer);
+    { Timer t("  TotalAssets"); loadAssets(world); }
+    { Timer t("  Ui");          initUi(world); }
+    { Timer t("  UiLayout");    loadUIFromFile(world, "assets/ui/ui_layout.txt", world.renderer); }
 
     world.lastTicks    = SDL_GetTicks();
     world.lastUIReload = SDL_GetTicks();
@@ -95,7 +94,7 @@ int main() {
 
     std::cerr << " -------- LOADING -------- \n";
 
-    initWorld(world);
+    loadGame(world);
 
     std::cerr << " -------- RUNNING -------- \n";
 

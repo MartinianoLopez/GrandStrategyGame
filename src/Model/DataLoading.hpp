@@ -16,8 +16,6 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_image.h>
 
-// ========================
-
 inline void loadProvincesTxt(World& world) {
     std::ifstream file("assets/provinces.txt");
     if (!file.is_open()) { std::cerr << "loadProvincesTxt Error: could not open provinces.txt\n"; return; }
@@ -46,19 +44,13 @@ inline void loadProvincesTxt(World& world) {
     world.provincesData = provincesData;
 }
 
-// ===============================================================================================================
-// Countries
-// ===============================================================================================================
-
-inline std::list<Country> loadCountries(SDL_Renderer* renderer) {
-
-    std::list<Country> countries;
+inline void loadCountries(World& world) {
+    SDL_Renderer* renderer = world.renderer;
 
     std::ifstream file("assets/countries.txt");
 
     if (!file.is_open()) {
         std::cerr << "loadCountries Error: could not open countries.txt\n";
-        return countries;
     }
 
     // format:
@@ -97,7 +89,7 @@ inline std::list<Country> loadCountries(SDL_Renderer* renderer) {
 
         std::string path = "assets/flags/" + tag + ".tga";
         SDL_Texture* flag = IMG_LoadTexture(renderer, path.c_str());
-        countries.emplace_back(
+        world.countries.emplace_back(
             tag,
             name,
             Color(r, g, b),
@@ -105,20 +97,13 @@ inline std::list<Country> loadCountries(SDL_Renderer* renderer) {
             flag
         );
     }
-
-    return countries;
 }
-// ===============================================================================================================
-// armies
-// ===============================================================================================================
-inline std::list<Army> loadArmies(const std::string& path, World& world) {
 
-    std::list<Army> armies;
-    std::ifstream file(path);
+inline void loadArmies(World& world) {
+    std::ifstream file("assets/armies.txt");
 
     if (!file.is_open()) {
-        std::cerr << "loadArmies Error: could not open: " << path << "\n";
-        return armies;
+        std::cerr << "loadArmies Error: could not open: armies.txt" << "\n";
     }
 
     std::string line;
@@ -142,7 +127,7 @@ inline std::list<Army> loadArmies(const std::string& path, World& world) {
         Country* c = findCountryByTag(world.countries, parts[2]);
         if (c) color = c->color;
 
-        armies.emplace_back(
+        world.armies.emplace_back(
             toInt(parts[0]),
             parts[1],
             parts[2],
@@ -150,5 +135,4 @@ inline std::list<Army> loadArmies(const std::string& path, World& world) {
             color
         );
     }
-    return armies;
 }

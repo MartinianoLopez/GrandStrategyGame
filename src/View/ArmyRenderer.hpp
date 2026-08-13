@@ -39,6 +39,7 @@ inline void renderSelectedOverlay(SDL_Renderer* renderer, World& world, int x, i
 }
 
 inline void renderArmy(SDL_Renderer* renderer, World& world, const std::string& fontId, int x, int y, const Army& army) {
+    // this is recreating the renderText function TODO replace it with the already working
     Font* font = nullptr;
     for (auto& f : world.fonts) {
         if (f.id == fontId) { font = &f; break; }

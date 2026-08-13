@@ -57,7 +57,7 @@ inline void renderUI(World& world) {
             int tx = (int)(rect.x + (rect.w - tw) * 0.5f);
             int ty = (int)(rect.y + (rect.h - th) * 0.5f);
 
-            renderText(renderer, rect, world, element.font, tx, ty, text);
+            renderText(rect, world, element.font, tx, ty, text);
         }
     }
 }

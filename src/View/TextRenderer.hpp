@@ -13,7 +13,6 @@
 //============================
 
 inline void renderText(
-    SDL_Renderer* renderer,
     SDL_FRect rect,
     World& world,
     const std::string& fontId,
@@ -21,6 +20,7 @@ inline void renderText(
     int y,
     const std::string& text
 ) {
+    SDL_Renderer* renderer = world.renderer;
     Font* font = nullptr;
     for (auto& f : world.fonts) {
         if (f.id == fontId) {

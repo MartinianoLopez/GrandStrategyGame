@@ -9,21 +9,6 @@
 #include <list>
 #include <string>
 #include <SDL2/SDL.h>
-#include <chrono>
-#include <iostream>
-
-// ===============================================================================================================
-// Time measure
-// ===============================================================================================================
-
-template<typename Func>
-void measureTime(const std::string& label, Func&& function) {
-    auto start = std::chrono::high_resolution_clock::now();
-    function();
-    auto end = std::chrono::high_resolution_clock::now();
-    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
-    std::cout << label << ": " << ms << "ms\n";
-}
 
 // ===============================================================================================================
 // surface → texture

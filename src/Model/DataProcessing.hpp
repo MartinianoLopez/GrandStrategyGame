@@ -15,7 +15,8 @@
 
 //============================
 
-inline std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFrontiers(SDL_Surface* img) {   
+inline void findFrontiers(World& world) {   
+    SDL_Surface* img = world.provincesBmp;
     std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> frontierList;
     int imgW = img->w;
     int imgH = img->h;
@@ -40,17 +41,16 @@ inline std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFron
         }
     }
 
-    return frontierList;
+    world.provinceFrontiers = frontierList;
 }
 
 // ===============================================================================================================
 // Adjacency Graph
 // ===============================================================================================================
 
-inline std::map<int, std::vector<int>> buildAdjacency( 
-    const std::map<std::pair<uint32_t, uint32_t>, 
-    std::vector<SDL_FPoint>>& provinceFrontiers,
-    const std::list<Province>& provinces){
+inline void buildAdjacency(World& world){
+    const std::map<std::pair<uint32_t, uint32_t>,std::vector<SDL_FPoint>>& provinceFrontiers = world.provinceFrontiers;
+    const std::list<Province>& provinces = world.provinces;
     std::map<int, std::vector<int>> adjacency;
     for (const auto& [pair, _] : provinceFrontiers) {
         Province* a = provinceFindByColor(provinces, pair.first);
@@ -59,12 +59,10 @@ inline std::map<int, std::vector<int>> buildAdjacency(
         adjacency[a->id].push_back(b->id);
         adjacency[b->id].push_back(a->id);
     }
-    return adjacency;
+    world.adjacencyGraph = adjacency;
 }
 
-inline std::map<int, std::vector<int>> buildAccessibilityGraph(
-    const World& world,
-    const std::vector<std::string>& accessibleCountryTags){
+inline std::map<int, std::vector<int>> buildAccessibilityGraph(const World& world, const std::vector<std::string>& accessibleCountryTags){
     const std::unordered_set<std::string> accessible(
         accessibleCountryTags.begin(), accessibleCountryTags.end());
 
@@ -106,8 +104,8 @@ inline void rechargeAccesibilityGraph(World& world, Country* country){
 // Frontiers
 // ===============================================================================================================
 
-inline std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFrontiersBetweenCountries( World& world, const std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>>& frontiers) {
-    
+inline void findFrontiersBetweenCountries( World& world) {
+    std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>>& frontiers = world.provinceFrontiers;
     std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> filteredFrontiers;
 
     for (const auto& [key, points] : frontiers) {
@@ -127,7 +125,7 @@ inline std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> findFron
         }
     }
 
-    return filteredFrontiers;
+    world.countryFrontiers = filteredFrontiers;
 }
 
 // ===============================================================================================================
@@ -175,16 +173,16 @@ inline std::map<uint32_t, SDL_Point> initProvincesCenters(const World& world) {
     return centerList;
 }
 
-inline SDL_Surface* prepareCountries(SDL_Renderer* renderer,const World& world) {
-    auto start = std::chrono::high_resolution_clock::now();
+inline void prepareCountries(World& world) {
+    SDL_Renderer* renderer = world.renderer;
 
     SDL_Surface* provinces = world.provincesBmp;
-    if (!provinces) return nullptr;
+    if (!provinces) return;
 
     SDL_Surface* result = SDL_CreateRGBSurfaceWithFormat(
         0, provinces->w, provinces->h, 32, SDL_PIXELFORMAT_RGBA32
     );
-    if (!result) return nullptr;
+    if (!result) return;
 
     SDL_FillRect(result, nullptr, SDL_MapRGBA(result->format, 0, 0, 0, 0));
 
@@ -228,8 +226,5 @@ inline SDL_Surface* prepareCountries(SDL_Renderer* renderer,const World& world) 
     SDL_UnlockSurface(provinces);
     SDL_UnlockSurface(result);
 
-    auto end = std::chrono::high_resolution_clock::now();
-    float ms = std::chrono::duration<float, std::milli>(end - start).count();
-    std::cerr << "prepareCountries: " << ms << " ms\n";
-    return result;
+    world.countriesImg = result;
 }

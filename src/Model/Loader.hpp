@@ -6,6 +6,7 @@
 #include "DataProcessing.hpp"
 #include "DataLoading.hpp"
 #include "../utils.hpp"
+#include "../utils/Timer.hpp"
 
 // ========================
 
@@ -13,14 +14,11 @@
 #include <string>
 #include "SDL_pixels.h"
 #include "SDL_render.h"
-#include <iostream>
 #include <algorithm>
 #include <SDL2/SDL_image.h>
-#include <chrono>
 #include <SDL2/SDL_image.h>
 
 // ========================
-
 
 inline std::unordered_map<int, std::vector<std::pair<uint16_t, uint16_t>>> buildShapes(World& world) {
     SDL_Surface* surface = world.provincesBmp;
@@ -139,56 +137,54 @@ inline void buildProvinceIdMap(World& world) {
 // LOAD ALL
 // ===============================================================================================================
 
-inline void loadAssets(World& world, SDL_Renderer* renderer) {
+static std::string FOLDERPATH = "assets/terrainCustom/";
+static float STARTING_COORDINATES[] = {0.57f, 0.22f};
 
-    auto start = std::chrono::high_resolution_clock::now();
+inline void loadAssets(World& world) {
+    SDL_Renderer* renderer = world.renderer;
 
-    std::string folderpath = "assets/terrainCustom/";
-    world.provincesBmp = IMG_Load("assets/terrainCustom/provinces.bmp");
-    world.terrain = surfaceToTexture(renderer, IMG_Load((folderpath + "terrain.bmp").c_str()));
-    world.height  = surfaceToTexture(renderer, IMG_Load((folderpath + "heightmap.bmp").c_str()));
+    world.provincesBmp = IMG_Load((FOLDERPATH + "provinces.bmp").c_str());
+    world.terrain = surfaceToTexture(renderer, IMG_Load((FOLDERPATH + "terrain.bmp").c_str()));
+    world.height  = surfaceToTexture(renderer, IMG_Load((FOLDERPATH + "heightmap.bmp").c_str()));
 
     world.texWidth  = world.provincesBmp->w;
     world.texHeight = world.provincesBmp->h;
+    
+    // load files
 
-    measureTime("Provinces", [&]() { loadProvinces(world); });
+    { Timer t("Provinces"); loadProvinces(world); }
+    { Timer t("Countries"); loadCountries(world); }
+    { Timer t("Armies");    loadArmies(world); }
+    
+    // data processing
 
-    world.countries = loadCountries(renderer);
+    { Timer t("ProcessColors"); desaturateCountries(world.countries, 0.3, 5); }
+    { Timer t("PrepareCountries"); prepareCountries(world); }
 
-    desaturateCountries(world.countries, 0.3, 5);
-
-    world.armies    = loadArmies("assets/armies.txt", world);
-    world.countriesImg = prepareCountries(renderer,world);
     world.countriesTex = surfaceToTexture(renderer, world.countriesImg);
+
     world.controlSur = SDL_CreateRGBSurfaceWithFormat(0, world.provincesBmp->w, world.provincesBmp->h, 32, SDL_PIXELFORMAT_RGBA32);
+
     world.controlTex = surfaceToTexture(renderer, world.controlSur);
 
-    world.provinceFrontiers = findFrontiers(world.provincesBmp);
-    world.countryFrontiers  = findFrontiersBetweenCountries(world, world.provinceFrontiers);
-
-    world.adjacencyGraph = buildAdjacency(world.provinceFrontiers, world.provinces);
-
-    buildProvinceIdMap(world);
-    InitAllAccesibiltyGraphs(world);
+    { Timer t("FindFrontiers");         findFrontiers(world); }
+    { Timer t("FindCountryFrontiers");  findFrontiersBetweenCountries(world); }
+    { Timer t("BuildAdjacency");        buildAdjacency(world); }
+    { Timer t("BuildProvinces"); buildProvinceIdMap(world); }
+    { Timer t("BuildAccesibilityGraphs"); InitAllAccesibiltyGraphs(world); }
 
     if (TTF_Init() == -1) {
         SDL_Log("TTF init error: %s", TTF_GetError());
         return;
     }
+
     world.fonts.push_back(initFont(renderer, "army", "assets/fonts/Nunito/Nunito-VariableFont_wght.ttf", {0, 0, 0, 255}, 12));
     world.fonts.push_back(initFont(renderer, "simple", "assets/fonts/Cinzel/static/Cinzel-Medium.ttf", {0, 0, 0, 255}, 18));
     world.fonts.push_back(initFont(renderer, "fancy", "assets/fonts/Cinzel/Cinzel-VariableFont_wght.ttf", {220, 220, 220, 255}, 22));
-    
-
-    auto end = std::chrono::high_resolution_clock::now();
-    float ms = std::chrono::duration<float, std::milli>(end - start).count();
-
 
     world.finalScale = std::min(1920.0f / world.texWidth,1080.0f / world.texHeight) * world.scale;
 
     // center starts over europe 
-    world.offsetX = 0.57f * (1920 - world.texWidth * world.finalScale);
-    world.offsetY = 0.22f * (1080 - world.texHeight * world.finalScale);
-
-    std::cerr << "time: " << ms << " ms\n";
+    world.offsetX = STARTING_COORDINATES[0] * (1920 - world.texWidth * world.finalScale);
+    world.offsetY = STARTING_COORDINATES[1] * (1080 - world.texHeight * world.finalScale);
 }
