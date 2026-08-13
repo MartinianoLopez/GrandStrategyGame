@@ -267,6 +267,7 @@ struct World{
 
     int selectedProvince = 0;
     int objectiveProvince = 0;
+    
     std::string selectedCountry = "";
     std::vector<Army*> selectedArmies;
 

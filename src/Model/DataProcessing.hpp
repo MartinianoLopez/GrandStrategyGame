@@ -63,27 +63,33 @@ inline void buildAdjacency(World& world){
 }
 
 inline std::map<int, std::vector<int>> buildAccessibilityGraph(const World& world, const std::vector<std::string>& accessibleCountryTags){
+
     const std::unordered_set<std::string> accessible(
         accessibleCountryTags.begin(), accessibleCountryTags.end());
 
-    std::unordered_map<int, Province*> idMap;
-    for (auto& province : world.provinces)
-        idMap[province.id] = const_cast<Province*>(&province);
+    int maxId = 0;
+    for (auto& p : world.provinces) maxId = std::max(maxId, p.id);
+    std::vector<const Province*> idMap(maxId + 1, nullptr);
+    for (auto& p : world.provinces) idMap[p.id] = &p;
+
+    std::vector<char> isAccessible(maxId + 1, 0);
+    for (int id = 0; id <= maxId; ++id)
+        if (idMap[id] && accessible.count(idMap[id]->owner))
+            isAccessible[id] = 1;
 
     std::map<int, std::vector<int>> adjacency;
 
     for (const auto& [provinceId, neighbors] : world.adjacencyGraph) {
-        auto itA = idMap.find(provinceId);
-        if (itA == idMap.end() || !accessible.count(itA->second->owner)) continue;
+        if (provinceId > maxId || !isAccessible[provinceId]) continue;
 
-        //std::cout << "Processing province: " << provinceId << " owner: " << itA->second->owner << std::endl;
+        std::vector<int> out;
+        out.reserve(neighbors.size());
+        for (int neighborId : neighbors)
+            if (neighborId <= maxId && isAccessible[neighborId])
+                out.push_back(neighborId);
 
-        for (int neighborId : neighbors) {
-            auto itB = idMap.find(neighborId);
-            if (itB == idMap.end() || !accessible.count(itB->second->owner)) continue;
-
-            adjacency[provinceId].push_back(neighborId);
-        }
+        if (!out.empty())
+            adjacency.emplace(provinceId, std::move(out));
     }
 
     return adjacency;
@@ -133,24 +139,19 @@ inline void findFrontiersBetweenCountries( World& world) {
 // ===============================================================================================================
 
 inline std::map<uint32_t, SDL_Point> initProvincesCenters(const World& world) {
-
     struct Accum {
-        int sumX = 0;
-        int sumY = 0;
+        int64_t sumX = 0;
+        int64_t sumY = 0;
         int count = 0;
     };
 
-    std::map<uint32_t, Accum> accum;
+    std::unordered_map<uint32_t, Accum> accum;
+    accum.reserve(1024);
 
     for (int y = 0; y < world.texHeight; y++) {
-
         for (int x = 0; x < world.texWidth; x++) {
-
-            uint32_t color =
-                getPixelColor(world.provincesBmp, x, y);
-
+            uint32_t color = getPixelColor(world.provincesBmp, x, y);
             auto& a = accum[color];
-
             a.sumX += x;
             a.sumY += y;
             a.count++;
@@ -158,17 +159,8 @@ inline std::map<uint32_t, SDL_Point> initProvincesCenters(const World& world) {
     }
 
     std::map<uint32_t, SDL_Point> centerList;
-
-    for (auto& [color, a] : accum) {
-
-        if (a.count > 0) {
-
-            centerList[color] = {
-                a.sumX / a.count,
-                a.sumY / a.count
-            };
-        }
-    }
+    for (auto& [color, a] : accum)
+        centerList[color] = { (int)(a.sumX / a.count), (int)(a.sumY / a.count) };
 
     return centerList;
 }
