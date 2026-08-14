@@ -12,7 +12,7 @@
 
 #include <string>
 #include <fstream>
-#include <sstream>
+#include <nlohmann/json.hpp>
 #include <functional>
 #include <algorithm>
 #include <SDL2/SDL.h>
@@ -144,6 +144,17 @@ inline void reloadFlagTextures(World& world) {
 // Ui Layout 
 // ===============================================================================================================
 
+inline void sortUiElements(World& world) {
+    // sorts the ui elements by the zIndex for rendering
+    std::sort(
+        world.ui.uiElements.begin(),
+        world.ui.uiElements.end(),
+        [](const UIElement& a, const UIElement& b) {
+            return a.zOrder < b.zOrder;
+        }
+    );
+}
+
 inline std::string screenName(MenuPlace place) {
     switch (place) {
         case MenuPlace::MainMenu:          return "MainMenu";
@@ -154,134 +165,105 @@ inline std::string screenName(MenuPlace place) {
     return "";
 }
 
-inline void parsePanel(World& world, std::istringstream& ss) {
-    std::string name;
-    int x, y, w, h, r, g, b, a, z;
-    std::string texName;
-    ss >> name >> x >> y >> w >> h >> texName >> r >> g >> b >> a >> z;
+using json = nlohmann::json;
 
+inline SDL_Color parseColor(const json& j) {
+    if (!j.contains("color")) return {0,0,0,0};
+    auto c = j["color"];
+    return {(Uint8)c[0], (Uint8)c[1], (Uint8)c[2], (Uint8)c[3]};
+}
+
+inline void parsePanel(World& world, const json& e) {
     SDL_Texture* tex = nullptr;
-    if (world.ui.Textures.count(texName))
-        tex = world.ui.Textures[texName];
+    if (world.ui.Textures.count(e["texture"]))
+        tex = world.ui.Textures[e["texture"]];
 
     world.ui.uiElements.push_back({
-        {x, y, w, h}, tex,
-        {(Uint8)r,(Uint8)g,(Uint8)b,(Uint8)a},
-        z, nullptr, nullptr, "fancy", name
+        {e["x"], e["y"], e["w"], e["h"]}, tex,
+        parseColor(e),
+        e["zOrder"], nullptr, nullptr, "fancy", e["name"]
     });
 }
 
-inline void parseText(World& world, std::istringstream& ss) {
-    std::string name;
-    int x, y, w, h, z;
-    std::string font, endpointKey;
-    ss >> name >> x >> y >> w >> h >> font >> z >> endpointKey;
-
+inline void parseText(World& world, const json& e) {
     std::function<std::string()> getText = nullptr;
+    std::string endpointKey = e["endpoint"];
     if (world.ui.hooks.count(endpointKey)) {
         auto fn = world.ui.hooks[endpointKey];
         getText = [fn, &world]() { return fn(world); };
     }
 
     world.ui.uiElements.push_back({
-        {x, y, w, h}, nullptr, {0,0,0,0},
-        z, nullptr, getText, font, name
+        {e["x"], e["y"], e["w"], e["h"]}, nullptr, {0,0,0,0},
+        e["zOrder"], nullptr, getText, e["font"], e["name"]
     });
 }
 
-inline void parseButton(World& world, std::istringstream& ss) {
-    std::string name;
-    int x, y, w, h, r, g, b, a;
-    std::string actionKey, texture;
-    ss >> name >> x >> y >> w >> h >> r >> g >> b >> a >> actionKey >> texture;
-
-    std::string label;
-    std::getline(ss, label);
-    if (!label.empty() && label[0] == ' ') label = label.substr(1);
-
+inline void parseButton(World& world, const json& e) {
     std::function<void()> onClick = nullptr;
+    std::string actionKey = e["action"];
     if (world.ui.actions.count(actionKey)) {
         auto fn = world.ui.actions[actionKey];
         onClick = [fn, &world]() { fn(world); };
     }
 
     SDL_Texture* tex = nullptr;
-    if (world.ui.Textures.count(texture))
-        tex = world.ui.Textures[texture];
+    if (world.ui.Textures.count(e["texture"]))
+        tex = world.ui.Textures[e["texture"]];
+
+    std::string label = e.value("label", "");
 
     world.ui.uiElements.push_back({
-        {x, y, w, h}, tex,
-        {(Uint8)r,(Uint8)g,(Uint8)b,(Uint8)a},
-        2, onClick, [label]() { return label; }, "simple", name
+        {e["x"], e["y"], e["w"], e["h"]}, tex,
+        parseColor(e),
+        2, onClick, [label]() { return label; }, "simple", e["name"]
     });
 }
 
-inline void parseGroupButton(World& world, std::istringstream& ss) {
-    std::string name;
-    int x, y, w, h;
-    std::string texture, action, group;
-    ss >> name >> x >> y >> w >> h >> texture >> action >> group;
-
+inline void parseGroupButton(World& world, const json& e) {
     std::function<void()> onClick = nullptr;
-    if (world.ui.actions.count(action)) {
-        auto fn = world.ui.actions[action];
+    std::string actionKey = e["action"];
+    if (world.ui.actions.count(actionKey)) {
+        auto fn = world.ui.actions[actionKey];
         onClick = [fn, &world]() { fn(world); };
     }
 
     SDL_Texture* tex = nullptr;
-    if (world.ui.Textures.count(texture))
-        tex = world.ui.Textures[texture];
+    if (world.ui.Textures.count(e["texture"]))
+        tex = world.ui.Textures[e["texture"]];
 
     world.ui.uiElements.push_back({
-        {x, y, w, h}, tex,
-        {}, 2, onClick, nullptr, "simple", name
+        {e["x"], e["y"], e["w"], e["h"]}, tex,
+        {}, 2, onClick, nullptr, "simple", e["name"]
     });
 }
 
-inline void sortUiElements(World& world) {
-    std::sort(
-        world.ui.uiElements.begin(),
-        world.ui.uiElements.end(),
-        [](const UIElement& a, const UIElement& b) {
-            return a.zOrder < b.zOrder;
-        }
-    );
-}
-
-inline void loadUIFromFile(World& world, const std::string& path, SDL_Renderer* renderer) {
+inline void parseLayout(World& world) {
+    const std::string& path = "assets/ui/ui_layout.json";
     std::ifstream file(path);
     if (!file.is_open()) return;
+
+    json data;
+    file >> data;
 
     world.ui.uiElements.clear();
 
     std::string targetScreen = screenName(world.ui.place);
-    bool inTarget = false;
 
-    std::string line;
-    while (std::getline(file, line)) {
+    for (auto& screen : data["screens"]) {
+        if (screen["name"] != targetScreen) continue;
 
-        if (line.empty() || line[0] == '#') continue;
-
-        std::istringstream ss(line);
-        std::string token;
-        ss >> token;
-
-        if (token == "SCREEN") {
-            std::string name;
-            ss >> name;
-            inTarget = (name == targetScreen);
-            continue;
+        for (auto& e : screen["elements"]) {
+            std::string type = e["type"];
+            if      (type == "PANEL")       parsePanel(world, e);
+            else if (type == "TEXT")        parseText(world, e);
+            else if (type == "BUTTON")      parseButton(world, e);
+            else if (type == "GROUPBUTTON") parseGroupButton(world, e);
         }
-
-        if (!inTarget) continue;
-
-        if      (token == "PANEL")       parsePanel(world, ss);
-        else if (token == "TEXT")        parseText(world, ss);
-        else if (token == "BUTTON")      parseButton(world, ss);
-        else if (token == "GROUPBUTTON") parseGroupButton(world, ss);
-
-        sortUiElements(world);
+        break;
     }
+
+    sortUiElements(world);
 }
 
 inline void loadAllUITextures(World& world, SDL_Renderer* renderer) {
@@ -304,11 +286,18 @@ inline void loadAllUITextures(World& world, SDL_Renderer* renderer) {
 // ===============================================================================================================
 
 inline void reloadUI(World& world, Uint32 frameStart){
-    bool placeChanged = world.ui.place != world.lastPlace;
-    bool timerFired   = (frameStart - world.lastUIReload) >= 2000;
+    
+    // if the user moved to other place of the game
+    bool userMovedToOtherScreen = world.ui.place != world.lastPlace;
 
-    if (placeChanged || (world.debugging && timerFired)) {
-        loadUIFromFile(world, "assets/ui/ui_layout.txt", world.renderer);
+    // hot reloading only on debugging mode
+    bool isTimeForUiReloading = (frameStart - world.lastUIReload) >= world.HOT_RELOAD_WAIT_TIME;
+    if(world.DEBUGGING_MODE == false){
+        isTimeForUiReloading = false;
+    }
+
+    if (userMovedToOtherScreen || isTimeForUiReloading) {
+        parseLayout(world);
         world.lastPlace    = world.ui.place;
         world.lastUIReload = frameStart;
     }

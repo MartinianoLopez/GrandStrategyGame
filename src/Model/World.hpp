@@ -236,14 +236,22 @@ struct World{
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     }
+    //Dev Flags
+    const bool DEBUGGING_MODE = true;
+    const int HOT_RELOAD_WAIT_TIME = 200;
+
+    bool running = true;
     
-    bool debugging = false;
-    Uint32 lastTicks    = 0;
-    Uint32 lastUIReload = 0;
-    MenuPlace lastPlace;
+
     Ui ui = Ui();
+    MenuPlace lastPlace;
+
     SDL_Window* window;
     SDL_Renderer* renderer;
+
+    Uint32 lastTicks    = 0;
+    Uint32 lastUIReload = 0;
+
     Time time = Time(1444, 11, 1);
     int armyMovementSpeed = 25;
     
@@ -287,7 +295,6 @@ struct World{
     float fps = 0.0f;
    
     bool dragging = false;
-    bool running = true;
     bool freecamera = false; 
 
     std::list<Font> fonts;
@@ -298,6 +305,7 @@ struct World{
     //====================================================================
     // Map modes
     //====================================================================
+    
     std::string mapMode = "normal";
     SDL_Texture* activeAccessibilityMap = nullptr;
     SDL_Texture* activeDiplomaticMap = nullptr;

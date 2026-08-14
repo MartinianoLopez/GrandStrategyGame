@@ -1,0 +1,49 @@
+{
+  "screens": [
+    {
+      "name": "MainMenu",
+      "elements": [
+        {"type":"PANEL","name":"mainPanel","x":25,"y":50,"w":50,"h":50,"texture":"table","color":[0,0,0,0],"zOrder":1},
+        {"type":"BUTTON","name":"playBtn","x":35,"y":63,"w":30,"h":7,"color":[34,139,34,240],"action":"goto:CountrySelection","texture":"booton","label":"PLAY"}
+      ]
+    },
+    {
+      "name": "CountrySelection",
+      "elements": [
+        {"type":"PANEL","name":"selectionPanel","x":76,"y":20,"w":22,"h":65,"texture":"table","color":[0,0,0,0],"zOrder":1},
+        {"type":"PANEL","name":"countryText","x":76,"y":20,"w":22,"h":10,"texture":"timeFrame","color":[26,26,26,200],"zOrder":3},
+        {"type":"TEXT","name":"countryText","x":76,"y":20,"w":22,"h":10,"font":"fancy","zOrder":4,"endpoint":"selected_country"},
+        {"type":"PANEL","name":"countryFlagFrame","x":73,"y":32,"w":28,"h":28,"texture":"flagFrame","color":[0,0,0,0],"zOrder":22},
+        {"type":"PANEL","name":"countryFlagTex","x":77,"y":35,"w":20,"h":22,"texture":"selectedCountryFlagTex","color":[0,0,0,0],"zOrder":2},
+        {"type":"BUTTON","name":"playBtn","x":79,"y":68,"w":16,"h":6,"color":[34,139,34,240],"action":"play_if_selected","texture":"booton","label":"PLAY"},
+        {"type":"BUTTON","name":"backBtn","x":79,"y":74,"w":16,"h":6,"color":[160,40,40,240],"action":"goto:MainMenu","texture":"booton","label":"BACK"}
+      ]
+    },
+    {
+      "name": "InGame",
+      "elements": [
+        {"type":"PANEL","name":"PlayerflagFrame","x":0,"y":0,"w":10,"h":18,"texture":"flagFrame","color":[0,0,0,0],"zOrder":2},
+        {"type":"PANEL","name":"PlayerflagTex","x":1,"y":1,"w":8,"h":17,"texture":"PlayerflagTexture","color":[0,0,0,0],"zOrder":1},
+        {"type":"PANEL","name":"statusBar","x":10,"y":0,"w":45,"h":10,"texture":"statusBar","color":[26,26,26,220],"zOrder":1},
+        {"type":"GROUPBUTTON","name":"coinsBtn","x":14,"y":3,"w":3,"h":3,"texture":"coins","action":"coins","group":"CoinsGroup"},
+        {"type":"TEXT","name":"moneyText","x":16,"y":3,"w":5,"h":4,"font":"fancy","zOrder":2,"endpoint":"player_money"},
+        {"type":"PANEL","name":"timeFrame","x":79,"y":0,"w":21,"h":10,"texture":"timeFrame","color":[26,26,26,200],"zOrder":1},
+        {"type":"GROUPBUTTON","name":"speed0Btn","x":86,"y":10,"w":5,"h":5,"texture":"0speed","action":"timeSpeed0","group":"TimeBootons"},
+        {"type":"GROUPBUTTON","name":"speed1Btn","x":89,"y":10,"w":5,"h":5,"texture":"1speed","action":"timeSpeed1","group":"TimeBootons"},
+        {"type":"GROUPBUTTON","name":"speed2Btn","x":92,"y":10,"w":5,"h":5,"texture":"2speed","action":"timeSpeed2","group":"TimeBootons"},
+        {"type":"GROUPBUTTON","name":"speed3Btn","x":95,"y":10,"w":5,"h":5,"texture":"3speed","action":"timeSpeed3","group":"TimeBootons"},
+        {"type":"TEXT","name":"dateText","x":86,"y":3,"w":8,"h":4,"font":"fancy","zOrder":2,"endpoint":"date"},
+        {"type":"PANEL","name":"provinceBar","x":35,"y":92,"w":30,"h":6,"texture":"booton","color":[26,26,26,200],"zOrder":1},
+        {"type":"TEXT","name":"provinceText","x":36,"y":93,"w":28,"h":4,"font":"simple","zOrder":2,"endpoint":"selected_province"},
+        {"type":"GROUPBUTTON","name":"recruitBtn","x":95,"y":65,"w":6,"h":6,"texture":"recruit","action":"recruit","group":"RecruitGroup"},
+        {"type":"GROUPBUTTON","name":"accessBtn","x":95,"y":84,"w":6,"h":6,"texture":"accessButton","action":"mapModeAccess","group":"MapModeBootons"},
+        {"type":"GROUPBUTTON","name":"terrainBtn","x":95,"y":90,"w":6,"h":6,"texture":"terrainButton","action":"mapModeTerrain","group":"MapModeBootons"},
+        {"type":"GROUPBUTTON","name":"diplomacyBtn","x":95,"y":78,"w":6,"h":6,"texture":"diplomacy","action":"mapModeDiplomacy","group":"MapModeBootons"},
+        {"type":"PANEL","name":"countryFlagFrame","x":3,"y":54,"w":8,"h":11,"texture":"flagFrame","color":[0,0,0,0],"zOrder":22},
+        {"type":"PANEL","name":"countryFlagTex","x":3,"y":56,"w":8,"h":8,"texture":"selectedCountryFlagTex","color":[0,0,0,0],"zOrder":2},
+        {"type":"PANEL","name":"sidePanel","x":-18,"y":50,"w":50,"h":50,"texture":"table","color":[0,0,0,0],"zOrder":1},
+        {"type":"BUTTON","name":"declareWarBtn","x":2,"y":66,"w":10,"h":6,"color":[160,40,40,240],"action":"declareWar","texture":"booton","label":"Declare War"}
+      ]
+    }
+  ]
+}
