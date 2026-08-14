@@ -134,52 +134,21 @@ struct Font {
 
 //==================================
 
-struct UIRect { int x, y, w, h; };
-
 struct UIElement {
-   
-    UIRect boundsNorm;
-    SDL_Texture* texture; // 4
-    SDL_Color color;
-    int zOrder;
-    std::function<void()> onClick;
-    std::function<std::string()> getText;
-    std::string font = "simple";
     std::string name;
-    
-    SDL_FRect calculateBase(int w, int h) const {
+    int zIndex = 0;
 
-        SDL_FRect base = { boundsNorm.x/100.f * w, boundsNorm.y/100.f * h,
-                   boundsNorm.w/100.f * w, boundsNorm.h/100.f * h };
+    SDL_FRect rect;
+    SDL_Texture* texture = nullptr;
+    SDL_Color color{};
 
-        if (!texture) return base;
+    std::function<void()> onClick;
+    std::function<std::string()> textProvider;
+    std::string font = "default";
 
-        int texW, texH;
-        SDL_QueryTexture(texture, nullptr, nullptr, &texW, &texH);
-
-        float texRatio  = (float)texW / texH;
-        float boxRatio  = base.w / base.h;
-
-        if (texRatio > boxRatio) {
-            // limitado por ancho
-            float newH = base.w / texRatio;
-            base.y += (base.h - newH) * 0.5f;
-            base.h  = newH;
-        } else {
-            // limitado por alto
-            float newW = base.h * texRatio;
-            base.x += (base.w - newW) * 0.5f;
-            base.w  = newW;
-        }
-
-        return base;
-    }
-
-    bool contains(int x, int y, int w, int h) const {
-        SDL_FRect r = calculateBase(w, h);
-        return x >= r.x && x < r.x + r.w &&
-               y >= r.y && y < r.y + r.h;
-    }
+    bool hoverable = false;
+    bool toggle = false;      // stays pressed (checkbox)
+    bool pressed = false;     // runtime state of toggle
 };
 
 //================================================
@@ -276,7 +245,7 @@ struct World{
     int selectedProvince = 0;
     int objectiveProvince = 0;
     
-    std::string selectedCountry = "";
+    std::string selectedCountry = "NONE";
     std::vector<Army*> selectedArmies;
 
     int texWidth = 0;

@@ -145,12 +145,11 @@ inline void reloadFlagTextures(World& world) {
 // ===============================================================================================================
 
 inline void sortUiElements(World& world) {
-    // sorts the ui elements by the zIndex for rendering
     std::sort(
         world.ui.uiElements.begin(),
         world.ui.uiElements.end(),
         [](const UIElement& a, const UIElement& b) {
-            return a.zOrder < b.zOrder;
+            return a.zIndex < b.zIndex;
         }
     );
 }
@@ -167,75 +166,50 @@ inline std::string screenName(MenuPlace place) {
 
 using json = nlohmann::json;
 
-inline SDL_Color parseColor(const json& j) {
-    if (!j.contains("color")) return {0,0,0,0};
-    auto c = j["color"];
-    return {(Uint8)c[0], (Uint8)c[1], (Uint8)c[2], (Uint8)c[3]};
-}
-
-inline void parsePanel(World& world, const json& e) {
+inline void parseElement(World& world, const json& e) {
     SDL_Texture* tex = nullptr;
-    if (world.ui.Textures.count(e["texture"]))
-        tex = world.ui.Textures[e["texture"]];
+    if (e.contains("texture") && !e["texture"].is_null() && world.ui.Textures.count(e["texture"].get<std::string>()))
+        tex = world.ui.Textures[e["texture"].get<std::string>()];
 
-    world.ui.uiElements.push_back({
-        {e["x"], e["y"], e["w"], e["h"]}, tex,
-        parseColor(e),
-        e["zOrder"], nullptr, nullptr, "fancy", e["name"]
-    });
-}
-
-inline void parseText(World& world, const json& e) {
-    std::function<std::string()> getText = nullptr;
-    std::string endpointKey = e["endpoint"];
-    if (world.ui.hooks.count(endpointKey)) {
-        auto fn = world.ui.hooks[endpointKey];
-        getText = [fn, &world]() { return fn(world); };
-    }
-
-    world.ui.uiElements.push_back({
-        {e["x"], e["y"], e["w"], e["h"]}, nullptr, {0,0,0,0},
-        e["zOrder"], nullptr, getText, e["font"], e["name"]
-    });
-}
-
-inline void parseButton(World& world, const json& e) {
     std::function<void()> onClick = nullptr;
-    std::string actionKey = e["action"];
-    if (world.ui.actions.count(actionKey)) {
-        auto fn = world.ui.actions[actionKey];
-        onClick = [fn, &world]() { fn(world); };
+    if (e.contains("action") && !e["action"].is_null()) {
+        std::string actionKey = e["action"].get<std::string>();
+        if (world.ui.actions.count(actionKey)) {
+            auto fn = world.ui.actions[actionKey];
+            onClick = [fn, &world]() { fn(world); };
+        }
     }
 
-    SDL_Texture* tex = nullptr;
-    if (world.ui.Textures.count(e["texture"]))
-        tex = world.ui.Textures[e["texture"]];
-
-    std::string label = e.value("label", "");
-
-    world.ui.uiElements.push_back({
-        {e["x"], e["y"], e["w"], e["h"]}, tex,
-        parseColor(e),
-        2, onClick, [label]() { return label; }, "simple", e["name"]
-    });
-}
-
-inline void parseGroupButton(World& world, const json& e) {
-    std::function<void()> onClick = nullptr;
-    std::string actionKey = e["action"];
-    if (world.ui.actions.count(actionKey)) {
-        auto fn = world.ui.actions[actionKey];
-        onClick = [fn, &world]() { fn(world); };
+    std::function<std::string()> textProvider = nullptr;
+    if (e.contains("label") && !e["label"].is_null()) {
+        std::string label = e["label"].get<std::string>();
+        textProvider = [label]() { return label; };
+    } else if (e.contains("endpoint") && !e["endpoint"].is_null()) {
+        std::string endpointKey = e["endpoint"].get<std::string>();
+        if (world.ui.hooks.count(endpointKey)) {
+            auto fn = world.ui.hooks[endpointKey];
+            textProvider = [fn, &world]() { return fn(world); };
+        }
     }
 
-    SDL_Texture* tex = nullptr;
-    if (world.ui.Textures.count(e["texture"]))
-        tex = world.ui.Textures[e["texture"]];
+    SDL_FRect rect {
+        e["x"].get<float>(), e["y"].get<float>(),
+        e["w"].get<float>(), e["h"].get<float>()
+    };
 
-    world.ui.uiElements.push_back({
-        {e["x"], e["y"], e["w"], e["h"]}, tex,
-        {}, 2, onClick, nullptr, "simple", e["name"]
-    });
+    UIElement el;
+    el.name = e["name"].get<std::string>();
+    el.zIndex = e.value("zIndex", 0);
+    el.rect = rect;
+    el.texture = tex;
+    el.onClick = onClick;
+    el.textProvider = textProvider;
+    el.font = e.value("font", std::string("default"));
+    el.hoverable = e.value("hoverable", false);
+    el.toggle = e.value("toggle", false);
+    el.pressed = false;
+
+    world.ui.uiElements.push_back(std::move(el));
 }
 
 inline void parseLayout(World& world) {
@@ -253,32 +227,38 @@ inline void parseLayout(World& world) {
     for (auto& screen : data["screens"]) {
         if (screen["name"] != targetScreen) continue;
 
-        for (auto& e : screen["elements"]) {
-            std::string type = e["type"];
-            if      (type == "PANEL")       parsePanel(world, e);
-            else if (type == "TEXT")        parseText(world, e);
-            else if (type == "BUTTON")      parseButton(world, e);
-            else if (type == "GROUPBUTTON") parseGroupButton(world, e);
-        }
+        for (auto& e : screen["elements"])
+            parseElement(world, e);
+
         break;
     }
 
     sortUiElements(world);
 }
 
-inline void loadAllUITextures(World& world, SDL_Renderer* renderer) {
+inline void loadAllUITextures(World& world) {
+    SDL_Renderer* renderer = world.renderer;
     namespace fs = std::filesystem;
-    
+
     for (const auto& entry : fs::recursive_directory_iterator("assets/ui/textures")) {
         if (entry.is_regular_file() && entry.path().extension() == ".png") {
-            std::string key = entry.path().stem().string(); // filename sin extensión
+            std::string key = entry.path().stem().string(); // filename
             SDL_Texture* tex = IMG_LoadTexture(renderer, entry.path().string().c_str());
             if (tex) {
                 world.ui.Textures[key] = tex;
-                //std::cout << "Loaded: " << key << "\n";
             }
         }
     }
+
+    // 1x1 transparent texture, used as a "no texture" placeholder
+    SDL_Texture* empty = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1, 1);
+    SDL_SetTextureBlendMode(empty, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderTarget(renderer, empty);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
+    SDL_SetRenderTarget(renderer, nullptr);
+
+    world.ui.Textures["empty"] = empty;
 }
 
 // ===============================================================================================================
@@ -306,5 +286,5 @@ inline void reloadUI(World& world, Uint32 frameStart){
 inline void initUi(World& world) {
     uiInformation(world);
     registerActions(world);
-    loadAllUITextures(world, world.renderer);
+    loadAllUITextures(world);
 }

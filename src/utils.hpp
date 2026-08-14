@@ -155,3 +155,39 @@ inline SDL_Texture* convertSurfaceToTexture(SDL_Renderer* renderer, SDL_Surface*
     SDL_FreeSurface(converted);
     return texture;
 }
+// ===============================================================================================================
+// ui Helpers
+// ===============================================================================================================
+
+inline SDL_FRect calculateBase(const UIElement& el, int w, int h) {
+    SDL_FRect base = {
+        el.rect.x / 100.f * w, el.rect.y / 100.f * h,
+        el.rect.w / 100.f * w, el.rect.h / 100.f * h
+    };
+
+    if (!el.texture) return base;
+
+    int texW, texH;
+    SDL_QueryTexture(el.texture, nullptr, nullptr, &texW, &texH);
+
+    float texRatio = (float)texW / texH;
+    float boxRatio = base.w / base.h;
+
+    if (texRatio > boxRatio) {
+        float newH = base.w / texRatio;
+        base.y += (base.h - newH) * 0.5f;
+        base.h  = newH;
+    } else {
+        float newW = base.h * texRatio;
+        base.x += (base.w - newW) * 0.5f;
+        base.w  = newW;
+    }
+
+    return base;
+}
+
+inline bool contains(const UIElement& el, int x, int y, int w, int h) {
+    SDL_FRect r = calculateBase(el, w, h);
+    return x >= r.x && x < r.x + r.w &&
+           y >= r.y && y < r.y + r.h;
+}

@@ -102,7 +102,7 @@ inline void onLeftClick(World& world, const SDL_Event& e) {
 
     // Try click on UI Layer
     for (auto it = world.ui.uiElements.rbegin(); it != world.ui.uiElements.rend(); ++it) {
-        if (it->contains(e.button.x, e.button.y, screenW, screenH)) {
+        if (contains(*it, e.button.x, e.button.y, screenW, screenH)) {
             if (it->onClick) it->onClick();
             return; // consumed
         }
@@ -120,15 +120,15 @@ inline void onLeftClick(World& world, const SDL_Event& e) {
     world.selectedProvince = target->id;
     world.selectedCountry = provinceFindById(world.provinces, world.selectedProvince) -> owner;
         
-    if( world.selectedCountry != "NONE" ){
+    if (world.selectedCountry != "NONE") {
         world.ui.Textures["selectedCountryFlagTex"] = findCountryByTag(world.countries, world.selectedCountry) -> flag;
-    }else{
+    } else {
         world.ui.Textures["selectedCountryFlagTex"] = NULL;
     }
         
 // ====================== army selection ============================================
-
-    if (world.ui.place == MenuPlace::InGame){
+  // TODO this here is wrong
+    if (world.ui.place == MenuPlace::InGame) {
 
         world.selectedArmies.clear();
             
@@ -142,19 +142,20 @@ inline void onLeftClick(World& world, const SDL_Event& e) {
     }
 
 // ====================== country selection ====================================
+    // TODO this here is wrong
 
-    if (world.ui.place == MenuPlace::CountrySelection){
+    if (world.ui.place == MenuPlace::CountrySelection) {
 
         Province* province = provinceFindById(world.provinces, world.selectedProvince);
         Country* country = findCountryByTag(world.countries, province->owner);
 
-        if (country){
+        if (country) {
             world.playerCountry = country->tag;
             world.ui.Textures["PlayerflagTexture"] = world.ui.Textures["selectedCountryFlagTex"];
             world.ui.Textures["selectedCountryFlagTex"] = country->flag;
         }
     }
-}    
+} 
     
 inline void onRightClick(World& world, const SDL_Event& e) {
         
