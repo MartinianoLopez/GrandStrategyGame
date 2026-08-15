@@ -12,12 +12,10 @@
 #include <nlohmann/json.hpp>
 #include <string>
 #include <unordered_set>
-#include <functional>
-#include <algorithm>
 
 
 //===========================
-
+// this is a bad aproach
 inline bool isElementHidden(World& world, const UIElement& element) {
     if (element.name == "declareWarBtn" && world.selectedCountry == world.playerCountry)
         return true;
@@ -42,41 +40,24 @@ inline void renderElementTexture(SDL_Renderer* renderer, const UIElement& elemen
     }
 }
 
-inline void renderElementText(World& world, const UIElement& element, const SDL_FRect& rect) {
-    if (!element.textProvider) return;
-
-    Font* font = nullptr;
-    for (auto& f : world.fonts) {
-        if (f.id == element.font) { font = &f; break; }
-    }
-    if (!font) return;
-
-    std::string text = element.textProvider();
-
-    int tw = 0, th = 0;
-    for (unsigned char c : text) {
-        if (c >= 128) continue;
-        Glyph& g = font->glyphs[c];
-        tw += g.w;
-        th = std::max(th, g.h);
-    }
-
-    int tx = (int)(rect.x + (rect.w - tw) * 0.5f);
-    int ty = (int)(rect.y + (rect.h - th) * 0.5f);
-
-    renderText(rect, world, element.font, tx, ty, text);
+inline void renderRects(SDL_Renderer* renderer, const SDL_FRect& rect) {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderDrawRectF(renderer, &rect);
 }
 
-
-inline void renderUI(World& world) {
+inline void renderElement(World& world, UIElement element){
     int w, h;
     SDL_GetWindowSize(world.window, &w, &h);
-
+    SDL_FRect rect = calculateBase(element, w, h);
+    renderElementTexture(world.renderer, element, rect);
+    renderElementText(world, element, rect);
+    if (world.DEBUGGING_MODE) {
+        renderRects(world.renderer, rect);
+    }
+}
+inline void renderUI(World& world) {
     for (auto& element : world.ui.uiElements) {
         if (isElementHidden(world, element)) continue;
-
-        SDL_FRect rect = calculateBase(element, w, h);
-        renderElementTexture(world.renderer, element, rect);
-        renderElementText(world, element, rect);
+        renderElement(world, element);
     }
 }

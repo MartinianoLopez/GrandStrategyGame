@@ -6,6 +6,7 @@
 #include "../utils.hpp"
 #include "../Simulation/Time.hpp"
 #include "../Simulation/Diplomacy.hpp"
+#include "SDL_render.h"
 #include <filesystem>
 
 //===============================
@@ -236,6 +237,19 @@ inline void parseLayout(World& world) {
     sortUiElements(world);
 }
 
+inline void createEmptyTexture(World& world){
+    SDL_Renderer* renderer = world.renderer;
+    // 1x1 transparent texture, used as a "no texture" placeholder
+    SDL_Texture* empty = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1, 1);
+    SDL_SetTextureBlendMode(empty, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderTarget(renderer, empty);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+    SDL_RenderClear(renderer);
+    SDL_SetRenderTarget(renderer, nullptr);
+
+    world.ui.Textures["empty"] = empty;
+}
+
 inline void loadAllUITextures(World& world) {
     SDL_Renderer* renderer = world.renderer;
     namespace fs = std::filesystem;
@@ -249,16 +263,7 @@ inline void loadAllUITextures(World& world) {
             }
         }
     }
-
-    // 1x1 transparent texture, used as a "no texture" placeholder
-    SDL_Texture* empty = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1, 1);
-    SDL_SetTextureBlendMode(empty, SDL_BLENDMODE_BLEND);
-    SDL_SetRenderTarget(renderer, empty);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
-    SDL_RenderClear(renderer);
-    SDL_SetRenderTarget(renderer, nullptr);
-
-    world.ui.Textures["empty"] = empty;
+    createEmptyTexture(world);
 }
 
 // ===============================================================================================================
@@ -275,7 +280,7 @@ inline void reloadUI(World& world, Uint32 frameStart){
     if(world.DEBUGGING_MODE == false){
         isTimeForUiReloading = false;
     }
-
+    // reload layout components
     if (userMovedToOtherScreen || isTimeForUiReloading) {
         parseLayout(world);
         world.lastPlace    = world.ui.place;

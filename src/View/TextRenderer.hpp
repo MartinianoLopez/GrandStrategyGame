@@ -3,52 +3,29 @@
 //============================
 
 #include "../Model/World.hpp"
-
+#include "../Model/FontLoader.hpp"
 //============================
-
-#include "SDL_rect.h"
-#include "SDL_render.h"
+#pragma once
+#include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include <string>
 
-//============================
+// Draws text centered inside rect, using the cache above
+inline void renderElementText(World& world, const UIElement& element, const SDL_FRect& rect) {
+    if (!element.textProvider) return;
 
-inline void renderText(
-    SDL_FRect rect,
-    World& world,
-    const std::string& fontId,
-    int x,
-    int y,
-    const std::string& text
-) {
-    SDL_Renderer* renderer = world.renderer;
-    Font* font = nullptr;
-    for (auto& f : world.fonts) {
-        if (f.id == fontId) {
-            font = &f;
-            break;
-        }
-    }
-    if (!font) return;
+    std::string text = element.textProvider();
+    if (text.empty()) return;
 
-    for (char c : text) {
-        unsigned char uc = static_cast<unsigned char>(c);
+    TextCache& cache = getOrRenderText(world, element.font, text);
+    if (!cache.texture) return;
 
-        if (uc >= 128)
-            continue;
+    SDL_FRect dst = {
+        rect.x + (rect.w - cache.w) * 0.5f,
+        rect.y + (rect.h - cache.h) * 0.5f,
+        (float)cache.w,
+        (float)cache.h
+    };
 
-        Glyph& g = font->glyphs[(int)uc];
-
-        if (!g.tex) continue;
-
-        SDL_Rect dst = {
-            x,
-            y,
-            g.w,
-            g.h
-        };
-
-        SDL_RenderCopy(renderer, g.tex, nullptr, &dst);
-
-        x += g.w;
-    }
+    SDL_RenderCopyF(world.renderer, cache.texture, nullptr, &dst);
 }

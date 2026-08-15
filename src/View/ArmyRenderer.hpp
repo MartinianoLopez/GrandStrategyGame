@@ -4,12 +4,12 @@
 
 #include "../utils.hpp"
 #include "../Model/World.hpp"
+#include "../Model/FontLoader.hpp"
 
 //=============================
 
 #include "SDL_rect.h"
 #include "SDL_render.h"
-#include <algorithm>
 #include <optional>
 #include <string>
 
@@ -17,63 +17,47 @@
 // Armies
 // ===============================================================================================================
 
-inline void renderSelectedOverlay(SDL_Renderer* renderer, World& world, int x, int y, const Army& army) {
-    Font* font = nullptr;
-    for (auto& f : world.fonts) {
-        if (f.id == "simple") { font = &f; break; }
-    }
-    if (!font) return;
+inline void renderSelectedOverlay(World& world, int x, int y, const Army& army) {
     std::string s = std::to_string(army.power);
-    int totalW = 0, maxH = 0;
-    for (char c : s) {
-        Glyph& g = font->glyphs[(int)c];
-        totalW += g.w;
-        maxH = std::max(maxH, g.h);
-    }
+
+    TextCache& cache = getOrRenderText(world, "simple", s);
+    if (!cache.texture) return;
+
     const int padding = 1;
-    int bx = (x - totalW / 2) - padding;
-    int by = (y - maxH / 2) - padding;
-    SDL_Rect border = { bx - 2, by - 2, totalW + padding * 2 + 4, maxH + padding * 2 + 4 };
-    SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
-    SDL_RenderDrawRect(renderer, &border);
+    int bx = (x - cache.w / 2) - padding;
+    int by = (y - cache.h / 2) - padding;
+
+    SDL_Rect border = { bx - 2, by - 2, cache.w + padding * 2 + 4, cache.h + padding * 2 + 4 };
+    SDL_SetRenderDrawColor(world.renderer, 255, 255, 0, 255);
+    SDL_RenderDrawRect(world.renderer, &border);
 }
 
-inline void renderArmy(SDL_Renderer* renderer, World& world, const std::string& fontId, int x, int y, const Army& army) {
-    // this is recreating the renderText function TODO replace it with the already working
-    Font* font = nullptr;
-    for (auto& f : world.fonts) {
-        if (f.id == fontId) { font = &f; break; }
-    }
-    if (!font) return;
+inline void renderArmy(World& world, int x, int y, const Army& army) {
     std::string s = std::to_string(army.power);
-    int totalW = 0, maxH = 0;
-    for (char c : s) {
-        Glyph& g = font->glyphs[(int)c];
-        totalW += g.w;
-        maxH = std::max(maxH, g.h);
-    }
-    x -= totalW / 2;
-    y -= maxH / 2;
+
+    TextCache& cache = getOrRenderText(world, "army", s);
+    if (!cache.texture) return;
+
+    x -= cache.w / 2;
+    y -= cache.h / 2;
+
     const int padding = 1;
-    SDL_Rect bg = { x - padding, y - padding, totalW + padding * 2, maxH + padding * 2 };
-    SDL_SetRenderDrawColor(renderer, army.color.r, army.color.g, army.color.b, 180);
-    SDL_RenderFillRect(renderer, &bg);
-    for (char c : s) {
-        Glyph& g = font->glyphs[(int)c];
-        SDL_Rect dst = { x, y, g.w, g.h };
-        SDL_RenderCopy(renderer, g.tex, nullptr, &dst);
-        x += g.w;
-    }
+    SDL_Rect bg = { x - padding, y - padding, cache.w + padding * 2, cache.h + padding * 2 };
+    SDL_SetRenderDrawColor(world.renderer, army.color.r, army.color.g, army.color.b, 180);
+    SDL_RenderFillRect(world.renderer, &bg);
+
+    SDL_Rect dst = { x, y, cache.w, cache.h };
+    SDL_RenderCopy(world.renderer, cache.texture, nullptr, &dst);
 }
 
-inline void renderArmies(World& world, SDL_Renderer* renderer, SDL_FRect destRect, int screenW, int screenH) {
+inline void renderArmies(World& world, SDL_FRect destRect, int screenW, int screenH) {
     for (const auto& army : world.armies) {
         Province* province = provinceFindById(world.provinces, army.position);
         if (!province) continue;
         float sx = destRect.x + province->center.x * world.finalScale;
         float sy = destRect.y + province->center.y * world.finalScale;
         if (sx < 0 || sy < 0 || sx > screenW || sy > screenH) continue;
-        renderArmy(renderer, world, "army", (int)sx, (int)sy, army);
+        renderArmy(world, (int)sx, (int)sy, army);
     }
     for (Army* army : world.selectedArmies) {
         if (!army) continue;
@@ -82,7 +66,7 @@ inline void renderArmies(World& world, SDL_Renderer* renderer, SDL_FRect destRec
         float sx = destRect.x + province->center.x * world.finalScale;
         float sy = destRect.y + province->center.y * world.finalScale;
         if (sx < 0 || sy < 0 || sx > screenW || sy > screenH) continue;
-        renderSelectedOverlay(renderer, world, (int)sx, (int)sy, *army);
+        renderSelectedOverlay(world, (int)sx, (int)sy, *army);
     }
 }
 

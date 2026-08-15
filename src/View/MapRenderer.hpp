@@ -194,7 +194,7 @@ inline void renderMap(World& world, bool isSecondMap) {
     if (world.scale > 4.0f) {
         renderFrontiers(world, renderer, destRect, {0, 0, 0, 220}, winWidth, winHeight, world.countryFrontiers, 1);
         markProvinceFrontiers(world, renderer, destRect, {255, 255, 0, 240}, world.selectedProvince);
-        renderArmies(world, renderer, destRect, winWidth, winHeight);
+        renderArmies(world, destRect, winWidth, winHeight);
         showSelectedArmiesPaths(world, renderer, destRect);
     }
 }

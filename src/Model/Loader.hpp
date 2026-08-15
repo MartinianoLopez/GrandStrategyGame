@@ -7,6 +7,7 @@
 #include "DataLoading.hpp"
 #include "../utils.hpp"
 #include "../utils/Timer.hpp"
+#include "FontLoader.hpp"
 
 // ========================
 
@@ -144,37 +145,6 @@ inline void desaturateCountries(std::list<Country>& countries, double k = 0.3, i
 }
 
 // ===============================================================================================================
-// font
-// ===============================================================================================================
-
-inline Font initFont(SDL_Renderer* renderer, const std::string& id, const char* fontPath, SDL_Color color, int fontSize) {
-    Font font;
-    font.id = id;
-
-    TTF_Font* ttf = TTF_OpenFont(fontPath, fontSize);
-    if (!ttf) {
-        SDL_Log("Font load error: %s", TTF_GetError());
-        return font;
-    }
-
-    for (int c = 32; c < 127; c++) {
-        char text[2] = { (char)c, '\0' };
-        SDL_Surface* s = TTF_RenderText_Solid(ttf, text, color);
-        if (!s) continue;
-
-        font.glyphs[c].tex = SDL_CreateTextureFromSurface(renderer, s);
-        font.glyphs[c].w = s->w;
-        font.glyphs[c].h = s->h;
-
-        SDL_FreeSurface(s);
-    }
-
-    TTF_CloseFont(ttf);
-    return font;
-}
-
-
-// ===============================================================================================================
 // optimization
 // ===============================================================================================================
 
@@ -229,9 +199,7 @@ inline void loadAssets(World& world) {
         return;
     }
 
-    world.fonts.push_back(initFont(renderer, "army", "assets/fonts/Nunito/Nunito-VariableFont_wght.ttf", {0, 0, 0, 255}, 12));
-    world.fonts.push_back(initFont(renderer, "simple", "assets/fonts/Cinzel/static/Cinzel-Medium.ttf", {0, 0, 0, 255}, 18));
-    world.fonts.push_back(initFont(renderer, "fancy", "assets/fonts/Cinzel/Cinzel-VariableFont_wght.ttf", {220, 220, 220, 255}, 22));
+    initFonts(world);
 
     world.finalScale = std::min(1920.0f / world.texWidth,1080.0f / world.texHeight) * world.scale;
 

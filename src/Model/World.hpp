@@ -121,16 +121,19 @@ struct Army {
 
 //==================================
 
-struct Glyph {
-    SDL_Texture* tex = nullptr;
-    int w = 0;
-    int h = 0;
-};
-
+// One loaded font, keyed by an id string (e.g. "default", "fancy")
 struct Font {
     std::string id;
-    Glyph glyphs[128];
+    TTF_Font* font = nullptr;
+    SDL_Color color;
 };
+
+// Cached rendered text: texture + size, keyed by "fontId|text"
+struct TextCache {
+    SDL_Texture* texture = nullptr;
+    int w = 0, h = 0;
+};
+
 
 //==================================
 
@@ -186,6 +189,7 @@ struct Ui{
     std::map<std::string, SDL_Texture*> Textures;  
     MenuPlace place = MenuPlace::MainMenu;
     std::vector<UIElement> uiElements;
+    std::unordered_map<std::string, TextCache> textCache;
 };
 
 struct World{
