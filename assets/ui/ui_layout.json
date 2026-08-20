@@ -3,19 +3,20 @@
     {
       "name": "MainMenu",
       "elements": [
-        { "name": "mainPanel", "zIndex": 1, "x": 25, "y": 50, "w": 50, "h": 50, "texture": "table" },
-        { "name": "playBtn", "zIndex": 2, "x": 35, "y": 63, "w": 30, "h": 7, "texture": "booton", "font": "simple", "action": "goto:CountrySelection", "label": "PLAY", "hoverable": true }
+        { "name": "logo", "zIndex": 3, "x": 25, "y": 10, "w": 50, "h": 50, "texture": "logo" },
+        { "name": "mainPanel", "zIndex": 1, "x": 25, "y": 50, "w": 50, "h": 50, "texture": "Panel" },
+        { "name": "playBtn", "zIndex": 2, "x": 35, "y": 63, "w": 30, "h": 7, "texture": "Button", "font": "fancy", "action": "goto:CountrySelection", "label": "PLAY", "hoverable": true }
       ]
     },
     {
       "name": "CountrySelection",
       "elements": [
-        { "name": "selectionPanel", "zIndex": 1, "x": 76, "y": 20, "w": 22, "h": 65, "texture": "table" },
+        { "name": "selectionPanel", "zIndex": 1, "x": 76, "y": 20, "w": 22, "h": 65, "texture": "Panel" },
         { "name": "countryText", "zIndex": 4, "x": 76, "y": 20, "w": 22, "h": 10, "texture": "timeFrame", "font": "fancy", "endpoint": "selected_country" },
-        { "name": "countryFlagFrame", "zIndex": 22, "x": 73, "y": 32, "w": 28, "h": 28, "texture": "flagFrame" },
+        { "name": "countryFlagFrame", "zIndex": 22, "x": 73, "y": 32, "w": 28, "h": 28, "texture": "FlagFrameGold" },
         { "name": "countryFlagTex", "zIndex": 2, "x": 77, "y": 35, "w": 20, "h": 22, "texture": "selectedCountryFlagTex" },
-        { "name": "playBtn", "zIndex": 2, "x": 79, "y": 68, "w": 16, "h": 6, "texture": "booton", "font": "simple", "action": "play_if_selected", "label": "PLAY", "hoverable": true },
-        { "name": "backBtn", "zIndex": 2, "x": 79, "y": 74, "w": 16, "h": 6, "texture": "booton", "font": "simple", "action": "goto:MainMenu", "label": "BACK", "hoverable": true }
+        { "name": "playBtn", "zIndex": 2, "x": 79, "y": 68, "w": 16, "h": 6, "texture": "Button", "font": "fancy", "action": "play_if_selected", "label": "PLAY", "hoverable": true },
+        { "name": "backBtn", "zIndex": 2, "x": 79, "y": 74, "w": 16, "h": 6, "texture": "Button", "font": "fancy", "action": "goto:MainMenu", "label": "BACK", "hoverable": true }
       ]
     },
     {
@@ -34,22 +35,22 @@
         { "name": "moneyText", "zIndex": 2, "x": 14, "y": 1.5, "w": 5, "h": 4, "texture": "empty", "font": "fancy", "endpoint": "player_money" },
 
         { "name": "timeFrame", "zIndex": 1, "x": 80, "y": 0, "w": 21, "h": 10, "texture": "timeFrame","font": "fancy", "endpoint": "date" },
-        { "name": "speed0Btn", "zIndex": 2, "x": 86, "y": 10, "w": 5, "h": 5, "texture": "IconButtonBlue", "action": "timeSpeed0", "hoverable": true, "toggle": true },        
+        { "name": "speed0Btn", "zIndex": 2, "x": 86, "y": 10, "w": 5, "h": 5, "texture": "IconButtonBlueSmall", "action": "timeSpeed0", "hoverable": true, "toggle": true },        
         { "name": "speed0Icon", "zIndex": 3, "x": 86.5, "y": 11, "w": 4, "h": 3, "texture": "0Speed", "action": "timeSpeed0", "hoverable": true, "toggle": true },
-        { "name": "speed1Btn", "zIndex": 2, "x": 89, "y": 10, "w": 5, "h": 5, "texture": "IconButtonBlue", "action": "timeSpeed1", "hoverable": true, "toggle": true },
+        { "name": "speed1Btn", "zIndex": 2, "x": 89, "y": 10, "w": 5, "h": 5, "texture": "IconButtonBlueSmall", "action": "timeSpeed1", "hoverable": true, "toggle": true },
         { "name": "speed1Icon", "zIndex": 3, "x": 89.5, "y": 11, "w": 4, "h": 3, "texture": "1Speed", "action": "timeSpeed1", "hoverable": true, "toggle": true },
-        { "name": "speed2Btn", "zIndex": 2, "x": 92, "y": 10, "w": 5, "h": 5, "texture": "IconButtonBlue", "action": "timeSpeed2", "hoverable": true, "toggle": true },
+        { "name": "speed2Btn", "zIndex": 2, "x": 92, "y": 10, "w": 5, "h": 5, "texture": "IconButtonBlueSmall", "action": "timeSpeed2", "hoverable": true, "toggle": true },
         { "name": "speed2Icon", "zIndex": 3, "x": 92.5, "y": 11, "w": 4, "h": 3, "texture": "2Speed", "action": "timeSpeed2", "hoverable": true, "toggle": true },
 
         { "name": "provinceText", "zIndex": 2, "x": 10, "y": 91, "w": 20, "h": 8, "texture": "textFrame", "font": "fancy", "endpoint": "selected_province" },
 
-        { "name": "recruitBtn", "zIndex": 2, "x": 95, "y": 65, "w": 6, "h": 6, "texture": "IconButtonGreen", "action": "recruit", "hoverable": true, "toggle": true },
+        { "name": "recruitBtn", "zIndex": 2, "x": 95, "y": 65, "w": 6, "h": 6, "texture": "IconButtonGreenSmall", "action": "recruit", "hoverable": true, "toggle": true },
         { "name": "recruitBtn", "zIndex": 3, "x": 95, "y": 65, "w": 6, "h": 6, "texture": "RecruitIcon", "action": "recruit", "hoverable": true, "toggle": true },
-        { "name": "accessBtn", "zIndex": 2, "x": 95, "y": 84, "w": 6, "h": 6, "texture": "IconButtonGreen", "action": "mapModeAccess", "hoverable": true, "toggle": true },
+        { "name": "accessBtn", "zIndex": 2, "x": 95, "y": 84, "w": 6, "h": 6, "texture": "IconButtonGreenSmall", "action": "mapModeAccess", "hoverable": true, "toggle": true },
         { "name": "accessBtn", "zIndex": 3, "x": 95, "y": 84, "w": 6, "h": 6, "texture": "AccessIcon", "action": "mapModeAccess", "hoverable": true, "toggle": true },
-        { "name": "terrainBtn", "zIndex": 2, "x": 95, "y": 90, "w": 6, "h": 6, "texture": "IconButtonGreen", "action": "mapModeTerrain", "hoverable": true, "toggle": true },
+        { "name": "terrainBtn", "zIndex": 2, "x": 95, "y": 90, "w": 6, "h": 6, "texture": "IconButtonGreenSmall", "action": "mapModeTerrain", "hoverable": true, "toggle": true },
         { "name": "terrainBtn", "zIndex": 3, "x": 95, "y": 90, "w": 6, "h": 6, "texture": "terrainButton", "action": "mapModeTerrain", "hoverable": true, "toggle": true },
-        { "name": "diplomacyBtn", "zIndex": 2, "x": 95, "y": 78, "w": 6, "h": 6, "texture": "IconButtonGreen", "action": "mapModeDiplomacy", "hoverable": true, "toggle": true },
+        { "name": "diplomacyBtn", "zIndex": 2, "x": 95, "y": 78, "w": 6, "h": 6, "texture": "IconButtonGreenSmall", "action": "mapModeDiplomacy", "hoverable": true, "toggle": true },
         { "name": "diplomacyBtn", "zIndex": 3, "x": 95, "y": 78, "w": 6, "h": 6, "texture": "diplomacy", "action": "mapModeDiplomacy", "hoverable": true, "toggle": true }
       ]
     }

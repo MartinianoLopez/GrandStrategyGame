@@ -256,7 +256,8 @@ inline void loadAllUITextures(World& world) {
     namespace fs = std::filesystem;
 
     for (const auto& entry : fs::recursive_directory_iterator("assets/ui/textures")) {
-        if (entry.is_regular_file() && entry.path().extension() == ".png") {
+
+        if (entry.is_regular_file() && entry.path().extension() == ".png") {        
             std::string key = entry.path().stem().string(); // filename
             SDL_Texture* tex = IMG_LoadTexture(renderer, entry.path().string().c_str());
             if (tex) {
