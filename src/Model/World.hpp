@@ -211,7 +211,7 @@ struct World{
     }
     //Dev Flags
     const bool DEBUGGING_MODE = true;
-    const int HOT_RELOAD_WAIT_TIME = 200;
+    const int HOT_RELOAD_WAIT_TIME = 500;
 
     bool running = true;
     

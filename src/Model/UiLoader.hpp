@@ -7,6 +7,7 @@
 #include "../Simulation/Time.hpp"
 #include "../Simulation/Diplomacy.hpp"
 #include "SDL_render.h"
+#include "../utils/Timer.hpp"
 #include <filesystem>
 
 //===============================
@@ -263,6 +264,7 @@ inline void loadAllUITextures(World& world) {
             }
         }
     }
+
     createEmptyTexture(world);
 }
 
@@ -280,8 +282,14 @@ inline void reloadUI(World& world, Uint32 frameStart){
     if(world.DEBUGGING_MODE == false){
         isTimeForUiReloading = false;
     }
+
     // reload layout components
     if (userMovedToOtherScreen || isTimeForUiReloading) {
+
+        { Timer t("reloading textures"); 
+            loadAllUITextures(world); 
+        }
+
         parseLayout(world);
         world.lastPlace    = world.ui.place;
         world.lastUIReload = frameStart;
