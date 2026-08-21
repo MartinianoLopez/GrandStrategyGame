@@ -209,7 +209,7 @@ inline void parseElement(World& world, const json& e) {
     el.font = e.value("font", std::string("default"));
     el.hoverable = e.value("hoverable", false);
     el.toggle = e.value("toggle", false);
-    el.pressed = false;
+    el.group = e.value("group", std::string("none"));
 
     world.ui.uiElements.push_back(std::move(el));
 }

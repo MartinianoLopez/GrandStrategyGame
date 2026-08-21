@@ -5,6 +5,7 @@
 #include "../Model/World.hpp"
 #include "../utils.hpp"
 #include "../Simulation/Army.hpp"
+#include "SDL_events.h"
 
 //===============================
 
@@ -79,7 +80,7 @@ inline void onScroll(World& world, const SDL_Event& e) {
     }
 }
 
-inline void onMouseMove(World& world, const SDL_Event& e) {
+inline void onMouseMoveOnMap(World& world, const SDL_Event& e) {
     if (!world.dragging) return;
 
     world.offsetX += e.motion.x - world.lastX;
@@ -89,6 +90,34 @@ inline void onMouseMove(World& world, const SDL_Event& e) {
 
     if (!world.freecamera){
         clampToBounds(world);
+    }
+}
+
+inline void onMouseHover(World& world, const SDL_Event& e) {
+    world.ui.hoveredElement = "";
+    int screenW, screenH;
+    SDL_GetWindowSize(world.window, &screenW, &screenH);
+    for (auto it = world.ui.uiElements.rbegin(); it != world.ui.uiElements.rend(); ++it) {
+        if (contains(*it, e.button.x, e.button.y, screenW, screenH)) {
+            world.ui.hoveredElement = it -> name;
+            return;
+        }
+    }
+}
+
+inline void eraseElementsOfTheSameToggleGroup(World& world, const std::string& group) {
+    std::cout << group << "\n";
+
+    for (auto it = world.ui.pressedElements.begin(); it != world.ui.pressedElements.end(); ) {
+        const std::string& name = *it;
+        auto found = std::find_if(world.ui.uiElements.begin(), world.ui.uiElements.end(),
+            [&](const UIElement& el){ return el.name == name; });
+
+        if (found != world.ui.uiElements.end() && found->group == group) {
+            it = world.ui.pressedElements.erase(it);
+        } else {
+            ++it;
+        }
     }
 }
 
@@ -104,6 +133,18 @@ inline void onLeftClick(World& world, const SDL_Event& e) {
     for (auto it = world.ui.uiElements.rbegin(); it != world.ui.uiElements.rend(); ++it) {
         if (contains(*it, e.button.x, e.button.y, screenW, screenH)) {
             if (it->onClick) it->onClick();
+
+            //toggleables
+            if (it->toggle) {
+                if (world.ui.pressedElements.count(it->name)){
+                    world.ui.pressedElements.erase(it->name);  
+                }else{
+                    eraseElementsOfTheSameToggleGroup(world, it->group);
+                    world.ui.pressedElements.insert(it->name);
+                }
+                    
+            }
+
             return; // consumed
         }
     }
@@ -208,12 +249,15 @@ inline void processEvent(World& world, const SDL_Event& e) {
                 onScroll(world, e);
             }
         break;
-
+        
         case SDL_MOUSEMOTION:
+            // map movement
             if (world.ui.place == MenuPlace::InGame || world.ui.place == MenuPlace::CountrySelection)
             {
-                onMouseMove(world, e);
+                onMouseMoveOnMap(world, e);
             } 
+            // hover elements
+            onMouseHover(world, e);
         break;
 
         case SDL_MOUSEBUTTONDOWN:

@@ -29,13 +29,38 @@ inline bool isElementHidden(World& world, const UIElement& element) {
     return false;
 }
 
-inline void renderElementTexture(SDL_Renderer* renderer, const UIElement& element, const SDL_FRect& rect) {
+inline void renderElementTexture(World& world, const UIElement& element, const SDL_FRect& rect) {
+    SDL_Renderer* renderer = world.renderer;
     constexpr SDL_Color kMissingTextureColor = {255, 0, 255, 255}; // debug: texture failed to load
 
     if (element.texture) {
         SDL_RenderCopyF(renderer, element.texture, nullptr, &rect);
     } else {
         SDL_SetRenderDrawColor(renderer, kMissingTextureColor.r, kMissingTextureColor.g, kMissingTextureColor.b, kMissingTextureColor.a);
+        SDL_RenderFillRectF(renderer, &rect);
+    }
+}
+
+inline void renderElementTextureHovered(World& world, const UIElement& element, const SDL_FRect& rect) {
+    SDL_Renderer* renderer = world.renderer;
+
+    if (element.texture) {
+        SDL_SetTextureColorMod(element.texture, 180, 180, 180);
+        SDL_RenderCopyF(renderer, element.texture, nullptr, &rect);
+        SDL_SetTextureColorMod(element.texture, 255, 255, 255);
+    } else {
+        SDL_RenderFillRectF(renderer, &rect);
+    }
+}
+
+inline void renderElementTexturePressed(World& world, const UIElement& element, const SDL_FRect& rect) {
+    SDL_Renderer* renderer = world.renderer;
+
+    if (element.texture) {
+        SDL_SetTextureColorMod(element.texture, 180, 180, 180);
+        SDL_RenderCopyF(renderer, element.texture, nullptr, &rect);
+        SDL_SetTextureColorMod(element.texture, 255, 255, 255);
+    } else {
         SDL_RenderFillRectF(renderer, &rect);
     }
 }
@@ -49,12 +74,21 @@ inline void renderElement(World& world, UIElement element){
     int w, h;
     SDL_GetWindowSize(world.window, &w, &h);
     SDL_FRect rect = calculateBase(element, w, h);
-    renderElementTexture(world.renderer, element, rect);
+    
+    if(element.name == world.ui.hoveredElement){
+        renderElementTextureHovered(world, element, rect);
+    }else if (world.ui.pressedElements.count(element.name)) {
+        renderElementTexturePressed(world, element, rect);
+    }else{
+        renderElementTexture(world, element, rect);
+    }
     renderElementText(world, element, rect);
+
     if (world.DEBUGGING_MODE) {
         renderRects(world.renderer, rect);
     }
 }
+
 inline void renderUI(World& world) {
     for (auto& element : world.ui.uiElements) {
         if (isElementHidden(world, element)) continue;

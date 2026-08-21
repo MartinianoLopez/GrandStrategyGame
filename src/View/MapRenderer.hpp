@@ -172,17 +172,19 @@ inline void renderMap(World& world, bool isSecondMap) {
     
     if (world.mapMode == "diplomatic") {
         displayTexture(renderer, world.countriesTex, destRect, 100);
+
         if (!world.activeDiplomaticMap || world.selectedCountry != world.countryoftheAccesibilityMap) {
             
-            SDL_DestroyTexture(world.activeDiplomaticMap);
-            Country* country = findCountryByTag(world.countries, world.selectedCountry);
-            if (country) {
-                world.activeDiplomaticMap = buildDiplomaticMap(world, renderer, country->relationships);
-            }
-            world.countryoftheAccesibilityMap = world.selectedCountry;
-        }
+        SDL_DestroyTexture(world.activeDiplomaticMap);
+        world.activeDiplomaticMap = nullptr;
+        Country* country = findCountryByTag(world.countries, world.selectedCountry);
+        if (country) {
+        world.activeDiplomaticMap = buildDiplomaticMap(world, renderer, country->relationships);
+                    }
+        world.countryoftheAccesibilityMap = world.selectedCountry;
+                }
         if (world.activeDiplomaticMap)
-            displayTexture(renderer, world.activeDiplomaticMap, destRect, 245);
+        displayTexture(renderer, world.activeDiplomaticMap, destRect, 245);
     }
 
     if (world.scale > 6.0f)

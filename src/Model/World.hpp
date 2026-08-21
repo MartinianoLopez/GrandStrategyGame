@@ -12,6 +12,7 @@
 #include <string>
 #include <utility>
 #include <SDL2/SDL_ttf.h>
+#include <unordered_set>
 #include <functional>
 
 //=========================
@@ -150,8 +151,8 @@ struct UIElement {
     std::string font = "default";
 
     bool hoverable = false;
-    bool toggle = false;      // stays pressed (checkbox)
-    bool pressed = false;     // runtime state of toggle
+    bool toggle = false;
+    std::string group = "";
 };
 
 //================================================
@@ -190,6 +191,8 @@ struct Ui{
     MenuPlace place = MenuPlace::MainMenu;
     std::vector<UIElement> uiElements;
     std::unordered_map<std::string, TextCache> textCache;
+    std::string hoveredElement;
+    std::unordered_set<std::string> pressedElements;
 };
 
 struct World{
