@@ -99,15 +99,16 @@ inline void onMouseHover(World& world, const SDL_Event& e) {
     SDL_GetWindowSize(world.window, &screenW, &screenH);
     for (auto it = world.ui.uiElements.rbegin(); it != world.ui.uiElements.rend(); ++it) {
         if (contains(*it, e.button.x, e.button.y, screenW, screenH)) {
-            world.ui.hoveredElement = it -> name;
-            return;
+            if(it->hoverable){
+                world.ui.hoveredElement = it -> name;
+                return; 
+            }
+
         }
     }
 }
 
 inline void eraseElementsOfTheSameToggleGroup(World& world, const std::string& group) {
-    std::cout << group << "\n";
-
     for (auto it = world.ui.pressedElements.begin(); it != world.ui.pressedElements.end(); ) {
         const std::string& name = *it;
         auto found = std::find_if(world.ui.uiElements.begin(), world.ui.uiElements.end(),

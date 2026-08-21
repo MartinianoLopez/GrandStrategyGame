@@ -67,10 +67,9 @@ void update(World& world) {
 }
 
 //=============================================================
-
 void runLoop(World& world) {
     #ifdef __EMSCRIPTEN__
-        emscripten_set_main_loop_arg([](void* arg){ main_loop(*(World*)arg); }, &world, 0, 1);
+        emscripten_set_main_loop_arg([](void* arg){ update(*(World*)arg); }, &world, 0, 1);
     #else
         while (world.running) update(world);
     #endif
