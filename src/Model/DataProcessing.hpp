@@ -102,7 +102,7 @@ inline void InitAllAccesibiltyGraphs(World& world){
     }
 }
 
-inline void rechargeAccesibilityGraph(World& world, Country* country){
+inline void reloadAccesibilityGraph(World& world, Country* country){
         country -> accessibilityGraph = buildAccessibilityGraph(world, country -> accessibleCountries);
 }
 

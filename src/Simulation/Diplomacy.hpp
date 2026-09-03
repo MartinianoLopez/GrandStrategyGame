@@ -25,7 +25,7 @@ inline void declareWar(World& world,std::string attacker, std::string defender){
     // access
     attackerCountry->addAccesibleCountries(defender);
     defenderCountry->addAccesibleCountries(attacker);
-    rechargeAccesibilityGraph(world, attackerCountry);
-    rechargeAccesibilityGraph(world, defenderCountry);
+    reloadAccesibilityGraph(world, attackerCountry);
+    reloadAccesibilityGraph(world, defenderCountry);
     
 }

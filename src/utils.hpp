@@ -186,6 +186,7 @@ inline SDL_FRect calculateBase(const UIElement& el, int w, int h) {
     return base;
 }
 
+
 inline bool contains(const UIElement& el, int x, int y, int w, int h) {
     SDL_FRect r = calculateBase(el, w, h);
     return x >= r.x && x < r.x + r.w &&

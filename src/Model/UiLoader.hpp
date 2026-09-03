@@ -102,24 +102,24 @@ inline void registerActions(World& world) {
         w.time.speed = 10;
     };
     world.ui.actions["mapModeAccess"] = [](World& w) {
-        if (w.mapMode != "access") {
-            w.mapMode = "access";
+        if (w.mapMode != MapMode::ACCESS) {
+            w.mapMode = MapMode::ACCESS;
         } else {
-            w.mapMode = "normal";
+            w.mapMode = MapMode::NORMAL;
         };
     };
     world.ui.actions["mapModeTerrain"] = [](World& w) {
-        if (w.mapMode != "terrain") {
-            w.mapMode = "terrain";
+        if (w.mapMode != MapMode::TERRAIN) {
+            w.mapMode = MapMode::TERRAIN;
         } else {
-            w.mapMode = "normal";
+            w.mapMode = MapMode::NORMAL;
         };
     };
     world.ui.actions["mapModeDiplomacy"] = [](World& w) {
-        if (w.mapMode != "diplomatic") {
-            w.mapMode = "diplomatic";
+        if (w.mapMode != MapMode::DIPLOMATIC) {
+            w.mapMode = MapMode::DIPLOMATIC;
         } else {
-            w.mapMode = "normal";
+            w.mapMode = MapMode::NORMAL;
         };
     };
     world.ui.actions["recruit"] = [](World& w) {

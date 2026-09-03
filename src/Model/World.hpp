@@ -184,6 +184,13 @@ enum class MenuPlace {
     LoadGame
 };
 
+enum class MapMode { 
+    NORMAL, 
+    DIPLOMATIC, 
+    ACCESS,
+    TERRAIN
+};
+
 struct Ui{
     std::unordered_map<std::string, std::function<std::string(World&)>> hooks;
     std::unordered_map<std::string, std::function<void(World&)>>        actions;
@@ -294,7 +301,7 @@ struct World{
     // Map modes
     //====================================================================
     
-    std::string mapMode = "normal";
+    MapMode mapMode = MapMode::NORMAL;
     SDL_Texture* activeAccessibilityMap = nullptr;
     SDL_Texture* activeDiplomaticMap = nullptr;
     std::string countryoftheAccesibilityMap = "";
