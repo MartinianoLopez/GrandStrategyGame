@@ -141,10 +141,10 @@ inline Province* provinceFindByColor(const std::list<Province>& list, uint32_t c
 // Texture helpers
 // ===============================================================================================================
 
-inline void displayTexture(SDL_Renderer* renderer, SDL_Texture* texture, const SDL_FRect& destRect, Uint8 alpha) {
+inline void displayTexture(World& world, SDL_Texture* texture, Uint8 alpha) {
     if (!texture) return;
     SDL_SetTextureAlphaMod(texture, alpha);
-    SDL_RenderCopyF(renderer, texture, nullptr, &destRect);
+    SDL_RenderCopyF(world.renderer, texture, nullptr, &world.destRect);
 }
 
 inline SDL_Texture* convertSurfaceToTexture(SDL_Renderer* renderer, SDL_Surface* surface) {

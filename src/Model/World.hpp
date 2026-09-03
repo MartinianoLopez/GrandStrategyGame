@@ -244,8 +244,11 @@ struct World{
     std::list<Country> countries;
     std::list<Army> armies;
 
+    
     std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> provinceFrontiers;
     std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> countryFrontiers;
+
+
     std::map<int, std::vector<int>> adjacencyGraph;
     std::unordered_map<int, Province*> provinceById;
 
@@ -254,6 +257,13 @@ struct World{
     
     std::string selectedCountry = "NONE";
     std::vector<Army*> selectedArmies;
+    
+    //======= window variables ====================
+    
+    SDL_FRect destRect;
+    
+    int winWidth;
+    int winHeight;
 
     int texWidth = 0;
     int texHeight = 0;
@@ -263,6 +273,8 @@ struct World{
 
     float offsetX = 0.0f;
     float offsetY = 0.0f; 
+
+    //===========================
 
     int lastX = 0;
     int lastY = 0;

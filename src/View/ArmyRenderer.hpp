@@ -50,13 +50,13 @@ inline void renderArmy(World& world, int x, int y, const Army& army) {
     SDL_RenderCopy(world.renderer, cache.texture, nullptr, &dst);
 }
 
-inline void renderArmies(World& world, SDL_FRect destRect, int screenW, int screenH) {
+inline void renderArmies(World& world, SDL_FRect destRect) {
     for (const auto& army : world.armies) {
         Province* province = provinceFindById(world.provinces, army.position);
         if (!province) continue;
         float sx = destRect.x + province->center.x * world.finalScale;
         float sy = destRect.y + province->center.y * world.finalScale;
-        if (sx < 0 || sy < 0 || sx > screenW || sy > screenH) continue;
+        if (sx < 0 || sy < 0 || sx > world.winWidth || sy > world.winHeight) continue;
         renderArmy(world, (int)sx, (int)sy, army);
     }
     for (Army* army : world.selectedArmies) {
@@ -65,7 +65,7 @@ inline void renderArmies(World& world, SDL_FRect destRect, int screenW, int scre
         if (!province) continue;
         float sx = destRect.x + province->center.x * world.finalScale;
         float sy = destRect.y + province->center.y * world.finalScale;
-        if (sx < 0 || sy < 0 || sx > screenW || sy > screenH) continue;
+        if (sx < 0 || sy < 0 || sx > world.winWidth || sy > world.winHeight) continue;
         renderSelectedOverlay(world, (int)sx, (int)sy, *army);
     }
 }
@@ -100,7 +100,8 @@ inline void drawPath(Army* army, World& world, SDL_Renderer* renderer, SDL_FRect
     }
 }
 
-inline void showSelectedArmiesPaths(World& world, SDL_Renderer* renderer, SDL_FRect destRect) {
+inline void showSelectedArmiesPaths(World& world, SDL_FRect destRect) {
+    SDL_Renderer* renderer = world.renderer;
     for (Army* army : world.selectedArmies) {
         drawPath(army, world, renderer, destRect);
     }
