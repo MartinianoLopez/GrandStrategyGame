@@ -2,6 +2,7 @@
 
 // ========================
 
+#include "SDL_stdinc.h"
 #include "World.hpp"
 #include "../utils.hpp"
 
@@ -79,7 +80,7 @@ inline void loadCountries(World& world) {
         std::string tag = parts[0];
         std::string name = parts[1];
 
-        int r = 0, g = 0, b = 0, money = 0;
+        Uint8 r = 0, g = 0, b = 0, money = 0;
         try {
             r = std::atoi(parts[2].c_str());
             g = std::atoi(parts[3].c_str());
@@ -92,7 +93,7 @@ inline void loadCountries(World& world) {
         world.countries.emplace_back(
             tag,
             name,
-            Color(r, g, b),
+            SDL_Color{r, g, b, 255},
             money,
             flag
         );
@@ -123,7 +124,7 @@ inline void loadArmies(World& world) {
             catch (...) { return fallback; }
         };
 
-        Color color = {0, 0, 0};
+        SDL_Color color = {0, 0, 0, 0};
         Country* c = findCountryByTag(world.countries, parts[2]);
         if (c) color = c->color;
 

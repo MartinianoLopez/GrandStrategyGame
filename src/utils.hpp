@@ -56,7 +56,7 @@ inline std::string colorToString(uint32_t color) {
     return std::to_string(r) + ", " + std::to_string(g) + ", " + std::to_string(b);
 }
 
-inline Uint32 colorToUint32(const Color color, SDL_PixelFormat* format) {
+inline Uint32 colorToUint32(const SDL_Color color, SDL_PixelFormat* format) {
     return SDL_MapRGB(format, color.r, color.g, color.b);
 }
 

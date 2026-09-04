@@ -105,7 +105,7 @@ inline void loadProvinces(World& world) {
 
     std::list<Province> provinces;
     for (const auto& pd : world.provincesData) {
-        Color color(pd.color.r, pd.color.g, pd.color.b);
+        SDL_Color color = { pd.color.r, pd.color.g, pd.color.b, 255 };
         Province p(pd.id, pd.name, pd.owner, color);
 
         uint32_t key = ((uint32_t)pd.color.r << 16) | ((uint32_t)pd.color.g << 8) | pd.color.b;
@@ -140,7 +140,7 @@ inline void desaturateCountries(std::list<Country>& countries, double k = 0.3, i
         newG = std::clamp(newG, 0, 255);
         newB = std::clamp(newB, 0, 255);
 
-        c.color = Color(newR, newG, newB);
+       c.color = SDL_Color{ (Uint8)newR, (Uint8)newG, (Uint8)newB, 255 };
     }
 }
 

@@ -17,36 +17,24 @@
 
 //=========================
 
-struct Color {
-    int r;
-    int g;
-    int b;
-    int a;
-
-    Color(int r, int g, int b, int a)
-        : r(r), g(g), b(b), a(a) {}
-
-    Color(int r, int g, int b)
-        : r(r), g(g), b(b), a(255) {}
-
-    bool operator==(const Color& other) const {
-        return r == other.r &&
-               g == other.g &&
-               b == other.b &&
-               a == other.a;
-    }
-
-    bool operator!=(const Color& other) const {
-        return !(*this == other);
-    }
-};
-
-//=========================
-
 enum class TypeOfRelation { 
     PEACE,
     WAR,
     ALLIANCE,
+};
+
+enum class MenuPlace { 
+    MainMenu, 
+    CountrySelection, 
+    InGame,
+    LoadGame
+};
+
+enum class MapMode { 
+    NORMAL, 
+    DIPLOMATIC, 
+    ACCESS,
+    TERRAIN
 };
 
 struct Relationship {
@@ -60,14 +48,14 @@ struct Relationship {
 struct Country {
     std::string tag;
     std::string name;
-    Color color;
+    SDL_Color color;
     int money;
     std::vector<std::string> accessibleCountries;
     std::map<int, std::vector<int>> accessibilityGraph;
     SDL_Texture* flag;
     std::vector<Relationship> relationships;
 
-    Country(std::string tag, std::string name, Color color, int money, SDL_Texture* flag)
+    Country(std::string tag, std::string name, SDL_Color color, int money, SDL_Texture* flag)
         : tag(tag), name(name), color(color), money(money), accessibleCountries{tag, "NONE"}, flag(flag) {}
 
     void addRelationship(Relationship relationship){
@@ -96,13 +84,13 @@ struct Province {
     int id;
     std::string name;
     std::string owner;
-    Color color;
+    SDL_Color color;
 
     std::string controller;
     SDL_Point center;
     std::vector<std::pair<uint16_t, uint16_t>> shape;
 
-    Province(int id, std::string name, std::string owner, Color color)
+    Province(int id, std::string name, std::string owner, SDL_Color color)
         : id(id), name(name), owner(owner), controller(""), color(color) {}
 };
 
@@ -114,9 +102,9 @@ struct Army {
     std::string name;
     std::string owner; 
     int power;
-    Color color;
+    SDL_Color color;
 
-    Army(int position, std::string name, std::string owner, int power, Color color)
+    Army(int position, std::string name, std::string owner, int power, SDL_Color color)
         : position(position), name(name), owner(owner), power(power), color(color), movementStage(0) {}
 };
 
@@ -177,19 +165,7 @@ struct Time {
 
 struct World;
 
-enum class MenuPlace { 
-    MainMenu, 
-    CountrySelection, 
-    InGame,
-    LoadGame
-};
 
-enum class MapMode { 
-    NORMAL, 
-    DIPLOMATIC, 
-    ACCESS,
-    TERRAIN
-};
 
 struct Ui{
     std::unordered_map<std::string, std::function<std::string(World&)>> hooks;
@@ -219,12 +195,12 @@ struct World{
         SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     }
+
     //Dev Flags
     const bool DEBUGGING_MODE = false;
     const int HOT_RELOAD_WAIT_TIME = 500;
 
     bool running = true;
-    
 
     Ui ui = Ui();
     MenuPlace lastPlace;
