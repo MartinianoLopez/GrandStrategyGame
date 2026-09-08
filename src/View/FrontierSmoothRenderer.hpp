@@ -71,7 +71,7 @@ inline void renderSmoothFrontiers(World &world) {
         renderFrontierStyle(world, world.frontierCache["province_frontiers"].frontiers);
     }
 
-    if (world.scale > 5.0f){
+    if (world.scale < 6.0f){
         renderFrontierStyle(world, world.frontierCache["country_frontiers_thick"].frontiers);
     }
 

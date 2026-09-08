@@ -13,54 +13,64 @@
 #include <SDL2/SDL_image.h>
 #include <unordered_set>
 #include <SDL2/SDL_image.h>
+#include <utility>   // std::pair, std::minmax
+#include <algorithm> // std::minmax
+#include <limits>    // std::numeric_limits
+#include <cstdint>   // uint32_t
 
 //============================
 
 inline void generateFrontierStyle(
     World& world,
     const std::string& styleName,
-    const std::map<std::pair<uint32_t,uint32_t>, std::vector<SDL_FPoint>>& worldFrontiers,
+    const std::map<std::pair<uint32_t,uint32_t>, std::vector<std::vector<SDL_FPoint>>>& worldFrontiers,
     float thickness,
     SDL_Color color
 ){
     FrontierStyle style;
     const float OFFSET = 0.5f;
 
-    for (const auto& [key, points] : worldFrontiers) {
-        if (points.size() < 2) continue;
-
+    for (const auto& [key, segments] : worldFrontiers) {
         FrontierData data;
+        bool hasAny = false;
 
-        // bounds en espacio mundo (con offset aplicado)
-        data.minX = data.maxX = points[0].x + OFFSET;
-        data.minY = data.maxY = points[0].y + OFFSET;
-        for (auto& p : points) {
-            float ox = p.x + OFFSET;
-            float oy = p.y + OFFSET;
-            data.minX = std::min(data.minX, ox); data.maxX = std::max(data.maxX, ox);
-            data.minY = std::min(data.minY, oy); data.maxY = std::max(data.maxY, oy);
+        for (const auto& points : segments) {
+            if (points.size() < 2) continue;
+
+            if (!hasAny) {
+                data.minX = data.maxX = points[0].x + OFFSET;
+                data.minY = data.maxY = points[0].y + OFFSET;
+                hasAny = true;
+            }
+            for (auto& p : points) {
+                float ox = p.x + OFFSET;
+                float oy = p.y + OFFSET;
+                data.minX = std::min(data.minX, ox); data.maxX = std::max(data.maxX, ox);
+                data.minY = std::min(data.minY, oy); data.maxY = std::max(data.maxY, oy);
+            }
+
+            std::vector<crushedpixel::Vec2> pts;
+            pts.reserve(points.size());
+            for (auto& p : points)
+                pts.push_back(crushedpixel::Vec2{p.x + OFFSET, p.y + OFFSET});
+
+            auto verts = crushedpixel::Polyline2D::create(
+                pts, thickness,
+                crushedpixel::Polyline2D::JointStyle::BEVEL,
+                crushedpixel::Polyline2D::EndCapStyle::SQUARE
+            );
+
+            data.cachedVerts.reserve(data.cachedVerts.size() + verts.size());
+            for (auto& v : verts) {
+                SDL_Vertex sv;
+                sv.position = SDL_FPoint{ v.x, v.y };
+                sv.color = color;
+                sv.tex_coord = SDL_FPoint{0,0};
+                data.cachedVerts.push_back(sv);
+            }
         }
 
-        // generar geometría en espacio MUNDO (con offset, sin cámara aplicada)
-        std::vector<crushedpixel::Vec2> pts;
-        pts.reserve(points.size());
-        for (auto& p : points)
-            pts.push_back(crushedpixel::Vec2{p.x + OFFSET, p.y + OFFSET});
-
-        auto verts = crushedpixel::Polyline2D::create(
-            pts, thickness,
-            crushedpixel::Polyline2D::JointStyle::BEVEL,
-            crushedpixel::Polyline2D::EndCapStyle::SQUARE
-        );
-
-        data.cachedVerts.reserve(verts.size());
-        for (auto& v : verts) {
-            SDL_Vertex sv;
-            sv.position = SDL_FPoint{ v.x, v.y };
-            sv.color = color;
-            sv.tex_coord = SDL_FPoint{0,0};
-            data.cachedVerts.push_back(sv);
-        }
+        if (!hasAny) continue;
 
         style.frontiers[key] = std::move(data);
     }
@@ -68,73 +78,121 @@ inline void generateFrontierStyle(
     world.frontierCache[styleName] = std::move(style);
 }
 
-inline std::vector<SDL_FPoint> orderPoints(std::vector<SDL_FPoint> points) {
-    std::vector<SDL_FPoint> ordered;
-    if (points.empty()) return ordered;
+inline std::vector<std::vector<SDL_FPoint>> orderPoints(std::vector<SDL_FPoint> points) {
+    std::vector<std::vector<SDL_FPoint>> segments;
+    if (points.empty()) return segments;
 
-    ordered.push_back(points[0]);
-    points.erase(points.begin());
+    const float maxDist = 1.05f * 1.05f; // límite: recto=1, diagonal≈0.707
 
     while (!points.empty()) {
-        const SDL_FPoint& last = ordered.back();
-        int bestIdx = 0;
-        float bestDist = std::numeric_limits<float>::max();
+        std::vector<SDL_FPoint> ordered;
 
-        for (int i = 0; i < (int)points.size(); i++) {
-            float dx = points[i].x - last.x;
-            float dy = points[i].y - last.y;
-            float dist = dx*dx + dy*dy;
-            if (dist < bestDist) {
-                bestDist = dist;
-                bestIdx = i;
+        // Semilla del nuevo segmento
+        ordered.push_back(points[0]);
+        points.erase(points.begin());
+
+        auto extend = [&](bool front) {
+            while (!points.empty()) {
+                SDL_FPoint ref = front ? ordered.front() : ordered.back();
+                int bestIdx = -1;
+                float bestDist = std::numeric_limits<float>::max();
+
+                for (int i = 0; i < (int)points.size(); i++) {
+                    float dx = points[i].x - ref.x;
+                    float dy = points[i].y - ref.y;
+                    float dist = dx * dx + dy * dy;
+                    if (dist < bestDist) {
+                        bestDist = dist;
+                        bestIdx = i;
+                    }
+                }
+
+                if (bestIdx == -1 || bestDist > maxDist) break;
+
+                if (front) ordered.insert(ordered.begin(), points[bestIdx]);
+                else ordered.push_back(points[bestIdx]);
+                points.erase(points.begin() + bestIdx);
             }
-        }
+        };
 
-        ordered.push_back(points[bestIdx]);
-        points.erase(points.begin() + bestIdx);
+        extend(false); // hacia adelante
+        extend(true);  // hacia atrás
+
+        segments.push_back(std::move(ordered));
     }
 
-    return ordered;
+    return segments;
+}
+inline std::vector<std::vector<SDL_FPoint>> randomizePositions(std::vector<SDL_FPoint> points) {
+    std::vector<std::vector<SDL_FPoint>> segments;
+    if (points.empty()) return segments;
+
+    const float jitterRange = 0.3f; // ajustá según escala de tus puntos
+
+    auto jitter = [&](float range) {
+        return ((float)rand() / RAND_MAX) * 2.0f * range - range;
+    };
+
+    for (size_t i = 0; i < points.size(); i++) {
+        if (i == 0 || i == points.size() - 1) continue; // no mover extremos
+        points[i].x += jitter(jitterRange);
+        points[i].y += jitter(jitterRange);
+    }
+
+    segments.push_back(std::move(points));
+    return segments;
 }
 
-inline void findFrontiers(World& world) {   
+inline void findFrontiers(World& world) {
     SDL_Surface* img = world.provincesBmp;
-    std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> frontierList;
+    std::map<std::pair<uint32_t, uint32_t>, std::vector<std::vector<SDL_FPoint>>> frontierList;
     int imgW = img->w;
     int imgH = img->h;
 
-    for (int y = 0; y < imgH; y++){
+    // Acumulador temporal: puntos sueltos por frontera, antes de ordenar
+    std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> rawPoints;
+
+    for (int y = 0; y < imgH; y++) {
         for (int x = 0; x < imgW; x++) {
             uint32_t current = getPixelColor(img, x, y);
-            if (x + 1 < imgW) { 
+            if (x + 1 < imgW) {
                 uint32_t next = getPixelColor(img, x + 1, y);
-                if (next != current) frontierList[{current, next}].push_back({x + 0.5f, (float)y});
+                if (next != current) {
+                    auto key = std::minmax(current, next);
+                    rawPoints[key].push_back({x + 0.5f, (float)y});
+                }
             }
         }
     }
 
-    for (int y = 0; y < imgH; y++){ 
-        for (int x = 0; x < imgW; x++) {  
+    for (int y = 0; y < imgH; y++) {
+        for (int x = 0; x < imgW; x++) {
             uint32_t current = getPixelColor(img, x, y);
-            if (y + 1 < imgH) {  
+            if (y + 1 < imgH) {
                 uint32_t next = getPixelColor(img, x, y + 1);
-                if (next != current) frontierList[{current, next}].push_back({(float)x, y + 0.5f});
+                if (next != current) {
+                    auto key = std::minmax(current, next);
+                    rawPoints[key].push_back({(float)x, y + 0.5f});
+                }
             }
         }
     }
 
-    for (auto& [key, pts] : frontierList)
-        pts = orderPoints(pts);
+    for (auto& [key, pts] : rawPoints) {
+        auto ordered = orderPoints(pts); // vector<vector<SDL_FPoint>>, ya segmentado
+        for (auto& segment : ordered)
+            segment = randomizePositions(segment)[0]; // jitter por segmento
+        frontierList[key] = std::move(ordered);
+    }
 
     world.provinceFrontiers = frontierList;
 }
-
 // ===============================================================================================================
 // Adjacency Graph
 // ===============================================================================================================
 
-inline void buildAdjacency(World& world){
-    const std::map<std::pair<uint32_t, uint32_t>,std::vector<SDL_FPoint>>& provinceFrontiers = world.provinceFrontiers;
+inline void buildAdjacency(World& world) {
+    const std::map<std::pair<uint32_t, uint32_t>, std::vector<std::vector<SDL_FPoint>>>& provinceFrontiers = world.provinceFrontiers;
     const std::list<Province>& provinces = world.provinces;
     std::map<int, std::vector<int>> adjacency;
     for (const auto& [pair, _] : provinceFrontiers) {
@@ -195,9 +253,9 @@ inline void reloadAccesibilityGraph(World& world, Country* country){
 // Frontiers
 // ===============================================================================================================
 
-inline void findFrontiersBetweenCountries( World& world) {
-    std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>>& frontiers = world.provinceFrontiers;
-    std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> filteredFrontiers;
+inline void findFrontiersBetweenCountries(World& world) {
+    std::map<std::pair<uint32_t, uint32_t>, std::vector<std::vector<SDL_FPoint>>>& frontiers = world.provinceFrontiers;
+    std::map<std::pair<uint32_t, uint32_t>, std::vector<std::vector<SDL_FPoint>>> filteredFrontiers;
 
     for (const auto& [key, points] : frontiers) {
         const Province* province1 = provinceFindByColor(world.provinces, key.first);
@@ -206,8 +264,8 @@ inline void findFrontiersBetweenCountries( World& world) {
         if (province1 == nullptr || province2 == nullptr) continue;
 
         const bool differentCountries = province1->owner != province2->owner
-                                     && !province1->owner.empty()
-                                     && !province2->owner.empty();
+            && !province1->owner.empty()
+            && !province2->owner.empty();
 
         const bool oneIsCountryOneIsNot = province1->owner.empty() != province2->owner.empty();
 

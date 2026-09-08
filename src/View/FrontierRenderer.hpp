@@ -13,28 +13,29 @@
 //=============================
 
 inline void renderPoints(
-    World& world,  
-    const std::map<std::pair<uint32_t,uint32_t>, std::vector<SDL_FPoint>>& pointList,
-    SDL_Color color, 
+    World& world,
+    const std::map<std::pair<uint32_t,uint32_t>, std::vector<std::vector<SDL_FPoint>>>& pointList,
+    SDL_Color color,
     float size
-){
+) {
     SDL_SetRenderDrawColor(world.renderer, color.r, color.g, color.b, color.a);
 
-    for (const auto& [colorPair, points] : pointList) {
-        for (const auto& point : points) {
-            float sx = world.destRect.x + point.x * world.finalScale;
-            float sy = world.destRect.y + point.y * world.finalScale;
-            if (sx < 0 || sy < 0 || sx > world.winWidth || sy > world.winHeight) continue;
-            SDL_FRect dot = { sx, sy, world.finalScale * size, world.finalScale * size };
-        
-            SDL_RenderFillRectF(world.renderer, &dot);
+    for (const auto& [colorPair, segments] : pointList) {
+        for (const auto& points : segments) {
+            for (const auto& point : points) {
+                float sx = world.destRect.x + point.x * world.finalScale;
+                float sy = world.destRect.y + point.y * world.finalScale;
+                if (sx < 0 || sy < 0 || sx > world.winWidth || sy > world.winHeight) continue;
+                SDL_FRect dot = { sx, sy, world.finalScale * size, world.finalScale * size };
+                SDL_RenderFillRectF(world.renderer, &dot);
+            }
         }
     }
 }
 
-inline std::map<std::pair<uint32_t,uint32_t>, std::vector<SDL_FPoint>> filterFrontiersOfAProvince(World& world, int provinceId){
+inline std::map<std::pair<uint32_t,uint32_t>, std::vector<std::vector<SDL_FPoint>>> filterFrontiersOfAProvince(World& world, int provinceId) {
 
-    std::map<std::pair<uint32_t,uint32_t>, std::vector<SDL_FPoint>> filtered;
+    std::map<std::pair<uint32_t,uint32_t>, std::vector<std::vector<SDL_FPoint>>> filtered;
 
     Province* p = provinceFindById(world.provinces, provinceId);
 
@@ -49,20 +50,19 @@ inline std::map<std::pair<uint32_t,uint32_t>, std::vector<SDL_FPoint>> filterFro
     return filtered;
 }
 
+
 inline void renderFrontiersAsPoints(
-    World& world, 
+    World& world,
     SDL_Color color,
-    const std::map<std::pair<uint32_t,uint32_t>, 
-    std::vector<SDL_FPoint>>& frontierList,
+    const std::map<std::pair<uint32_t,uint32_t>, std::vector<std::vector<SDL_FPoint>>>& frontierList,
     float size
-){
+) {
     renderPoints(world, frontierList, color, size);
 }
 
 
 inline void highligthProvinceFrontiers(World& world, SDL_Color color, int provinceId, float size = 1.0f) {
-    
-    std::map<std::pair<uint32_t,uint32_t>, std::vector<SDL_FPoint>> filtered = filterFrontiersOfAProvince(world, provinceId);
+    std::map<std::pair<uint32_t,uint32_t>, std::vector<std::vector<SDL_FPoint>>> filtered = filterFrontiersOfAProvince(world, provinceId);
 
     renderPoints(world, filtered, color, size);
 }
@@ -70,15 +70,15 @@ inline void highligthProvinceFrontiers(World& world, SDL_Color color, int provin
 inline void renderFrontiers(World &world) {
 
   if (world.scale > 6.0f)
-    renderFrontiersAsPoints(world, {0, 0, 0, 120}, world.provinceFrontiers, 1);
+    renderFrontiersAsPoints(world, {255}, world.provinceFrontiers, 1);
 
   if (world.scale < 5.0f)
-    renderFrontiersAsPoints(world, {0, 0, 0, 220}, world.countryFrontiers,
+    renderFrontiersAsPoints(world, {0, 0, 0, 255}, world.countryFrontiers,
                             6 / world.scale);
 
   if (world.scale > 4.0f) {
-    renderFrontiersAsPoints(world, {0, 0, 0, 220}, world.countryFrontiers, 1);
-    highligthProvinceFrontiers(world, {255, 255, 0, 240},
+    renderFrontiersAsPoints(world, {0, 0, 0, 255}, world.countryFrontiers, 1);
+    highligthProvinceFrontiers(world, {255, 255, 0, 255},
                                world.selectedProvince);
   }
 }

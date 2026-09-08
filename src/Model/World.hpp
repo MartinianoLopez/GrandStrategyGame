@@ -241,8 +241,8 @@ struct World{
     std::list<Army> armies;
 
 
-    std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> provinceFrontiers;
-    std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> countryFrontiers;
+    std::map<std::pair<uint32_t, uint32_t>, std::vector<std::vector<SDL_FPoint>>> provinceFrontiers;
+    std::map<std::pair<uint32_t, uint32_t>, std::vector<std::vector<SDL_FPoint>>> countryFrontiers;
 
     std::map<std::string, FrontierStyle> frontierCache; // FrontierStyleName -> FrontierStyle
 

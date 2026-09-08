@@ -162,10 +162,11 @@ public:
 		// handle different end cap styles
 		if (endCapStyle == EndCapStyle::SQUARE) {
 			// extend the start/end points by half the thickness
-			pathStart1 = Vec2Maths::subtract(pathStart1, Vec2Maths::multiply(firstSegment.edge1.direction(), thickness));
-			pathStart2 = Vec2Maths::subtract(pathStart2, Vec2Maths::multiply(firstSegment.edge2.direction(), thickness));
-			pathEnd1 = Vec2Maths::add(pathEnd1, Vec2Maths::multiply(lastSegment.edge1.direction(), thickness));
-			pathEnd2 = Vec2Maths::add(pathEnd2, Vec2Maths::multiply(lastSegment.edge2.direction(), thickness));
+			const float capExtension = thickness * 2.0f;
+			pathStart1 = Vec2Maths::subtract(pathStart1, Vec2Maths::multiply(firstSegment.edge1.direction(), capExtension));
+			pathStart2 = Vec2Maths::subtract(pathStart2, Vec2Maths::multiply(firstSegment.edge2.direction(), capExtension));
+			pathEnd1   = Vec2Maths::add(pathEnd1,   Vec2Maths::multiply(lastSegment.edge1.direction(), capExtension));
+			pathEnd2   = Vec2Maths::add(pathEnd2,   Vec2Maths::multiply(lastSegment.edge2.direction(), capExtension));
 
 		} else if (endCapStyle == EndCapStyle::ROUND) {
 			// draw half circle end caps
