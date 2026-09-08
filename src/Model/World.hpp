@@ -160,6 +160,15 @@ struct Time {
     Time(int year, int month, int day)
         : date(year, month, day) {}
 };
+struct FrontierData {
+    std::vector<SDL_Vertex> cachedVerts; // pregenerated geometry
+    float minX, minY, maxX, maxY;        // bounding box to render only if it is in screen
+};
+
+struct FrontierStyle {
+    std::map<std::pair<uint32_t,uint32_t>, FrontierData> frontiers; // diferent prerendered frontier styles
+};
+
 
 //==================================
 
@@ -199,6 +208,7 @@ struct World{
     //Dev Flags
     const bool DEBUGGING_MODE = false;
     const int HOT_RELOAD_WAIT_TIME = 500;
+    const bool FRONTIER_MODE_SMOOTH = true;
 
     bool running = true;
 
@@ -221,16 +231,20 @@ struct World{
     SDL_Texture* countriesTex = nullptr;
     SDL_Surface* controlSur = nullptr;
     SDL_Texture* controlTex = nullptr;
-    
+
+
+
+
     std::vector<ProvinceData> provincesData;
     std::list<Province> provinces;
     std::list<Country> countries;
     std::list<Army> armies;
 
-    
+
     std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> provinceFrontiers;
     std::map<std::pair<uint32_t, uint32_t>, std::vector<SDL_FPoint>> countryFrontiers;
 
+    std::map<std::string, FrontierStyle> frontierCache; // FrontierStyleName -> FrontierStyle
 
     std::map<int, std::vector<int>> adjacencyGraph;
     std::unordered_map<int, Province*> provinceById;

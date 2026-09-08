@@ -4,6 +4,7 @@
 
 #include "World.hpp"
 #include "../utils.hpp"
+#include "../third_party/Polyline2D/Polyline2D.hpp"
 
 //===========================
 
@@ -14,6 +15,87 @@
 #include <SDL2/SDL_image.h>
 
 //============================
+
+inline void generateFrontierStyle(
+    World& world,
+    const std::string& styleName,
+    const std::map<std::pair<uint32_t,uint32_t>, std::vector<SDL_FPoint>>& worldFrontiers,
+    float thickness,
+    SDL_Color color
+){
+    FrontierStyle style;
+    const float OFFSET = 0.5f;
+
+    for (const auto& [key, points] : worldFrontiers) {
+        if (points.size() < 2) continue;
+
+        FrontierData data;
+
+        // bounds en espacio mundo (con offset aplicado)
+        data.minX = data.maxX = points[0].x + OFFSET;
+        data.minY = data.maxY = points[0].y + OFFSET;
+        for (auto& p : points) {
+            float ox = p.x + OFFSET;
+            float oy = p.y + OFFSET;
+            data.minX = std::min(data.minX, ox); data.maxX = std::max(data.maxX, ox);
+            data.minY = std::min(data.minY, oy); data.maxY = std::max(data.maxY, oy);
+        }
+
+        // generar geometría en espacio MUNDO (con offset, sin cámara aplicada)
+        std::vector<crushedpixel::Vec2> pts;
+        pts.reserve(points.size());
+        for (auto& p : points)
+            pts.push_back(crushedpixel::Vec2{p.x + OFFSET, p.y + OFFSET});
+
+        auto verts = crushedpixel::Polyline2D::create(
+            pts, thickness,
+            crushedpixel::Polyline2D::JointStyle::BEVEL,
+            crushedpixel::Polyline2D::EndCapStyle::SQUARE
+        );
+
+        data.cachedVerts.reserve(verts.size());
+        for (auto& v : verts) {
+            SDL_Vertex sv;
+            sv.position = SDL_FPoint{ v.x, v.y };
+            sv.color = color;
+            sv.tex_coord = SDL_FPoint{0,0};
+            data.cachedVerts.push_back(sv);
+        }
+
+        style.frontiers[key] = std::move(data);
+    }
+
+    world.frontierCache[styleName] = std::move(style);
+}
+
+inline std::vector<SDL_FPoint> orderPoints(std::vector<SDL_FPoint> points) {
+    std::vector<SDL_FPoint> ordered;
+    if (points.empty()) return ordered;
+
+    ordered.push_back(points[0]);
+    points.erase(points.begin());
+
+    while (!points.empty()) {
+        const SDL_FPoint& last = ordered.back();
+        int bestIdx = 0;
+        float bestDist = std::numeric_limits<float>::max();
+
+        for (int i = 0; i < (int)points.size(); i++) {
+            float dx = points[i].x - last.x;
+            float dy = points[i].y - last.y;
+            float dist = dx*dx + dy*dy;
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestIdx = i;
+            }
+        }
+
+        ordered.push_back(points[bestIdx]);
+        points.erase(points.begin() + bestIdx);
+    }
+
+    return ordered;
+}
 
 inline void findFrontiers(World& world) {   
     SDL_Surface* img = world.provincesBmp;
@@ -40,6 +122,9 @@ inline void findFrontiers(World& world) {
             }
         }
     }
+
+    for (auto& [key, pts] : frontierList)
+        pts = orderPoints(pts);
 
     world.provinceFrontiers = frontierList;
 }

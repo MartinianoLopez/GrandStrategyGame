@@ -67,6 +67,20 @@ inline void highligthProvinceFrontiers(World& world, SDL_Color color, int provin
     renderPoints(world, filtered, color, size);
 }
 
+inline void renderFrontiers(World &world) {
 
+  if (world.scale > 6.0f)
+    renderFrontiersAsPoints(world, {0, 0, 0, 120}, world.provinceFrontiers, 1);
+
+  if (world.scale < 5.0f)
+    renderFrontiersAsPoints(world, {0, 0, 0, 220}, world.countryFrontiers,
+                            6 / world.scale);
+
+  if (world.scale > 4.0f) {
+    renderFrontiersAsPoints(world, {0, 0, 0, 220}, world.countryFrontiers, 1);
+    highligthProvinceFrontiers(world, {255, 255, 0, 240},
+                               world.selectedProvince);
+  }
+}
 
 

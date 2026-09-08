@@ -189,10 +189,16 @@ inline void loadAssets(World& world) {
     world.controlTex = surfaceToTexture(renderer, world.controlSur);
 
     { Timer t("   FindFrontiers");           findFrontiers(world); }
+
     { Timer t("   FindCountryFrontiers");    findFrontiersBetweenCountries(world); }
     { Timer t("   BuildAdjacency");          buildAdjacency(world); }
     { Timer t("   BuildProvinces");          buildProvinceIdMap(world); }
     { Timer t("   BuildAccesibilityGraphs"); InitAllAccesibiltyGraphs(world); }
+
+    { Timer t("   generateFrontierStyle province_frontiers"); generateFrontierStyle(world, "province_frontiers", world.provinceFrontiers, 1.0f, {0,0,0,120}); }
+    { Timer t("   generateFrontierStyle country_frontiers_thin"); generateFrontierStyle(world, "country_frontiers_thin", world.countryFrontiers, 1.0f, {0,0,0,255}); }
+    { Timer t("   generateFrontierStyle country_frontiers_thick"); generateFrontierStyle(world, "country_frontiers_thick", world.countryFrontiers, 3.0f, {0,0,0,255}); }
+    { Timer t("   generateFrontierStyle highlight"); generateFrontierStyle(world, "highlight", world.provinceFrontiers, 1.0f, {255,255,0,255}); }
 
     if (TTF_Init() == -1) {
         SDL_Log("TTF init error: %s", TTF_GetError());

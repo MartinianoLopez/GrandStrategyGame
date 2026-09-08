@@ -6,6 +6,7 @@
 #include "../utils.hpp"
 #include "ArmyRenderer.hpp"
 #include "FrontierRenderer.hpp"
+#include "FrontierSmoothRenderer.hpp"
 #include "MapModeRenderers.hpp"
 
 //=============================
@@ -37,22 +38,9 @@ inline void renderMapModeLayer(World &world) {
   }
 }
 
-inline void renderFrontiers(World &world) {
-
-  if (world.scale > 6.0f)
-    renderFrontiersAsPoints(world, {0, 0, 0, 120}, world.provinceFrontiers, 1);
-
-  if (world.scale < 5.0f)
-    renderFrontiersAsPoints(world, {0, 0, 0, 220}, world.countryFrontiers,
-                            6 / world.scale);
-
-  if (world.scale > 4.0f) {
-    renderFrontiersAsPoints(world, {0, 0, 0, 220}, world.countryFrontiers, 1);
-    highligthProvinceFrontiers(world, {255, 255, 0, 240},
-                               world.selectedProvince);
+inline void renderArmiesLayer(World& world){
     renderArmies(world, world.destRect);
     showSelectedArmiesPaths(world, world.destRect);
-  }
 }
 
 inline void renderMap(World &world, bool isSecondMap) {
@@ -67,6 +55,10 @@ inline void renderMap(World &world, bool isSecondMap) {
   displayTexture(world, world.terrain, 200);
 
   renderMapModeLayer(world);
-  
-  renderFrontiers(world);
+  if(world.FRONTIER_MODE_SMOOTH){
+    renderSmoothFrontiers(world);
+  }else{
+    renderFrontiers(world);
+  }
+  renderArmiesLayer(world);
 }
