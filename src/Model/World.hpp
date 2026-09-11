@@ -73,15 +73,24 @@ struct Country {
     }
 };
 
+
+
+enum class TerrainType { 
+    LAND,
+    OCEAN
+};
+
 struct ProvinceData {
     int id;
     SDL_Color color;
+    TerrainType terrainType;
     std::string name;
     std::string owner;
 };
 
 struct Province {
     int id;
+    TerrainType terrainType;
     std::string name;
     std::string owner;
     SDL_Color color;
@@ -90,8 +99,10 @@ struct Province {
     SDL_Point center;
     std::vector<std::pair<uint16_t, uint16_t>> shape;
 
-    Province(int id, std::string name, std::string owner, SDL_Color color)
-        : id(id), name(name), owner(owner), controller(""), color(color) {}
+    Province(int id, std::string name, std::string owner, SDL_Color color,
+             TerrainType terrainType = TerrainType::LAND)
+        : id(id), terrainType(terrainType), name(name), owner(owner),
+          controller(""), color(color) {}
 };
 
 struct Army {

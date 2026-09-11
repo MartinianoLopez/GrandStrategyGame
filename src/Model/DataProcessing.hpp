@@ -28,7 +28,7 @@ inline void generateFrontierStyle(
     SDL_Color color
 ){
     FrontierStyle style;
-    const float OFFSET = 0.5f;
+    const float OFFSET = 0.50f;
 
     for (const auto& [key, segments] : worldFrontiers) {
         FrontierData data;
@@ -127,7 +127,7 @@ inline std::vector<std::vector<SDL_FPoint>> randomizePositions(std::vector<SDL_F
     std::vector<std::vector<SDL_FPoint>> segments;
     if (points.empty()) return segments;
 
-    const float jitterRange = 0.3f; // ajustá según escala de tus puntos
+    const float jitterRange = 0.25f; // randomization value
 
     auto jitter = [&](float range) {
         return ((float)rand() / RAND_MAX) * 2.0f * range - range;

@@ -17,33 +17,66 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_image.h>
 
+inline TerrainType parseTerrainType(const std::string& s) {
+    if (s == "ocean")
+        return TerrainType::OCEAN;
+    return TerrainType::LAND; // default / "land"
+}
+
 inline void loadProvincesTxt(World& world) {
     std::ifstream file("assets/provinces.txt");
-    if (!file.is_open()) { std::cerr << "loadProvincesTxt Error: could not open provinces.txt\n"; return; }
-    std::vector<ProvinceData> provincesData;
+
+    if (!file.is_open()) {
+        std::cout << "[ERROR] No se pudo abrir provinces.txt\n";
+        return;
+    }
+
     std::string line;
+    std::getline(file, line); // header
+    std::cout << "[DEBUG] Header leido: " << line << "\n";
+
+    int lineCount = 0;
+    int parsedCount = 0;
+
     while (std::getline(file, line)) {
-        std::istringstream ss(line);
-        std::vector<std::string> parts;
-        std::string token;
-        while (std::getline(ss, token, ';'))
-            parts.push_back(token);
-        if (parts.size() < 6) continue;
+        lineCount++;
+        if (line.empty()) continue;
+
+        std::stringstream ss(line);
+        std::string field;
+        std::vector<std::string> tokens;
+
+        while (std::getline(ss, field, ';'))
+            tokens.push_back(field);
+
+        if (tokens.size() < 7) {
+            std::cout << "[WARN] Linea invalida (" << tokens.size()
+                       << " campos): \"" << line << "\"\n";
+            continue;
+        }
 
         try {
             ProvinceData pd;
-            pd.id      = std::atoi(parts[0].c_str());
-            pd.color.r = std::atoi(parts[1].c_str());
-            pd.color.g = std::atoi(parts[2].c_str());
-            pd.color.b = std::atoi(parts[3].c_str());
-            pd.color.a = 255;
-            pd.name    = parts[4];
-            pd.owner   = parts[5];
-            provincesData.push_back(pd);
-        } catch (...) { continue; }
+            pd.id          = std::stoi(tokens[0]);
+            pd.terrainType = parseTerrainType(tokens[1]);
+            pd.color.r     = static_cast<uint8_t>(std::stoi(tokens[2]));
+            pd.color.g     = static_cast<uint8_t>(std::stoi(tokens[3]));
+            pd.color.b     = static_cast<uint8_t>(std::stoi(tokens[4]));
+            pd.name        = tokens[5];
+            pd.owner       = tokens[6];
+
+            world.provincesData.push_back(pd);
+            parsedCount++;
+        } catch (const std::exception& e) {
+            std::cout << "[ERROR] stoi fallo en linea \"" << line
+                       << "\": " << e.what() << "\n";
+        }
     }
-    world.provincesData = provincesData;
+
+    std::cout << "[DEBUG] Lineas leidas: " << lineCount
+               << " | Provincias parseadas: " << parsedCount << "\n";
 }
+
 
 inline void loadCountries(World& world) {
     SDL_Renderer* renderer = world.renderer;

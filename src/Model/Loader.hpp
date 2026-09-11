@@ -94,6 +94,30 @@ inline std::unordered_map<int, std::vector<std::pair<uint16_t, uint16_t>>> build
     return shapeMap;
 }
 
+inline void debugPrintFirstProvinces(const World& world, int count = 10) {
+    std::cout << "Debuging Provinces\n";
+    int i = 0;
+    for (const auto& p : world.provinces) {
+        if (i >= count) break;
+
+        std::cout << "Province #" << i << "\n";
+        std::cout << "  id: " << p.id << "\n";
+        std::cout << "  name: " << p.name << "\n";
+        std::cout << "  owner: " << p.owner << "\n";
+        std::cout << "  controller: " << p.controller << "\n";
+        std::cout << "  terrainType: "
+                   << (p.terrainType == TerrainType::OCEAN ? "OCEAN" : "LAND") << "\n";
+        std::cout << "  color: (" << (int)p.color.r << ", "
+                                    << (int)p.color.g << ", "
+                                    << (int)p.color.b << ")\n";
+        std::cout << "  center: (" << p.center.x << ", " << p.center.y << ")\n";
+        std::cout << "  shape size: " << p.shape.size() << " points\n";
+        std::cout << "----------------------------\n";
+
+        i++;
+    }
+}
+
 inline void loadProvinces(World& world) {
     { Timer t("     loadProvincesTxt"); loadProvincesTxt(world); }
 
@@ -106,7 +130,7 @@ inline void loadProvinces(World& world) {
     std::list<Province> provinces;
     for (const auto& pd : world.provincesData) {
         SDL_Color color = { pd.color.r, pd.color.g, pd.color.b, 255 };
-        Province p(pd.id, pd.name, pd.owner, color);
+        Province p(pd.id, pd.name, pd.owner, color, pd.terrainType);
 
         uint32_t key = ((uint32_t)pd.color.r << 16) | ((uint32_t)pd.color.g << 8) | pd.color.b;
 
@@ -122,6 +146,7 @@ inline void loadProvinces(World& world) {
     }
 
     world.provinces = provinces;
+    debugPrintFirstProvinces(world);
 }
 
 inline void desaturateCountries(std::list<Country>& countries, double k = 0.3, int brightness = 20) {
@@ -158,7 +183,7 @@ inline void buildProvinceIdMap(World& world) {
 // LOAD ALL
 // ===============================================================================================================
 
-static std::string FOLDERPATH = "assets/terrainCustom/";
+static std::string FOLDERPATH = "assets/terrain/";
 static float STARTING_COORDINATES[] = {0.57f, 0.22f};
 
 inline void loadAssets(World& world) {

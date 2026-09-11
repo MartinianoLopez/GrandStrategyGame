@@ -52,7 +52,7 @@ inline void renderMap(World &world, bool isSecondMap) {
 
   // base map
   displayTexture(world, world.height, 255);
-  displayTexture(world, world.terrain, 200);
+  displayTexture(world, world.terrain, 255);
 
   renderMapModeLayer(world);
   if(world.FRONTIER_MODE_SMOOTH){
