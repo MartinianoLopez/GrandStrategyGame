@@ -150,6 +150,7 @@ inline void loadProvinces(World& world) {
 }
 
 inline void desaturateCountries(std::list<Country>& countries, double k = 0.3, int brightness = 20) {
+
     for (auto& c : countries) {
         int r = c.color.r;
         int g = c.color.g;
@@ -191,7 +192,6 @@ inline void loadAssets(World& world) {
 
     world.provincesBmp = IMG_Load((FOLDERPATH + "provinces.bmp").c_str());
     world.terrain = surfaceToTexture(renderer, IMG_Load((FOLDERPATH + "terrain.bmp").c_str()));
-    world.height  = surfaceToTexture(renderer, IMG_Load((FOLDERPATH + "heightmap.bmp").c_str()));
 
     world.texWidth  = world.provincesBmp->w;
     world.texHeight = world.provincesBmp->h;
@@ -204,7 +204,7 @@ inline void loadAssets(World& world) {
     
     // data processing
     
-    { Timer t("   ProcessColors");          desaturateCountries(world.countries, 0.3, 5); }
+    { Timer t("   ProcessColors");          desaturateCountries(world.countries, 0.3, 0); }
     { Timer t("   PrepareCountries");       prepareCountries(world); }
 
     world.countriesTex = surfaceToTexture(renderer, world.countriesImg);
