@@ -56,6 +56,7 @@ inline void renderMap(World &world, bool isSecondMap) {
 
 
   renderMapModeLayer(world);
+  
   if(world.FRONTIER_MODE_SMOOTH){
     renderSmoothFrontiers(world);
   }else{

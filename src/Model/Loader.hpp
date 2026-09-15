@@ -146,7 +146,7 @@ inline void loadProvinces(World& world) {
     }
 
     world.provinces = provinces;
-    debugPrintFirstProvinces(world);
+    //debugPrintFirstProvinces(world);
 }
 
 inline void desaturateCountries(std::list<Country>& countries, double k = 0.3, int brightness = 20) {
@@ -204,7 +204,7 @@ inline void loadAssets(World& world) {
     
     // data processing
     
-    { Timer t("   ProcessColors");          desaturateCountries(world.countries, 0.3, 0); }
+    { Timer t("   ProcessColors");          desaturateCountries(world.countries, 0.6, -30); }
     { Timer t("   PrepareCountries");       prepareCountries(world); }
 
     world.countriesTex = surfaceToTexture(renderer, world.countriesImg);

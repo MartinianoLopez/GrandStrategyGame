@@ -27,19 +27,13 @@ inline void loadProvincesTxt(World& world) {
     std::ifstream file("assets/provinces.txt");
 
     if (!file.is_open()) {
-        std::cout << "[ERROR] No se pudo abrir provinces.txt\n";
         return;
     }
 
     std::string line;
     std::getline(file, line); // header
-    std::cout << "[DEBUG] Header leido: " << line << "\n";
-
-    int lineCount = 0;
-    int parsedCount = 0;
 
     while (std::getline(file, line)) {
-        lineCount++;
         if (line.empty()) continue;
 
         std::stringstream ss(line);
@@ -49,11 +43,7 @@ inline void loadProvincesTxt(World& world) {
         while (std::getline(ss, field, ';'))
             tokens.push_back(field);
 
-        if (tokens.size() < 7) {
-            std::cout << "[WARN] Linea invalida (" << tokens.size()
-                       << " campos): \"" << line << "\"\n";
-            continue;
-        }
+        if (tokens.size() < 7) continue;
 
         try {
             ProvinceData pd;
@@ -66,15 +56,10 @@ inline void loadProvincesTxt(World& world) {
             pd.owner       = tokens[6];
 
             world.provincesData.push_back(pd);
-            parsedCount++;
-        } catch (const std::exception& e) {
-            std::cout << "[ERROR] stoi fallo en linea \"" << line
-                       << "\": " << e.what() << "\n";
+        } catch (const std::exception&) {
+            // invalid line, just ignores it
         }
     }
-
-    std::cout << "[DEBUG] Lineas leidas: " << lineCount
-               << " | Provincias parseadas: " << parsedCount << "\n";
 }
 
 
