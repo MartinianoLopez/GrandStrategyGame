@@ -67,7 +67,8 @@ inline void onScroll(World& world, const SDL_Event& e) {
     float my   = (float)e.wheel.mouseY;
 
     bool tooZoomedOut = !world.freecamera && world.scale * zoom <= 1.5f;
-    if (tooZoomedOut) return;
+    bool tooZoomedIn  = world.scale * zoom >= 20.0f;
+    if (tooZoomedOut || tooZoomedIn) return;
 
     // Zoom toward the mouse cursor
     world.offsetX = mx + (world.offsetX - mx) * zoom;

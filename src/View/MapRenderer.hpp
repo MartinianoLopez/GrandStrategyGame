@@ -8,6 +8,7 @@
 #include "FrontierRenderer.hpp"
 #include "FrontierSmoothRenderer.hpp"
 #include "MapModeRenderers.hpp"
+#include "LabelRenderer.hpp"
 
 //=============================
 
@@ -52,7 +53,7 @@ inline void renderMap(World &world, bool isSecondMap) {
 
   // base map  
   displayTexture(world, world.height, 255);
-  displayTexture(world, world.terrain, 255);
+  displayTexture(world, world.terrain, 220);
 
 
   renderMapModeLayer(world);
@@ -63,4 +64,6 @@ inline void renderMap(World &world, bool isSecondMap) {
     renderFrontiers(world);
   }
   renderArmiesLayer(world);
+
+  renderCountryLabels(world, world.destRect);
 }

@@ -180,6 +180,19 @@ struct FrontierStyle {
     std::map<std::pair<uint32_t,uint32_t>, FrontierData> frontiers; // diferent prerendered frontier styles
 };
 
+struct CountryLabel {
+    std::string tag;         // Country::tag, clave estable
+    std::string countryName; // Country::name, el texto a mostrar
+    SDL_Point   position;    // pole of inaccessibility de su región más grande
+    int         area;        // en píxeles, útil para elegir tamaño de fuente
+};
+
+struct Region {
+    SDL_Color color;
+    SDL_Point pole;
+    int       area = 0;
+    SDL_Rect  bbox{ 0, 0, 0, 0 };
+};
 
 //==================================
 
@@ -204,7 +217,7 @@ struct World{
             "Window", 
             SDL_WINDOWPOS_CENTERED, 
             SDL_WINDOWPOS_CENTERED, 
-            1080, 1080, 
+            1920, 1080, 
             SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
         );
         renderer = SDL_CreateRenderer(
@@ -220,6 +233,9 @@ struct World{
     const bool DEBUGGING_MODE = false;
     const int HOT_RELOAD_WAIT_TIME = 500;
     const bool FRONTIER_MODE_SMOOTH = true;
+
+    const float STARTING_COORDINATES[2] = {0.48f, 0.18f};
+    const float STARTING_SCALE = 6.0f;
 
     bool running = true;
 
@@ -265,6 +281,8 @@ struct World{
     
     std::string selectedCountry = "NONE";
     std::vector<Army*> selectedArmies;
+
+    std::unordered_map<std::string, CountryLabel> countryLabels;
     
     //======= window variables ====================
     
@@ -276,7 +294,7 @@ struct World{
     int texWidth = 0;
     int texHeight = 0;
 
-    float scale = 5.0f;
+    float scale = STARTING_SCALE;
     float finalScale = 0.0f; 
 
     float offsetX = 0.0f;

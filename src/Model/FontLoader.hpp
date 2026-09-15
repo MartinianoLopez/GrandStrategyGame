@@ -11,7 +11,12 @@ inline void initFonts(World& world) {
     SDL_Renderer* renderer = world.renderer;
     world.fonts.push_back(initFont(renderer, "army",   "assets/fonts/Cinzel/static/Cinzel-SemiBold.ttf", {0, 0, 0, 255}, 10));
     world.fonts.push_back(initFont(renderer, "simple", "assets/fonts/Cinzel/static/Cinzel-SemiBold.ttf", {0, 0, 0, 255}, 20));
-    world.fonts.push_back(initFont(renderer, "fancy", "assets/fonts/Cinzel/static/Cinzel-SemiBold.ttf", {220, 220, 220, 255}, 22));
+    world.fonts.push_back(initFont(renderer, "fancy",  "assets/fonts/Cinzel/static/Cinzel-SemiBold.ttf", {220, 220, 220, 255}, 22));
+
+    // agregar estas tres:
+    world.fonts.push_back(initFont(renderer, "country_small",  "assets/fonts/Cinzel/static/Cinzel-SemiBold.ttf", {40, 40, 40, 255}, 12));
+    world.fonts.push_back(initFont(renderer, "country_medium", "assets/fonts/Cinzel/static/Cinzel-SemiBold.ttf", {40, 40, 40, 255}, 16));
+    world.fonts.push_back(initFont(renderer, "country_large",  "assets/fonts/Cinzel/static/Cinzel-SemiBold.ttf", {40, 40, 40, 255}, 22));
 }
 
 inline Font* findFont(World& world, const std::string& fontId) {

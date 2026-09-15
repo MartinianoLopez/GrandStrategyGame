@@ -5,6 +5,7 @@
 #include "World.hpp"
 #include "DataProcessing.hpp"
 #include "DataLoading.hpp"
+#include "../View/LabelBuilder.hpp"
 #include "../utils.hpp"
 #include "../utils/Timer.hpp"
 #include "FontLoader.hpp"
@@ -149,24 +150,21 @@ inline void loadProvinces(World& world) {
     //debugPrintFirstProvinces(world);
 }
 
-inline void desaturateCountries(std::list<Country>& countries, double k = 0.3, int brightness = 20) {
+inline void desaturateCountries(std::list<Country>& countries, double desaturationAmount = 0, int brightnessBoost = 0) {
+    for (auto& country : countries) {
+        double grayLevel = (country.color.r + country.color.g + country.color.b) / 3.0;
 
-    for (auto& c : countries) {
-        int r = c.color.r;
-        int g = c.color.g;
-        int b = c.color.b;
+        auto blendTowardGray = [&](int colorChannel) {
+            int result = static_cast<int>(colorChannel + (grayLevel - colorChannel) * desaturationAmount) + brightnessBoost;
+            return static_cast<Uint8>(std::clamp(result, 0, 255));
+        };
 
-        double gray = (r + g + b) / 3.0;
-
-        int newR = static_cast<int>(r + (gray - r) * k) + brightness;
-        int newG = static_cast<int>(g + (gray - g) * k) + brightness;
-        int newB = static_cast<int>(b + (gray - b) * k) + brightness;
-
-        newR = std::clamp(newR, 0, 255);
-        newG = std::clamp(newG, 0, 255);
-        newB = std::clamp(newB, 0, 255);
-
-       c.color = SDL_Color{ (Uint8)newR, (Uint8)newG, (Uint8)newB, 255 };
+        country.color = SDL_Color{
+            blendTowardGray(country.color.r),
+            blendTowardGray(country.color.g),
+            blendTowardGray(country.color.b),
+            255
+        };
     }
 }
 
@@ -185,12 +183,13 @@ inline void buildProvinceIdMap(World& world) {
 // ===============================================================================================================
 
 static std::string FOLDERPATH = "assets/terrain/";
-static float STARTING_COORDINATES[] = {0.57f, 0.22f};
 
 inline void loadAssets(World& world) {
     SDL_Renderer* renderer = world.renderer;
-
+    
     world.provincesBmp = IMG_Load((FOLDERPATH + "provinces.bmp").c_str());
+
+    world.height = surfaceToTexture(renderer, IMG_Load((FOLDERPATH + "heightMap.bmp").c_str()));
     world.terrain = surfaceToTexture(renderer, IMG_Load((FOLDERPATH + "terrain.bmp").c_str()));
 
     world.texWidth  = world.provincesBmp->w;
@@ -204,7 +203,7 @@ inline void loadAssets(World& world) {
     
     // data processing
     
-    { Timer t("   ProcessColors");          desaturateCountries(world.countries, 0.6, -30); }
+    { Timer t("   ProcessColors");          desaturateCountries(world.countries, 0.3f, -20); }
     { Timer t("   PrepareCountries");       prepareCountries(world); }
 
     world.countriesTex = surfaceToTexture(renderer, world.countriesImg);
@@ -225,16 +224,15 @@ inline void loadAssets(World& world) {
     { Timer t("   generateFrontierStyle country_frontiers_thick"); generateFrontierStyle(world, "country_frontiers_thick", world.countryFrontiers, 2.5f, {0,0,0,255}); }
     { Timer t("   generateFrontierStyle highlight"); generateFrontierStyle(world, "highlight", world.provinceFrontiers, 1.5f, {255,255,0,255}); }
 
-    if (TTF_Init() == -1) {
-        SDL_Log("TTF init error: %s", TTF_GetError());
-        return;
-    }
+    TTF_Init();
 
     initFonts(world);
 
+    buildCountryLabels(world);
+    
     world.finalScale = std::min(1920.0f / world.texWidth,1080.0f / world.texHeight) * world.scale;
 
     // center starts over europe 
-    world.offsetX = STARTING_COORDINATES[0] * (1920 - world.texWidth * world.finalScale);
-    world.offsetY = STARTING_COORDINATES[1] * (1080 - world.texHeight * world.finalScale);
+    world.offsetX = world.STARTING_COORDINATES[0] * (1920 - world.texWidth * world.finalScale);
+    world.offsetY = world.STARTING_COORDINATES[1] * (1080 - world.texHeight * world.finalScale);
 }
