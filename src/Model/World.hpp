@@ -237,6 +237,15 @@ struct World{
     const float STARTING_COORDINATES[2] = {0.48f, 0.18f};
     const float STARTING_SCALE = 6.0f;
 
+    // Country label reveal thresholds in zoom scale.
+    // These define the full range of the zoom transition:
+    // - first visible for the biggest countries
+    // - last visible for the smallest countries
+    const float COUNTRY_FLAG_FIRST_VISIBLE = 0.02f;
+    const float COUNTRY_FLAG_LAST_VISIBLE = 2.55f;
+    const float COUNTRY_NAME_FIRST_VISIBLE = 0.65f; 
+    const float COUNTRY_NAME_LAST_VISIBLE = 4.00f;
+
     bool running = true;
 
     Ui ui = Ui();

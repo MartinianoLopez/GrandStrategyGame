@@ -228,6 +228,7 @@ inline void loadAssets(World& world) {
 
     initFonts(world);
 
+    { Timer t("   buildLabels"); buildCountryLabels(world); }
     buildCountryLabels(world);
     
     world.finalScale = std::min(1920.0f / world.texWidth,1080.0f / world.texHeight) * world.scale;

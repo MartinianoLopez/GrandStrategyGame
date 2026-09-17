@@ -1,9 +1,9 @@
 tag;name;r;g;b;money
-SWE;Sweden;8;82;165;100
-DAN;Denmark;190;70;70;100
+SWE;Kingdom of Sweden;8;82;165;100
+DAN;Kingdom of Denmark;190;70;70;100
 FIN;Finland;182;134;100;100
 GOT;Gotland;153;126;0;100
-NOR;Norway;117;165;188;100
+NOR;Kingdom of Norway;117;165;188;100
 SHL;Holstein;220;150;158;100
 SCA;Scandinavia;62;122;189;100
 EST;Estonia;248;125;125;100
@@ -17,7 +17,7 @@ ALB;Albania;181;0;20;100
 ATH;Athens;113;112;96;100
 BOS;Bosnia;240;167;130;100
 BUL;Bulgaria;116;107;140;100
-BYZ;ByzantineEmpire;149;45;102;100
+BYZ;Byzantinum;149;45;102;100
 LAE;Latin Empire;255;212;42;100
 CEP;Corfu;211;172;185;100
 CRO;Croatia;104;94;247;100
@@ -38,10 +38,10 @@ TRA;Transylvania;211;207;173;100
 WAL;Wallachia;161;126;128;100
 HUN;Hungary;152;85;92;100
 SLO;Slovakia;34;131;193;100
-TUR;Ottomans;126;203;120;100
+TUR;Ottoman Empire;126;203;120;100
 CNN;Connacht;193;237;85;100
 CRN;Cornwall;155;56;0;100
-ENG;England;193;26;14;100
+ENG;Kingdom of England;193;26;14;100
 LEI;Leinster;48;164;51;100
 IRE;Ireland;112;150;105;100
 MNS;IRE_Munster;104;137;140;100
@@ -117,7 +117,7 @@ CHP;Champagne;166;125;154;100
 COR;Corsica;106;178;46;100
 DAU;Dauphine;93;194;122;100
 FOI;Foix;105;106;182;100
-FRA;France;20;50;210;100
+FRA;Kingdom of France;20;50;210;100
 GUY;Gascony;32;144;204;100
 NEV;Nevers;195;104;228;100
 NRM;Normandy;131;138;116;100
@@ -302,7 +302,7 @@ MAM;Burgi;188;166;93;100
 MOR;Morocco;191;110;62;100
 TRP;Tripoli;25;105;90;100
 TUN;Tunisia;146;134;57;100
-EGY;Egypt;255;220;104;100
+EGY;Mamluk Sultanate;255;220;104;100
 KBA;Kabylia;60;140;70;100
 TFL;Tafilalt;140;45;100;100
 SOS;Sus;255;255;240;100

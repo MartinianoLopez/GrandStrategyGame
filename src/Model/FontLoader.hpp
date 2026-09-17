@@ -3,30 +3,30 @@
 #include "World.hpp"
 
 inline Font initFont(SDL_Renderer* renderer, const std::string& id, const std::string& path, SDL_Color color, int size) {
-    TTF_Font* f = TTF_OpenFont(path.c_str(), size);
-    return { id, f, color };
+    TTF_Font* font = TTF_OpenFont(path.c_str(), size);
+    return { id, font, color };
 }
 
 inline void initFonts(World& world) {
     SDL_Renderer* renderer = world.renderer;
+
     world.fonts.push_back(initFont(renderer, "army",   "assets/fonts/Cinzel/static/Cinzel-SemiBold.ttf", {0, 0, 0, 255}, 10));
     world.fonts.push_back(initFont(renderer, "simple", "assets/fonts/Cinzel/static/Cinzel-SemiBold.ttf", {0, 0, 0, 255}, 20));
     world.fonts.push_back(initFont(renderer, "fancy",  "assets/fonts/Cinzel/static/Cinzel-SemiBold.ttf", {220, 220, 220, 255}, 22));
 
-    // agregar estas tres:
-    world.fonts.push_back(initFont(renderer, "country_small",  "assets/fonts/Cinzel/static/Cinzel-SemiBold.ttf", {40, 40, 40, 255}, 12));
-    world.fonts.push_back(initFont(renderer, "country_medium", "assets/fonts/Cinzel/static/Cinzel-SemiBold.ttf", {40, 40, 40, 255}, 16));
-    world.fonts.push_back(initFont(renderer, "country_large",  "assets/fonts/Cinzel/static/Cinzel-SemiBold.ttf", {40, 40, 40, 255}, 22));
+    world.fonts.push_back(initFont(renderer, "country_small",  "assets/fonts/Sedan_SC/SedanSC-Regular.ttf", {255, 255, 255, 255}, 12));
+    world.fonts.push_back(initFont(renderer, "country_medium", "assets/fonts/Sedan_SC/SedanSC-Regular.ttf", {255, 255, 255, 255}, 16));
+    world.fonts.push_back(initFont(renderer, "country_large",  "assets/fonts/Sedan_SC/SedanSC-Regular.ttf", {255, 255, 255, 255}, 22));
 }
 
 inline Font* findFont(World& world, const std::string& fontId) {
-    for (auto& f : world.fonts) {
-        if (f.id == fontId) return &f;
+    for (auto& font : world.fonts) {
+        if (font.id == fontId) return &font;
     }
     return nullptr;
 }
 
-// Renders text to a texture only once per fontId+text combo, reusing it on later calls
+// Render text once per fontId + text combo and reuse it afterwards.
 inline TextCache& getOrRenderText(World& world, const std::string& fontId, const std::string& text) {
     std::string key = fontId + "|" + text;
 
