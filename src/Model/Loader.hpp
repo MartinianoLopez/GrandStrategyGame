@@ -204,7 +204,7 @@ inline void loadAssets(World& world) {
     // data processing
     
     { Timer t("   ProcessColors");          desaturateCountries(world.countries, 0.3f, -20); }
-    { Timer t("   PrepareCountries");       prepareCountries(world); }
+    { Timer t("   PrepareCountries");       buildCountriesLayer(world); }
 
     world.countriesTex = surfaceToTexture(renderer, world.countriesImg);
 

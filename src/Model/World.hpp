@@ -77,7 +77,8 @@ struct Country {
 
 enum class TerrainType { 
     LAND,
-    OCEAN
+    OCEAN,
+    MOUNTAIN,
 };
 
 struct ProvinceData {

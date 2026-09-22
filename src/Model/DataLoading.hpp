@@ -18,9 +18,13 @@
 #include <SDL2/SDL_image.h>
 
 inline TerrainType parseTerrainType(const std::string& s) {
-    if (s == "ocean")
-        return TerrainType::OCEAN;
-    return TerrainType::LAND; // default / "land"
+    if (s == "land"){
+        return TerrainType::LAND;
+    }
+    if (s == "mountain"){
+        return TerrainType::MOUNTAIN;
+    }
+    return TerrainType::OCEAN; // Default
 }
 
 inline void loadProvincesTxt(World& world) {

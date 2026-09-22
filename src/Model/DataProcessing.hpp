@@ -205,23 +205,38 @@ inline void buildAdjacency(World& world) {
     world.adjacencyGraph = adjacency;
 }
 
-inline std::map<int, std::vector<int>> buildAccessibilityGraph(const World& world, const std::vector<std::string>& accessibleCountryTags){
+inline std::map<int, std::vector<int>> buildAccessibilityGraph(const World& world, const std::vector<std::string>& accessibleCountryTags) {
 
     const std::unordered_set<std::string> accessible(
         accessibleCountryTags.begin(), accessibleCountryTags.end());
 
+    // Find the highest province id, to size a flat lookup vector (avoids map lookups per id)
     int maxId = 0;
     for (auto& p : world.provinces) maxId = std::max(maxId, p.id);
+
+    // Flat array: id -> pointer to Province (nullptr if id doesn't exist)
     std::vector<const Province*> idMap(maxId + 1, nullptr);
     for (auto& p : world.provinces) idMap[p.id] = &p;
 
+    // Flat array: id -> is this province "accessible" (owner is in the accessible set)
+    // AND not a mountain. Mountains are always excluded, regardless of owner.
     std::vector<char> isAccessible(maxId + 1, 0);
-    for (int id = 0; id <= maxId; ++id)
-        if (idMap[id] && accessible.count(idMap[id]->owner))
+    for (int id = 0; id <= maxId; ++id) {
+        const Province* p = idMap[id];
+        if (!p) continue;
+
+        // Skip mountains entirely: they never count as accessible / never appear in the graph
+        if (p->terrainType == TerrainType::MOUNTAIN) continue;
+
+        if (p->terrainType == TerrainType::OCEAN) continue;
+
+        if (accessible.count(p->owner))
             isAccessible[id] = 1;
+    }
 
     std::map<int, std::vector<int>> adjacency;
 
+    // Build adjacency only between provinces that are accessible (
     for (const auto& [provinceId, neighbors] : world.adjacencyGraph) {
         if (provinceId > maxId || !isAccessible[provinceId]) continue;
 
@@ -308,7 +323,7 @@ inline std::map<uint32_t, SDL_Point> initProvincesCenters(const World& world) {
     return centerList;
 }
 
-inline void prepareCountries(World& world) {
+inline void buildCountriesLayer(World& world) {
     SDL_Renderer* renderer = world.renderer;
 
     SDL_Surface* provinces = world.provincesBmp;
@@ -329,6 +344,10 @@ inline void prepareCountries(World& world) {
     int imgW = provinces->w;
     int imgH = provinces->h;
 
+    // Precompute black in the result surface's pixel format, used for mountain terrain
+
+    uint32_t mountainColor = SDL_MapRGB(result->format, 55, 55, 55);
+
     for (int y = 0; y < imgH; y++) {
         for (int x = 0; x < imgW; x++) {
             uint32_t pixelColor = getPixelColor(provinces, x, y);
@@ -340,10 +359,27 @@ inline void prepareCountries(World& world) {
             }
 
             Province* p = provinceFindByColor(world.provinces, pixelColor);
-            if (!p || p->owner.empty()) {
+            if (!p) {
                 colorToCountryColor[pixelColor] = 0;
                 continue;
             }
+
+            // If the province terrain is MOUNTAIN, it is painted in a color.
+
+            if (p->terrainType == TerrainType::MOUNTAIN) {
+                colorToCountryColor[pixelColor] = mountainColor;
+                setPixel(result, x, y, mountainColor);
+                continue;
+            }
+            
+            // If the province has no country in it, don't paint it.
+
+            if (p->owner.empty()) {
+                colorToCountryColor[pixelColor] = 0;
+                continue;
+            }
+
+            // Find the country, if the country doesnt exist on the list, don't paint it.
 
             Country* c = findCountryByTag(world.countries, p->owner);
             if (!c) {
@@ -351,9 +387,14 @@ inline void prepareCountries(World& world) {
                 continue;
             }
 
+            // Find the country color
+
             uint32_t countryColor = SDL_MapRGB(result->format, c->color.r, c->color.g, c->color.b);
 
             colorToCountryColor[pixelColor] = countryColor;
+
+            // paint it
+            
             setPixel(result, x, y, countryColor);
         }
     }
