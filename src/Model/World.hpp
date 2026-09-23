@@ -167,7 +167,7 @@ struct Date {
 struct Time {
     Date date;
     float accumulator = 0.0f;
-    float speed = 1.0f;
+    float speed = 0.0f;
 
     Time(int year, int month, int day)
         : date(year, month, day) {}
@@ -231,7 +231,7 @@ struct World{
     }
 
     //Dev Flags
-    const bool DEBUGGING_MODE = false;
+    const bool DEBUGGING_MODE = true;
     const int HOT_RELOAD_WAIT_TIME = 500;
     const bool FRONTIER_MODE_SMOOTH = true;
 

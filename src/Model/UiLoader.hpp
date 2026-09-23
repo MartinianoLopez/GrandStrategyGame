@@ -46,7 +46,7 @@ inline void uiInformation(World& world) {
 
     world.ui.hooks["selected_province"] = [](World& w) {
         Province* p = provinceFindById(w.provinces, w.selectedProvince);
-        return p ? p->name : "None";
+        return p ? p->name : "NONE";
     };
 
     world.ui.hooks["selected_country"] = [](World& w) {

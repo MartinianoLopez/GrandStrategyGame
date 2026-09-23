@@ -236,7 +236,7 @@ inline std::map<int, std::vector<int>> buildAccessibilityGraph(const World& worl
 
     std::map<int, std::vector<int>> adjacency;
 
-    // Build adjacency only between provinces that are accessible (
+    // Build adjacency only between provinces that are accessible for the country
     for (const auto& [provinceId, neighbors] : world.adjacencyGraph) {
         if (provinceId > maxId || !isAccessible[provinceId]) continue;
 
