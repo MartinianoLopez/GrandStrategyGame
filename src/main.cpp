@@ -26,6 +26,10 @@ void loadGame(World& world){
     { Timer t("Ui");          initUi(world); }
     { Timer t("UiLayout");    parseLayout(world); }
 
+    #ifdef __EMSCRIPTEN__
+        world.DEBUGGING_MODE = false;
+    #endif
+
     world.lastTicks    = SDL_GetTicks();
     world.lastUIReload = SDL_GetTicks();
     world.lastPlace    = world.ui.place;

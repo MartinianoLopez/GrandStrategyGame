@@ -11,8 +11,6 @@ emcc src/main.cpp -Isrc -Isrc/third_party \
 -s INITIAL_MEMORY=536870912 \
 -s FORCE_FILESYSTEM=1 \
 --preload-file assets \
---exclude-file "assets/terrain/*" \
---exclude-file "assets/terrainOld/*" \
 -o webAssembly/index.html
 
 kill -9 $(lsof -t -i:8000) 2>/dev/null

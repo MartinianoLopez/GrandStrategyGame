@@ -1,14 +1,19 @@
-# "Kingdoms, Lands and Seas" — Grand Strategy Game
+# Kingdoms, Lands and Seas — Grand Strategy Game
+ 
+Kingdoms, Lands and Seas aims to be a minimalistic, easy-to-play grand strategy game for players new to the genre, who often struggle to get into this type of game. The game is set in the year 1444 AC, allowing the player to play as any country in the world during this era, fighting with other countries to become powerful — or even rule the world.
+ 
+## Technology Choices
+ 
+The game is built using only **C++**, chosen for its efficiency in resource management, and **SDL2**, used for window management, basic rendering, and input handling.
+ 
+## Architecture Principles
+ 
+The game is designed to be data driven in every possible way, allowing anyone to modify its visuals simply by changing an image, a txt file, or a json file. This includes the UI, which is fully defined in json and compiled at runtime into UI objects, letting developers add or remove static UI elements at will.
+ 
+## Assets
+ 
+Development started with placeholder assets sourced from Europa Universalis IV. Since then, a significant effort has gone into replacing each of them with hand-polished, open source alternatives.
 
-Kingdoms, Lands and Seas aims to be a minimalistic, easy-to-play grand strategy game for players new to the genre, who often struggle to get into this type of game. The game will be set in the 13th century, allowing the player to play as any country in the world during the feudal era, moving forward through the colonization of America and later the rest of the world.
-
-# Technology Choices
-
-The project uses only C++17 and SDL2 for rendering. For the UI, I tried other libraries like IMGUI, RmlUi, and WebView, but none of them offered a simple way to build UI based on PNG textures. So I built a simple compiler that reads a `.txt` file and translates it into UI components. It also supports hot reload, so I can tweak the UI at runtime.
-
-# The Game Engine
-
-The idea going forward is to turn this into a game engine for building any other kind of grand strategy game. Right now all the data is interchangeable, including the UI layout and textures, but the map visuals and the UI's supporting logic (the actions elements perform on click, and the text/information they display) are still deeply hardcoded.
 
 ---
 
@@ -38,7 +43,7 @@ The idea going forward is to turn this into a game engine for building any other
 |-------|-------|----------------|
 | **Controller** | `EventManager` | Handles user input |
 | **Simulation** | `Simulation` | Mutates the model driven by time and game events |
-| **Model** | `World` | God object with all the data but no logic |
+| **Model** | `World` | Is where all the data lives in diferent structures |
 | **View** | `Renderer` | Draws all data to the screen |
 
 ---
