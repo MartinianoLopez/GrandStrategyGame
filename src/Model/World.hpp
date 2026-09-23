@@ -213,28 +213,14 @@ struct Ui{
 };
 
 struct World{
-    World(){
-        window = SDL_CreateWindow(
-            "Window", 
-            SDL_WINDOWPOS_CENTERED, 
-            SDL_WINDOWPOS_CENTERED, 
-            1920, 1080, 
-            SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
-        );
-        renderer = SDL_CreateRenderer(
-            window, 
-            -1, 
-            SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC
-        );
-        SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
-
-    }
+    bool firstStep = true;
 
     //Dev Flags
-    const bool DEBUGGING_MODE = true;
+    const bool DEBUGGING_MODE = false;
     const int HOT_RELOAD_WAIT_TIME = 500;
+    
+    //Style variables
     const bool FRONTIER_MODE_SMOOTH = true;
-
     const float STARTING_COORDINATES[2] = {0.48f, 0.18f};
     const float STARTING_SCALE = 6.0f;
 

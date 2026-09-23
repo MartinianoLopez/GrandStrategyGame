@@ -4513,3 +4513,4 @@ id;territory_type;r;g;b;name;owner
 4512;ocean;16;65;110;NONE;NONE
 4513;ocean;47;39;138;NONE;NONE
 4514;ocean;15;50;156;NONE;NONE
+4515;ocean;22;39;130;NONE;NONE

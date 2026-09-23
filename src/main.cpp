@@ -6,6 +6,7 @@
 #include "Model/Loader.hpp"
 #include "Model/UiLoader.hpp"
 #include "Simulation/Time.hpp"
+#include "Model/windowInitializer.hpp"
 
 //================================
 
@@ -22,13 +23,11 @@
 
 void loadGame(World& world){
 
+    WindowInit(world);
+
     { Timer t("TotalAssets"); loadAssets(world); }
     { Timer t("Ui");          initUi(world); }
     { Timer t("UiLayout");    parseLayout(world); }
-
-    #ifdef __EMSCRIPTEN__
-        world.DEBUGGING_MODE = false;
-    #endif
 
     world.lastTicks    = SDL_GetTicks();
     world.lastUIReload = SDL_GetTicks();
@@ -38,6 +37,16 @@ void loadGame(World& world){
 //=============================================================
 
 void update(World& world) {
+
+    if(world.firstStep == true){
+
+        std::cerr << " -------- Loading -------- \n";
+
+        loadGame(world);
+        world.firstStep = false;
+
+        std::cerr << " -------- RUNNING -------- \n";
+    }
 
     Uint32 frameStart = SDL_GetTicks();
     float deltaTime   = (frameStart - world.lastTicks) / 1000.0f;
@@ -94,12 +103,6 @@ void shutdown(World& world){
 int main() {
 
     World world = World();
-
-    std::cerr << " -------- LOADING -------- \n";
-
-    loadGame(world);
-
-    std::cerr << " -------- RUNNING -------- \n";
 
     runLoop(world);
 

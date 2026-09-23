@@ -130,7 +130,7 @@ inline std::vector<std::vector<SDL_FPoint>> randomizePositions(std::vector<SDL_F
     const float jitterRange = 0.25f; // randomization value
 
     auto jitter = [&](float range) {
-        return ((float)rand() / RAND_MAX) * 2.0f * range - range;
+        return ((double)rand() / RAND_MAX) * 2.0f * range - range;
     };
 
     for (size_t i = 0; i < points.size(); i++) {
