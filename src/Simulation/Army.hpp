@@ -91,7 +91,7 @@ inline void recruitArmy(World& world) {
 
 inline void tryToRecruitArmy(World& world) {
     Country* country = findCountryByTag(world.countries, world.playerCountry);
-    Province* province = provinceFindById(world.provinces, world.objectiveProvince);
+    Province* province = findProvinceById(world.provinces, world.objectiveProvince);
     if (country->tag != province->owner) return;
     if (country->money < 100) return;  
     country->money -= 100;
@@ -171,7 +171,7 @@ inline void occupyProvince(World& world, Province* province, Country* country) {
 
 inline void tryOccupyProvince(World& world, Army& army) {
     Country* country = findCountryByTag(world.countries, army.owner);
-    Province* province = provinceFindById(world.provinces, army.position);
+    Province* province = findProvinceById(world.provinces, army.position);
     if (!country || !province) return;
 
     std::vector<Relationship> warRelations = country->getWarRelations();

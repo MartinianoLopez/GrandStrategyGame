@@ -37,7 +37,7 @@ inline std::map<std::pair<uint32_t,uint32_t>, std::vector<std::vector<SDL_FPoint
 
     std::map<std::pair<uint32_t,uint32_t>, std::vector<std::vector<SDL_FPoint>>> filtered;
 
-    Province* p = provinceFindById(world.provinces, provinceId);
+    Province* p = findProvinceById(world.provinces, provinceId);
 
     if (!p) return filtered;
 

@@ -99,11 +99,12 @@ struct Province {
     std::string controller;
     SDL_Point center;
     std::vector<std::pair<uint16_t, uint16_t>> shape;
+    int localEconomy = 1;
 
     Province(int id, std::string name, std::string owner, SDL_Color color,
              TerrainType terrainType = TerrainType::LAND)
         : id(id), terrainType(terrainType), name(name), owner(owner),
-          controller(""), color(color) {}
+          controller(""), color(color) {};
 };
 
 struct Army {

@@ -113,7 +113,7 @@ inline Country* findCountryByTag(const std::list<Country>& list, const std::stri
 // province finders
 // ===============================================================================================================
 
-inline Province* provinceFindById(const std::list<Province>& list, int id) {
+inline Province* findProvinceById(const std::list<Province>& list, int id) {
     for (auto& province : list) {
         if (province.id == id)
             return const_cast<Province*>(&province);
@@ -122,7 +122,7 @@ inline Province* provinceFindById(const std::list<Province>& list, int id) {
     return nullptr;
 }
 
-inline Province* provinceFindByColor(const std::list<Province>& list, uint32_t color) {
+inline Province* findProvinceByColor(const std::list<Province>& list, uint32_t color) {
     int r = (color >> 16) & 0xFF;
     int g = (color >> 8)  & 0xFF;
     int b = (color)       & 0xFF;

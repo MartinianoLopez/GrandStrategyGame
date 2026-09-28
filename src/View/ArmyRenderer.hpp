@@ -52,7 +52,7 @@ inline void renderArmy(World& world, int x, int y, const Army& army) {
 
 inline void renderArmies(World& world, SDL_FRect destRect) {
     for (const auto& army : world.armies) {
-        Province* province = provinceFindById(world.provinces, army.position);
+        Province* province = findProvinceById(world.provinces, army.position);
         if (!province) continue;
         float sx = destRect.x + province->center.x * world.finalScale;
         float sy = destRect.y + province->center.y * world.finalScale;
@@ -61,7 +61,7 @@ inline void renderArmies(World& world, SDL_FRect destRect) {
     }
     for (Army* army : world.selectedArmies) {
         if (!army) continue;
-        Province* province = provinceFindById(world.provinces, army->position);
+        Province* province = findProvinceById(world.provinces, army->position);
         if (!province) continue;
         float sx = destRect.x + province->center.x * world.finalScale;
         float sy = destRect.y + province->center.y * world.finalScale;
@@ -85,12 +85,12 @@ inline std::optional<Army> findArmy(World& world, int selectedProvince) {
 inline void drawPath(Army* army, World& world, SDL_Renderer* renderer, SDL_FRect destRect) {
     if (!army || army->path.empty()) return;
     SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
-    Province* from = provinceFindById(world.provinces, army->position);
+    Province* from = findProvinceById(world.provinces, army->position);
     if (!from) return;
     float px = destRect.x + from->center.x * world.finalScale;
     float py = destRect.y + from->center.y * world.finalScale;
     for (int provinceId : army->path) {
-        Province* p = provinceFindById(world.provinces, provinceId);
+        Province* p = findProvinceById(world.provinces, provinceId);
         if (!p) continue;
         float cx = destRect.x + p->center.x * world.finalScale;
         float cy = destRect.y + p->center.y * world.finalScale;

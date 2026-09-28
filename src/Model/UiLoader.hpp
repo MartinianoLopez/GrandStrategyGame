@@ -6,6 +6,7 @@
 #include "../utils.hpp"
 #include "../Simulation/Time.hpp"
 #include "../Simulation/Diplomacy.hpp"
+#include "../Simulation/Economy.hpp"
 #include "SDL_render.h"
 #include "../utils/Timer.hpp"
 #include <filesystem>
@@ -45,12 +46,12 @@ inline void uiInformation(World& world) {
     };
 
     world.ui.hooks["selected_province"] = [](World& w) {
-        Province* p = provinceFindById(w.provinces, w.selectedProvince);
+        Province* p = findProvinceById(w.provinces, w.selectedProvince);
         return p ? p->name : "NONE";
     };
 
     world.ui.hooks["selected_country"] = [](World& w) {
-        Province* p = provinceFindById(w.provinces, w.selectedProvince);
+        Province* p = findProvinceById(w.provinces, w.selectedProvince);
         if (!p) return std::string("Select a Kingdom");
         Country* c = findCountryByTag(w.countries, p->owner);
         if (c) w.playerCountry = c->tag;
@@ -127,6 +128,9 @@ inline void registerActions(World& world) {
     };
     world.ui.actions["declareWar"] = [](World& w) {
         declareWar(w, w.playerCountry, w.selectedCountry);
+    };
+    world.ui.actions["Invest"] = [](World& w) {
+        Invest(w, w.playerCountry, w.selectedProvince);
     };
 }
 

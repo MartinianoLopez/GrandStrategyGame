@@ -46,7 +46,7 @@ inline std::map<std::pair<uint32_t,uint32_t>, FrontierData> filterCachedFrontier
 ){
     std::map<std::pair<uint32_t,uint32_t>, FrontierData> filtered;
 
-    Province* p = provinceFindById(world.provinces, provinceId);
+    Province* p = findProvinceById(world.provinces, provinceId);
     if (!p) return filtered;
 
     uint32_t pColor = ((uint32_t)p->color.r << 16) | ((uint32_t)p->color.g << 8) | (uint32_t)p->color.b;

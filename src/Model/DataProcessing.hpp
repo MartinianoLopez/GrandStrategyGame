@@ -196,8 +196,8 @@ inline void buildAdjacency(World& world) {
     const std::list<Province>& provinces = world.provinces;
     std::map<int, std::vector<int>> adjacency;
     for (const auto& [pair, _] : provinceFrontiers) {
-        Province* a = provinceFindByColor(provinces, pair.first);
-        Province* b = provinceFindByColor(provinces, pair.second);
+        Province* a = findProvinceByColor(provinces, pair.first);
+        Province* b = findProvinceByColor(provinces, pair.second);
         if (!a || !b) continue;
         adjacency[a->id].push_back(b->id);
         adjacency[b->id].push_back(a->id);
@@ -273,8 +273,8 @@ inline void findFrontiersBetweenCountries(World& world) {
     std::map<std::pair<uint32_t, uint32_t>, std::vector<std::vector<SDL_FPoint>>> filteredFrontiers;
 
     for (const auto& [key, points] : frontiers) {
-        const Province* province1 = provinceFindByColor(world.provinces, key.first);
-        const Province* province2 = provinceFindByColor(world.provinces, key.second);
+        const Province* province1 = findProvinceByColor(world.provinces, key.first);
+        const Province* province2 = findProvinceByColor(world.provinces, key.second);
 
         if (province1 == nullptr || province2 == nullptr) continue;
 
@@ -358,7 +358,7 @@ inline void buildCountriesLayer(World& world) {
                 continue;
             }
 
-            Province* p = provinceFindByColor(world.provinces, pixelColor);
+            Province* p = findProvinceByColor(world.provinces, pixelColor);
             if (!p) {
                 colorToCountryColor[pixelColor] = 0;
                 continue;

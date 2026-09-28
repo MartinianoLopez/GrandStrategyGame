@@ -38,7 +38,7 @@ inline Province* pickProvince(const World& world, float sx, float sy) {
     int texX, texY;
     if (!screenToTexture(world, sx, sy, texX, texY)) return nullptr;
     uint32_t color = getPixelColor(world.provincesBmp, texX, texY);
-    return provinceFindByColor(world.provinces, color);
+    return findProvinceByColor(world.provinces, color);
 }
 
 // =========================================================================
@@ -164,7 +164,7 @@ inline void onLeftClick(World& world, const SDL_Event& e) {
     }        
         
     world.selectedProvince = target->id;
-    world.selectedCountry = provinceFindById(world.provinces, world.selectedProvince) -> owner;
+    world.selectedCountry = findProvinceById(world.provinces, world.selectedProvince) -> owner;
         
     if (world.selectedCountry != "NONE") {
         world.ui.Textures["selectedCountryFlagTex"] = findCountryByTag(world.countries, world.selectedCountry) -> flag;
@@ -192,7 +192,7 @@ inline void onLeftClick(World& world, const SDL_Event& e) {
 
     if (world.ui.place == MenuPlace::CountrySelection) {
 
-        Province* province = provinceFindById(world.provinces, world.selectedProvince);
+        Province* province = findProvinceById(world.provinces, world.selectedProvince);
         Country* country = findCountryByTag(world.countries, province->owner);
 
         if (country) {
