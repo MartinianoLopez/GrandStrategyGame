@@ -4,6 +4,7 @@
 
 #include "../Model/World.hpp"
 #include "TextRenderer.hpp"
+#include "UiVisibility.hpp"
 #include "../utils.hpp"
 
 //============================
@@ -11,23 +12,7 @@
 #include <SDL2/SDL.h>
 #include <nlohmann/json.hpp>
 #include <string>
-#include <unordered_set>
 
-
-//===========================
-// this is a bad aproach
-inline bool isElementHidden(World& world, const UIElement& element) {
-    if (element.name == "declareWarBtn" && world.selectedCountry == world.playerCountry)
-        return true;
-
-    static const std::unordered_set<std::string> countryOnlyElements = {
-        "countryFlagFrame", "countryFlagTex", "sidePanel", "declareWarBtn"
-    };
-    if (world.selectedCountry == "NONE" && countryOnlyElements.count(element.name))
-        return true;
-
-    return false;
-}
 
 inline void renderElementTexture(World& world, const UIElement& element, const SDL_FRect& rect) {
     SDL_Renderer* renderer = world.renderer;
@@ -91,7 +76,7 @@ inline void renderElement(World& world, UIElement element){
 
 inline void renderUI(World& world) {
     for (auto& element : world.ui.uiElements) {
-        if (isElementHidden(world, element)) continue;
+        if (!areUiConditionsMet(world, element)) continue;
         renderElement(world, element);
     }
 }

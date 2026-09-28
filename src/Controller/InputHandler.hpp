@@ -5,6 +5,7 @@
 #include "../Model/World.hpp"
 #include "../utils.hpp"
 #include "../Simulation/Army.hpp"
+#include "../View/UiVisibility.hpp"
 #include "SDL_events.h"
 
 //===============================
@@ -99,6 +100,7 @@ inline void onMouseHover(World& world, const SDL_Event& e) {
     int screenW, screenH;
     SDL_GetWindowSize(world.window, &screenW, &screenH);
     for (auto it = world.ui.uiElements.rbegin(); it != world.ui.uiElements.rend(); ++it) {
+        if (!areUiConditionsMet(world, *it)) continue;
         if (contains(*it, e.button.x, e.button.y, screenW, screenH)) {
             if(it->hoverable){
                 world.ui.hoveredElement = it -> name;
@@ -133,6 +135,7 @@ inline void onLeftClick(World& world, const SDL_Event& e) {
 
     // Try click on UI Layer
     for (auto it = world.ui.uiElements.rbegin(); it != world.ui.uiElements.rend(); ++it) {
+        if (!areUiConditionsMet(world, *it)) continue;
         if (contains(*it, e.button.x, e.button.y, screenW, screenH)) {
             if (it->onClick) it->onClick();
 

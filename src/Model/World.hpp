@@ -153,6 +153,7 @@ struct UIElement {
     bool hoverable = false;
     bool toggle = false;
     std::string group = "";
+    std::vector<std::string> visibleWhen;
 };
 
 //================================================
@@ -204,6 +205,7 @@ struct World;
 struct Ui{
     std::unordered_map<std::string, std::function<std::string(World&)>> hooks;
     std::unordered_map<std::string, std::function<void(World&)>>        actions;
+    std::unordered_map<std::string, std::function<bool(World&)>>         conditions;
     std::map<std::string, SDL_Texture*> Textures;  
     MenuPlace place = MenuPlace::MainMenu;
     std::vector<UIElement> uiElements;
@@ -323,4 +325,3 @@ struct World{
 
     bool recruitOneUnit = false;
 };
-

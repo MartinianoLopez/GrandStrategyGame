@@ -130,6 +130,35 @@ inline void registerActions(World& world) {
     };
 }
 
+inline void registerUiConditions(World& world) {
+    world.ui.conditions["selected_country_is_selectable"] = [](World& w) {
+        return findCountryByTag(w.countries, w.selectedCountry) != nullptr;
+    };
+
+    world.ui.conditions["selected_country_is_selected"] = [](World& w) {
+        return w.selectedCountry != "NONE";
+    };
+
+    world.ui.conditions["selected_country_is_other_country"] = [](World& w) {
+        return w.selectedCountry != "NONE" &&
+               w.selectedCountry != w.playerCountry;
+    };
+
+    world.ui.conditions["selected_country_is_not_an_enemy"] = [](World& w) {
+        Country* player = findCountryByTag(w.countries, w.playerCountry);
+        if (!player) return false;
+
+        return std::none_of(
+            player->relationships.begin(),
+            player->relationships.end(),
+            [&w](const Relationship& relationship) {
+                return relationship.tag == w.selectedCountry &&
+                       relationship.typeOfRelation == TypeOfRelation::WAR;
+            }
+        );
+    };
+}
+
 // ===============================================================================================================
 // reload flag 
 // ===============================================================================================================
@@ -210,6 +239,17 @@ inline void parseElement(World& world, const json& e) {
     el.hoverable = e.value("hoverable", false);
     el.toggle = e.value("toggle", false);
     el.group = e.value("group", std::string("none"));
+    el.visibleWhen = e.value("visibleWhen", std::vector<std::string>{});
+    for (const std::string& condition : el.visibleWhen) {
+        if (!world.ui.conditions.count(condition)) {
+            SDL_LogError(
+                SDL_LOG_CATEGORY_APPLICATION,
+                "Unknown UI visibility condition '%s' on element '%s'",
+                condition.c_str(),
+                el.name.c_str()
+            );
+        }
+    }
 
     world.ui.uiElements.push_back(std::move(el));
 }
@@ -300,5 +340,6 @@ inline void reloadUI(World& world, Uint32 frameStart){
 inline void initUi(World& world) {
     uiInformation(world);
     registerActions(world);
+    registerUiConditions(world);
     loadAllUITextures(world);
 }
