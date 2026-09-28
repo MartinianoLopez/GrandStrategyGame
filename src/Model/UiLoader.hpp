@@ -129,7 +129,7 @@ inline void registerActions(World& world) {
     world.ui.actions["declareWar"] = [](World& w) {
         declareWar(w, w.playerCountry, w.selectedCountry);
     };
-    world.ui.actions["Invest"] = [](World& w) {
+    world.ui.actions["investInProvince"] = [](World& w) {
         Invest(w, w.playerCountry, w.selectedProvince);
     };
 }
@@ -146,6 +146,10 @@ inline void registerUiConditions(World& world) {
     world.ui.conditions["selected_country_is_other_country"] = [](World& w) {
         return w.selectedCountry != "NONE" &&
                w.selectedCountry != w.playerCountry;
+    };
+    world.ui.conditions["selected_country_is_self_country"] = [](World& w) {
+        return w.selectedCountry != "NONE" &&
+               w.selectedCountry == w.playerCountry;
     };
 
     world.ui.conditions["selected_country_is_not_an_enemy"] = [](World& w) {
