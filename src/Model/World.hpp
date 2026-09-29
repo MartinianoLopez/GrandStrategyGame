@@ -150,6 +150,7 @@ struct UIElement {
     std::function<void()> onClick;
     std::function<std::string()> textProvider;
     std::string font = "default";
+    std::string tooltip;
 
     bool hoverable = false;
     bool toggle = false; // they stay pressed but can be none pressed in the group
@@ -213,6 +214,10 @@ struct Ui{
     std::vector<UIElement> uiElements;
     std::unordered_map<std::string, TextCache> textCache;
     std::string hoveredElement;
+    std::string hoveredTooltip;
+    Uint32 hoverStartTicks = 0;
+    int mouseX = 0;
+    int mouseY = 0;
     std::unordered_set<std::string> pressedElements;
 };
 

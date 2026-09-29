@@ -96,19 +96,28 @@ inline void onMouseMoveOnMap(World& world, const SDL_Event& e) {
 }
 
 inline void onMouseHover(World& world, const SDL_Event& e) {
-    world.ui.hoveredElement = "";
+    world.ui.mouseX = e.motion.x;
+    world.ui.mouseY = e.motion.y;
     int screenW, screenH;
     SDL_GetWindowSize(world.window, &screenW, &screenH);
+    std::string hoveredElement;
+    std::string hoveredTooltip;
     for (auto it = world.ui.uiElements.rbegin(); it != world.ui.uiElements.rend(); ++it) {
         if (!areUiConditionsMet(world, *it)) continue;
-        if (contains(*it, e.button.x, e.button.y, screenW, screenH)) {
+        if (contains(*it, e.motion.x, e.motion.y, screenW, screenH)) {
             if(it->hoverable){
-                world.ui.hoveredElement = it -> name;
-                return; 
+                hoveredElement = it->name;
+                hoveredTooltip = it->tooltip;
+                break;
             }
-
         }
     }
+
+    if (hoveredElement != world.ui.hoveredElement) {
+        world.ui.hoverStartTicks = SDL_GetTicks();
+    }
+    world.ui.hoveredElement = std::move(hoveredElement);
+    world.ui.hoveredTooltip = std::move(hoveredTooltip);
 }
 
 inline void eraseElementsOfTheSameToggleGroup(World& world, const std::string& group) {
