@@ -17,11 +17,6 @@
 
 //=========================
 
-enum class TypeOfRelation { 
-    PEACE,
-    WAR,
-    ALLIANCE,
-};
 
 enum class MenuPlace { 
     MainMenu, 
@@ -37,12 +32,26 @@ enum class MapMode {
     TERRAIN
 };
 
+
+enum class stateOfRelation { 
+    PEACE,
+    ALLIANCE,
+};
+
 struct Relationship {
     std::string tag;
-    enum TypeOfRelation typeOfRelation;
+    enum stateOfRelation stateOfRelations;
+    int opinion = 0;
 
-    Relationship(std::string tag, TypeOfRelation typeOfRelation)
-        : tag(tag), typeOfRelation(typeOfRelation) {}
+    Relationship(std::string tag, stateOfRelation typeOfRelation)
+        : tag(tag), stateOfRelations(typeOfRelation) {}
+};
+struct activeWar {
+    std::string mainAttacker;
+    std::string mainDefender;
+    std::vector<std::string> attackerCountries;
+    std::vector<std::string> defenderCountries;
+    int warProgressForAttackers;
 };
 
 struct Country {
@@ -63,13 +72,6 @@ struct Country {
     }
     void addAccesibleCountries(std::string tag){
         accessibleCountries.push_back(tag);
-    }
-    std::vector<Relationship> getWarRelations() {
-        std::vector<Relationship> wars;
-        for (const Relationship& r : relationships)
-            if (r.typeOfRelation == TypeOfRelation::WAR)
-                wars.push_back(r);
-        return wars;
     }
 };
 
@@ -227,6 +229,7 @@ struct World{
     //Dev Flags
     const bool DEBUGGING_MODE = true;
     const int HOT_RELOAD_WAIT_TIME = 500;
+    const int ALLIANCE_ACCEPTANCE_RELATION_THRESHOLD = -10;
     
     //Style variables
     const bool FRONTIER_MODE_SMOOTH = true;
@@ -271,6 +274,8 @@ struct World{
     std::list<Province> provinces;
     std::list<Country> countries;
     std::list<Army> armies;
+    
+    std::list<activeWar> activeWars;
 
 
     std::map<std::pair<uint32_t, uint32_t>, std::vector<std::vector<SDL_FPoint>>> provinceFrontiers;

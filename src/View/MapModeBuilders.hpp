@@ -4,6 +4,7 @@
 
 #include "../utils.hpp"
 #include "../Model/World.hpp"
+#include "../Simulation/Diplomacy.hpp"
 
 //=============================
 
@@ -46,7 +47,7 @@ inline SDL_Texture* buildAccessibilityMap(World& world, const std::vector<std::s
 }
 
 
-inline SDL_Texture* buildDiplomaticMap(World& world, SDL_Renderer* renderer, const std::vector<Relationship> relationships) {
+inline SDL_Texture* buildDiplomaticMap(World& world, SDL_Renderer* renderer, const std::string& tag) {
     SDL_Surface* src = world.countriesImg;
     if (!src || !src->format) return nullptr;
 
@@ -54,22 +55,36 @@ inline SDL_Texture* buildDiplomaticMap(World& world, SDL_Renderer* renderer, con
     if (!dst) return nullptr;
 
     std::unordered_set<Uint32> countriesAtWar;
-
-    for (const auto& relation : relationships) {
-        Country* c = findCountryByTag(world.countries, relation.tag);
-        if (c) countriesAtWar.insert(colorToUint32(c->color, src->format));
+    std::unordered_set<Uint32> alliedCountries;
+    Uint32 selectedCountryColor = 0;
+    if (Country* selectedCountry = findCountryByTag(world.countries, tag)) {
+        selectedCountryColor = colorToUint32(selectedCountry->color, src->format);
+        for (const auto& allyTag : getAllies(*selectedCountry)) {
+            Country* ally = findCountryByTag(world.countries, allyTag);
+            if (ally) alliedCountries.insert(colorToUint32(ally->color, src->format));
+        }
     }
+    for (const auto& c : world.countries)
+        if (c.tag != tag && isAtWar(world, tag, c.tag))
+            countriesAtWar.insert(colorToUint32(c.color, src->format));
+
     SDL_LockSurface(src);
     SDL_LockSurface(dst);
 
     Uint32* srcPixels = static_cast<Uint32*>(src->pixels);
     Uint32* dstPixels = static_cast<Uint32*>(dst->pixels);
     int totalPixels = src->w * src->h;
-    Uint32 red       = SDL_MapRGB(dst->format, 255, 0, 0);
+    Uint32 red         = SDL_MapRGB(dst->format, 255, 0, 0);
+    Uint32 blue        = SDL_MapRGB(dst->format, 0, 0, 255);
+    Uint32 lightBlue   = SDL_MapRGB(dst->format, 74, 165, 212);
     Uint32 transparent = SDL_MapRGBA(dst->format, 0, 0, 0, 0);
 
-    for (int i = 0; i < totalPixels; ++i)
-        dstPixels[i] = countriesAtWar.count(srcPixels[i]) ? red : transparent;
+    for (int i = 0; i < totalPixels; ++i) {
+        if (srcPixels[i] == selectedCountryColor) dstPixels[i] = blue;
+        else if (alliedCountries.count(srcPixels[i])) dstPixels[i] = lightBlue;
+        else if (countriesAtWar.count(srcPixels[i])) dstPixels[i] = red;
+        else dstPixels[i] = transparent;
+    }
 
     SDL_UnlockSurface(dst);
     SDL_UnlockSurface(src);

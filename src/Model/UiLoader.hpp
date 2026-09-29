@@ -57,6 +57,10 @@ inline void uiInformation(World& world) {
         if (c) w.playerCountry = c->tag;
         return c ? c->name : std::string("Select a Kingdom");
     };
+
+    world.ui.hooks["alliance_button_label"] = [](World& w) {
+        return isAllied(w, w.playerCountry, w.selectedCountry) ? std::string("Break Alliance") : std::string("Offer Alliance");
+    };
 }
 
 // ===============================================================================================================
@@ -135,6 +139,16 @@ inline void registerActions(World& world) {
     world.ui.actions["declareWar"] = [](World& w) {
         declareWar(w, w.playerCountry, w.selectedCountry);
     };
+    world.ui.actions["offerAlliance"] = [](World& w) {
+        offerAlliance(w, w.playerCountry, w.selectedCountry);
+    };
+    world.ui.actions["toggleAlliance"] = [](World& w) {
+        if (isAllied(w, w.playerCountry, w.selectedCountry)) {
+            breakAlliance(w, w.playerCountry, w.selectedCountry);
+        } else {
+            offerAlliance(w, w.playerCountry, w.selectedCountry);
+        }
+    };
     world.ui.actions["investInProvince"] = [](World& w) {
         Invest(w, w.playerCountry, w.selectedProvince);
     };
@@ -165,17 +179,21 @@ inline void registerUiConditions(World& world) {
     };
 
     world.ui.conditions["selected_country_is_not_an_enemy"] = [](World& w) {
-        Country* player = findCountryByTag(w.countries, w.playerCountry);
-        if (!player) return false;
-
-        return std::none_of(
-            player->relationships.begin(),
-            player->relationships.end(),
-            [&w](const Relationship& relationship) {
-                return relationship.tag == w.selectedCountry &&
-                       relationship.typeOfRelation == TypeOfRelation::WAR;
-            }
-        );
+        return !isAtWar(w, w.playerCountry, w.selectedCountry);
+    };
+    world.ui.conditions["selected_country_is_allied"] = [](World& w) {
+        return isAllied(w, w.playerCountry, w.selectedCountry);
+    };
+    world.ui.conditions["selected_country_is_not_allied"] = [](World& w) {
+        return !isAllied(w, w.playerCountry, w.selectedCountry);
+    };
+    world.ui.conditions["selected_country_can_accept_alliance"] = [](World& w) {
+        return canOfferAlliance(w, w.playerCountry, w.selectedCountry);
+    };
+    world.ui.conditions["selected_country_can_offer_or_break_alliance"] = [](World& w) {
+        if (w.selectedCountry == "NONE" || w.selectedCountry == w.playerCountry) return false;
+        return !isAtWar(w, w.playerCountry, w.selectedCountry) &&
+               (isAllied(w, w.playerCountry, w.selectedCountry) || canOfferAlliance(w, w.playerCountry, w.selectedCountry));
     };
 }
 

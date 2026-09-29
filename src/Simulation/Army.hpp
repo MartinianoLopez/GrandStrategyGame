@@ -4,6 +4,7 @@
 
 #include "../Model/World.hpp"
 #include "../utils.hpp"
+#include "Diplomacy.hpp"
 
 // ===============================
 
@@ -170,18 +171,12 @@ inline void splitArmies(World& world){
 }
 
 inline void scanForEnemies(World& world, Army& army) {
-    std::vector<Army*> armiesInProvince = findArmiesOnProvinceId(world.armies, army.position);
-    Country* country = findCountryByTag(world.countries, army.owner);
-    if (!country) return;
-    std::vector<Relationship> warRelations = country->getWarRelations();
-
-    for (Army* other : armiesInProvince) {
+    for (Army* other : findArmiesOnProvinceId(world.armies, army.position)) {
         if (other == &army) continue;
-        if (isAtWar(warRelations, other->owner))
-            fight(army, *other);
+        if (isAtWar(world, army.owner, other->owner)) fight(army, *other);
     }
-    
 }
+
 inline void scanForAliesAndRegroup(World& world, Army& army) {
     std::vector<Army*> armiesInProvince = findArmiesOnProvinceId(world.armies, army.position);
     for (Army* other : armiesInProvince) {
@@ -222,8 +217,7 @@ inline void tryOccupyProvince(World& world, Army& army) {
     Province* province = findProvinceById(world.provinces, army.position);
     if (!country || !province) return;
 
-    std::vector<Relationship> warRelations = country->getWarRelations();
-    if (isAtWar(warRelations, province->owner))
+    if (isAtWar(world, country->tag, province->owner))
         occupyProvince(world, province, country);
 }
 

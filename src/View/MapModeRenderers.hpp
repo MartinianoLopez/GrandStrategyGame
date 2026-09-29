@@ -39,15 +39,10 @@ inline void renderDiplomaticMap(World& world) {
     if (!world.activeDiplomaticMap || world.selectedCountry != world.countryoftheAccesibilityMap) {
         SDL_DestroyTexture(world.activeDiplomaticMap);
         world.activeDiplomaticMap = nullptr;
-        
+
         Country* country = findCountryByTag(world.countries, world.selectedCountry);
-        if (country) {
-            world.activeDiplomaticMap = buildDiplomaticMap(world, world.renderer, country->relationships);
-        }
+        if (country) world.activeDiplomaticMap = buildDiplomaticMap(world, world.renderer, country->tag);
         world.countryoftheAccesibilityMap = world.selectedCountry;
     }
-
-    if (world.activeDiplomaticMap) { 
-        displayTexture(world, world.activeDiplomaticMap, 245); 
-    }
+    if (world.activeDiplomaticMap) displayTexture(world, world.activeDiplomaticMap, 245);
 }
