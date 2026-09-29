@@ -152,9 +152,10 @@ struct UIElement {
     std::string font = "default";
 
     bool hoverable = false;
-    bool toggle = false;
+    bool toggle = false; // they stay pressed but can be none pressed in the group
+    bool hardtoggle = false; // they stay pressed but one of the group is always pressed
     std::string group = "";
-    std::vector<std::string> visibleWhen;
+    std::vector<std::string> visibleWhen; // contitions to be visible
 };
 
 //================================================
@@ -219,7 +220,7 @@ struct World{
     bool firstStep = true;
 
     //Dev Flags
-    const bool DEBUGGING_MODE = false;
+    const bool DEBUGGING_MODE = true;
     const int HOT_RELOAD_WAIT_TIME = 500;
     
     //Style variables

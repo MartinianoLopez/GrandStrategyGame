@@ -139,15 +139,12 @@ inline void onLeftClick(World& world, const SDL_Event& e) {
         if (contains(*it, e.button.x, e.button.y, screenW, screenH)) {
             if (it->onClick) it->onClick();
 
-            //toggleables
             if (it->toggle) {
-                if (world.ui.pressedElements.count(it->name)){
-                    world.ui.pressedElements.erase(it->name);  
-                }else{
-                    eraseElementsOfTheSameToggleGroup(world, it->group);
-                    world.ui.pressedElements.insert(it->name);
-                }
-                    
+                if (world.ui.pressedElements.count(it->name)) world.ui.pressedElements.erase(it->name);
+                else { if (!it->group.empty()) eraseElementsOfTheSameToggleGroup(world, it->group); world.ui.pressedElements.insert(it->name); }
+            }
+            else if (it->hardtoggle) {
+                if (!world.ui.pressedElements.count(it->name)) { eraseElementsOfTheSameToggleGroup(world, it->group); world.ui.pressedElements.insert(it->name); }
             }
 
             return; // consumed
@@ -173,7 +170,6 @@ inline void onLeftClick(World& world, const SDL_Event& e) {
     }
         
 // ====================== army selection ============================================
-  // TODO this here is wrong
     if (world.ui.place == MenuPlace::InGame) {
 
         world.selectedArmies.clear();
@@ -188,8 +184,6 @@ inline void onLeftClick(World& world, const SDL_Event& e) {
     }
 
 // ====================== country selection ====================================
-    // TODO this here is wrong
-
     if (world.ui.place == MenuPlace::CountrySelection) {
 
         Province* province = findProvinceById(world.provinces, world.selectedProvince);

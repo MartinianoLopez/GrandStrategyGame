@@ -9,6 +9,7 @@
 #include <list>
 #include <string>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
 // ===============================================================================================================
 // surface → texture
@@ -191,4 +192,8 @@ inline bool contains(const UIElement& el, int x, int y, int w, int h) {
     SDL_FRect r = calculateBase(el, w, h);
     return x >= r.x && x < r.x + r.w &&
            y >= r.y && y < r.y + r.h;
+}
+
+inline void unToggleElement(World& world, const std::string& name) {
+    world.ui.pressedElements.erase(name);
 }

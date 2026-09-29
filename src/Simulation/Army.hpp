@@ -92,11 +92,32 @@ inline void recruitArmy(World& world) {
 inline void tryToRecruitArmy(World& world) {
     Country* country = findCountryByTag(world.countries, world.playerCountry);
     Province* province = findProvinceById(world.provinces, world.objectiveProvince);
+
     if (country->tag != province->owner) return;
     if (country->money < 100) return;  
+
     country->money -= 100;
     recruitArmy(world);
+
     world.recruitOneUnit = false;
+    unToggleElement(world, "recruitBtn");
+}
+
+inline void recruitArmyInProvince(World& world) {
+    Country* country = findCountryByTag(world.countries, world.playerCountry);
+    Province* province = findProvinceById(world.provinces, world.selectedProvince);
+
+    if (country->tag != province->owner) return;
+    if (country->money < 100) return;  
+
+    country->money -= 100;
+    world.armies.emplace_back(world.selectedProvince, "Recruits", world.playerCountry, 1000, country->color);
+}
+
+inline void recruitArmyWithAmount(World& world, int power){
+    Country* country = findCountryByTag(world.countries, world.playerCountry);
+    if (!country) { std::cerr << "ERROR: country not found!\n"; return; }
+    world.armies.emplace_back(world.objectiveProvince, "Recruits", world.playerCountry, power, country->color);
 }
 
 // ============================================================
@@ -132,6 +153,25 @@ inline bool isAtWar(std::vector<Relationship>& warRelations, const std::string& 
     return false;
 }
 
+inline void joinArmies(World& world, Army& army, Army& army2){
+    army2.power += army.power;
+    army.power = 0;
+}
+
+inline void splitArmies(World& world){
+    std::vector<Army*>& selectedArmies = world.selectedArmies;
+    // only split one selected army
+    if (selectedArmies.size() != 1) return;
+    Army* army = selectedArmies[0];
+    // don't divide the armies in the hundreds
+    int split = (army->power / 2 / 1000) * 1000;
+    if (split <= 0) return;
+    // remove the "half"
+    army->power -= split;
+    // add a new army with that "half"
+    recruitArmyWithAmount(world, split);
+}
+
 inline void scanForEnemies(World& world, Army& army) {
     std::vector<Army*> armiesInProvince = findArmiesOnProvinceId(world.armies, army.position);
     Country* country = findCountryByTag(world.countries, army.owner);
@@ -142,6 +182,17 @@ inline void scanForEnemies(World& world, Army& army) {
         if (other == &army) continue;
         if (isAtWar(warRelations, other->owner))
             fight(army, *other);
+    }
+    
+}
+inline void scanForAliesAndRegroup(World& world, Army& army) {
+    std::vector<Army*> armiesInProvince = findArmiesOnProvinceId(world.armies, army.position);
+    for (Army* other : armiesInProvince) {
+        if (other == &army) continue;
+        if(other->owner == army.owner){
+            joinArmies(world, army, *other);
+        }
+            
     }
     
 }
@@ -183,8 +234,14 @@ inline void tryOccupyProvince(World& world, Army& army) {
 // ARMY MOVEMENT SYSTEM
 // ============================================================
 
-inline void moveArmy(Army& army, int toProvinceId) {
-    army.position = toProvinceId;
+inline void moveArmy(World& world, Army& army) {
+    
+    army.position = army.path.front();
+    army.path.erase(army.path.begin());
+
+    scanForEnemies(world,army);
+    tryOccupyProvince(world, army);
+    scanForAliesAndRegroup(world, army);
 }
 
 inline void createArmyMovement(World& world,Army* army, int from, int to) {
@@ -196,16 +253,17 @@ inline void createArmyMovement(World& world,Army* army, int from, int to) {
 
 inline void updateArmyMovement(World& world) {
     for (auto& army : world.armies) {
+        // if army is in final position continue with the next
         if (army.path.empty()) continue;
+        // add movement progress
         army.movementStage += world.armyMovementSpeed;
-        if (army.movementStage >= 100) {
+        // if movement progress not full continue
+        if (army.movementStage >= 100) continue;
+            // remove the progress
             army.movementStage -= 100;
-            army.position = army.path.front();
-            army.path.erase(army.path.begin());
-            scanForEnemies(world,army);
-            tryOccupyProvince(world, army);
-            // std::cout << "[" << army.name << "] moved to: " << army.position << "\n";
-        }
+            // move the army
+            moveArmy(world, army);
     }
+    // remove armies with 0 troops
     remove0Armies(world.armies);
 }

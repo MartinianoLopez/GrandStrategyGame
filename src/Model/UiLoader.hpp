@@ -132,6 +132,12 @@ inline void registerActions(World& world) {
     world.ui.actions["investInProvince"] = [](World& w) {
         Invest(w, w.playerCountry, w.selectedProvince);
     };
+    world.ui.actions["recruitInProvince"] = [](World& w) {
+        recruitArmyInProvince(w);
+    };
+    world.ui.actions["splitArmies"] = [](World& w) {
+        splitArmies(w);
+    };
 }
 
 inline void registerUiConditions(World& world) {
@@ -246,6 +252,7 @@ inline void parseElement(World& world, const json& e) {
     el.font = e.value("font", std::string("default"));
     el.hoverable = e.value("hoverable", false);
     el.toggle = e.value("toggle", false);
+    el.hardtoggle = e.value("hardToggle", false);
     el.group = e.value("group", std::string("none"));
     el.visibleWhen = e.value("visibleWhen", std::vector<std::string>{});
     for (const std::string& condition : el.visibleWhen) {
