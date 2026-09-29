@@ -5,7 +5,7 @@
       "elements": [
         { "name": "logo", "zIndex": 3, "x": 25, "y": 10, "w": 50, "h": 50, "texture": "logo" },
         { "name": "mainPanel", "zIndex": 1, "x": 25, "y": 50, "w": 50, "h": 50, "texture": "Panel" },
-        { "name": "playBtn", "zIndex": 2, "x": 35, "y": 63, "w": 30, "h": 7, "texture": "Button", "font": "fancy", "action": "goto:CountrySelection", "label": "PLAY", "hoverable": true }
+        { "name": "playBtn", "zIndex": 2, "x": 35, "y": 63, "w": 30, "h": 7, "texture": "Button", "font": "fancy", "action": "goto:CountrySelection", "label": "PLAY", "tooltip": "Open country selection.", "hoverable": true }
       ]
     },
     {
@@ -15,8 +15,8 @@
         { "name": "countryText", "zIndex": 4, "x": 76, "y": 20, "w": 22, "h": 10, "texture": "timeFrame", "font": "fancy", "endpoint": "selected_country", "visibleWhen": ["selected_country_is_selectable"] },
         { "name": "countryFlagFrame", "zIndex": 22, "x": 73, "y": 32, "w": 28, "h": 28, "texture": "FlagFrameGold", "visibleWhen": ["selected_country_is_selectable"] },
         { "name": "countryFlagTex", "zIndex": 2, "x": 77, "y": 35, "w": 20, "h": 22, "texture": "selectedCountryFlagTex", "visibleWhen": ["selected_country_is_selectable"] },
-        { "name": "playBtn", "zIndex": 2, "x": 79, "y": 68, "w": 16, "h": 6, "texture": "Button", "font": "fancy", "action": "play_if_selected", "label": "PLAY", "hoverable": true, "visibleWhen": ["selected_country_is_selectable"] },
-        { "name": "backBtn", "zIndex": 2, "x": 87, "y": 93, "w": 16, "h": 6, "texture": "Button", "font": "fancy", "action": "goto:MainMenu", "label": "BACK", "hoverable": true }
+        { "name": "playBtn", "zIndex": 2, "x": 79, "y": 68, "w": 16, "h": 6, "texture": "Button", "font": "fancy", "action": "play_if_selected", "label": "PLAY", "tooltip": "Start the game as the selected country.", "hoverable": true, "visibleWhen": ["selected_country_is_selectable"] },
+        { "name": "backBtn", "zIndex": 2, "x": 87, "y": 93, "w": 16, "h": 6, "texture": "Button", "font": "fancy", "action": "goto:MainMenu", "label": "BACK", "tooltip": "Return to the main menu.", "hoverable": true }
       ]
     },
     {
@@ -29,33 +29,33 @@
         { "name": "countryFlagTex", "zIndex": 2, "x": 2, "y": 41.2, "w": 14, "h": 14, "texture": "selectedCountryFlagTex", "visibleWhen": ["selected_country_is_selected"] },
         { "name": "sidePanel", "zIndex": 1, "x": -6, "y": 50, "w": 30, "h": 45, "texture": "Panel", "visibleWhen": ["selected_country_is_selected"] },
 
-        { "name": "declareWarBtn", "zIndex": 2, "x": 4, "y": 55, "w": 10, "h": 10, "texture": "Button", "font": "fancy", "action": "declareWar", "label": "Declare War", "hoverable": true, "visibleWhen": ["selected_country_is_other_country", "selected_country_is_not_an_enemy"] },
+        { "name": "declareWarBtn", "zIndex": 2, "x": 4, "y": 55, "w": 10, "h": 10, "texture": "Button", "font": "fancy", "action": "declareWar", "label": "Declare War", "tooltip": "Declare war on the selected country.", "hoverable": true, "visibleWhen": ["selected_country_is_other_country", "selected_country_is_not_an_enemy"] },
 
-        { "name": "investBtn", "zIndex": 2, "x": 4, "y": 55, "w": 10, "h": 10, "texture": "Button", "font": "fancy", "action": "investInProvince", "label": "Invest", "hoverable": true, "visibleWhen": ["selected_country_is_self_country"] },
-        { "name": "recluitBtn2", "zIndex": 2, "x": 4, "y": 65, "w": 10, "h": 10, "texture": "Button", "font": "fancy", "action": "recruitInProvince", "label": "Recruit", "hoverable": true, "visibleWhen": ["selected_country_is_self_country"] },
+        { "name": "investBtn", "zIndex": 2, "x": 4, "y": 55, "w": 10, "h": 10, "texture": "Button", "font": "fancy", "action": "investInProvince", "label": "Invest", "tooltip": "Invest in the selected province. -100 coins +1 of money production in the province", "hoverable": true, "visibleWhen": ["selected_country_is_self_country"] },
+        { "name": "recluitBtn2", "zIndex": 2, "x": 4, "y": 65, "w": 10, "h": 10, "texture": "Button", "font": "fancy", "action": "recruitInProvince", "label": "Recruit", "tooltip": "Recruit an army in the selected province. -100 coins +1000 power army", "hoverable": true, "visibleWhen": ["selected_country_is_self_country"] },
 
         { "name": "statusBar", "zIndex": 0, "x": 4, "y": 0, "w": 40, "h": 6, "texture": "StatusBar" },
-        { "name": "coinsBtn", "zIndex": 2, "x": 12, "y": 1.5, "w": 3, "h": 3, "texture": "coins", "action": "coins", "hoverable": true, "toggle": true },
+        { "name": "coinsBtn", "zIndex": 2, "x": 12, "y": 1.5, "w": 3, "h": 3, "texture": "coins" },
         { "name": "moneyText", "zIndex": 2, "x": 14, "y": 1.5, "w": 5, "h": 4, "texture": "empty", "font": "fancy", "endpoint": "player_money" },
 
         { "name": "timeFrame", "zIndex": 1, "x": 80, "y": 0, "w": 21, "h": 10, "texture": "timeFrame","font": "fancy", "endpoint": "date" },
-        { "name": "speed0Btn", "zIndex": 2, "x": 86, "y": 10, "w": 5, "h": 5, "texture": "IconButtonBlueSmall", "action": "timeSpeed0", "hoverable": true, "hardToggle": true, "group": "time"},        
-        { "name": "speed0Btn", "zIndex": 3, "x": 86.5, "y": 11, "w": 4, "h": 3, "texture": "0Speed", "action": "timeSpeed0", "hoverable": true, "hardToggle": true,"group": "time" },
-        { "name": "speed1Btn", "zIndex": 2, "x": 89, "y": 10, "w": 5, "h": 5, "texture": "IconButtonBlueSmall", "action": "timeSpeed1", "hoverable": true, "hardToggle": true, "group": "time"},
-        { "name": "speed1Btn", "zIndex": 3, "x": 89.5, "y": 11, "w": 4, "h": 3, "texture": "1Speed", "action": "timeSpeed1", "hoverable": true, "hardToggle": true,"group": "time" },
-        { "name": "speed2Btn", "zIndex": 2, "x": 92, "y": 10, "w": 5, "h": 5, "texture": "IconButtonBlueSmall", "action": "timeSpeed2", "hoverable": true, "hardToggle": true, "group": "time"},
-        { "name": "speed2Btn", "zIndex": 3, "x": 92.5, "y": 11, "w": 4, "h": 3, "texture": "2Speed", "action": "timeSpeed2", "hoverable": true, "hardToggle": true,"group": "time" },
+        { "name": "speed0Btn", "zIndex": 2, "x": 86, "y": 10, "w": 5, "h": 5, "texture": "IconButtonBlueSmall", "action": "timeSpeed0", "tooltip": "Pause the game.", "hoverable": true, "hardToggle": true, "group": "time"},
+        { "name": "speed0Btn", "zIndex": 3, "x": 86.5, "y": 11, "w": 4, "h": 3, "texture": "0Speed", "action": "timeSpeed0", "tooltip": "Pause the game.", "hoverable": true, "hardToggle": true,"group": "time" },
+        { "name": "speed1Btn", "zIndex": 2, "x": 89, "y": 10, "w": 5, "h": 5, "texture": "IconButtonBlueSmall", "action": "timeSpeed1", "tooltip": "Run the game at normal speed.", "hoverable": true, "hardToggle": true, "group": "time"},
+        { "name": "speed1Btn", "zIndex": 3, "x": 89.5, "y": 11, "w": 4, "h": 3, "texture": "1Speed", "action": "timeSpeed1", "tooltip": "Run the game at normal speed.", "hoverable": true, "hardToggle": true,"group": "time" },
+        { "name": "speed2Btn", "zIndex": 2, "x": 92, "y": 10, "w": 5, "h": 5, "texture": "IconButtonBlueSmall", "action": "timeSpeed2", "tooltip": "Run the game faster.", "hoverable": true, "hardToggle": true, "group": "time"},
+        { "name": "speed2Btn", "zIndex": 3, "x": 92.5, "y": 11, "w": 4, "h": 3, "texture": "2Speed", "action": "timeSpeed2", "tooltip": "Run the game at double the normal speed.", "hoverable": true, "hardToggle": true,"group": "time" },
 
-        { "name": "recruitBtn", "zIndex": 2, "x": -1, "y": 20, "w": 6, "h": 6, "texture": "IconButtonGreenSmall", "action": "recruit", "hoverable": true, "toggle": true},
-        { "name": "recruitBtn", "zIndex": 3, "x": -1, "y": 20, "w": 6, "h": 6, "texture": "RecruitIcon", "action": "recruit", "hoverable": true, "toggle": true},
-        { "name": "splitArmiesBtn", "zIndex": 2, "x": 4, "y": 20, "w": 6, "h": 6, "texture": "IconButtonGreenSmall", "action": "splitArmies", "hoverable": true},
-        { "name": "splitArmiesBtn", "zIndex": 3, "x": 4, "y": 20, "w": 6, "h": 6, "texture": "splitArmiesIcon", "action": "splitArmies", "hoverable": true},
-        { "name": "accessBtn", "zIndex": 2, "x": 95, "y": 84, "w": 6, "h": 6, "texture": "IconButtonGreenSmall", "action": "mapModeAccess", "hoverable": true, "toggle": true, "group": "map"},
-        { "name": "accessBtn", "zIndex": 3, "x": 95, "y": 84, "w": 6, "h": 6, "texture": "AccessIcon", "action": "mapModeAccess", "hoverable": true, "toggle": true ,"group": "map"},
-        { "name": "terrainBtn", "zIndex": 2, "x": 95, "y": 90, "w": 6, "h": 6, "texture": "IconButtonGreenSmall", "action": "mapModeTerrain", "hoverable": true, "toggle": true, "group": "map"},
-        { "name": "terrainBtn", "zIndex": 3, "x": 95, "y": 90, "w": 6, "h": 6, "texture": "terrainButton", "action": "mapModeTerrain", "hoverable": true, "toggle": true,"group": "map" },
-        { "name": "diplomacyBtn", "zIndex": 2, "x": 95, "y": 78, "w": 6, "h": 6, "texture": "IconButtonGreenSmall", "action": "mapModeDiplomacy", "hoverable": true, "toggle": true, "group": "map"},
-        { "name": "diplomacyBtn", "zIndex": 3, "x": 95, "y": 78, "w": 6, "h": 6, "texture": "diplomacy", "action": "mapModeDiplomacy", "hoverable": true, "toggle": true,"group": "map" }
+        { "name": "recruitBtn", "zIndex": 2, "x": -1, "y": 20, "w": 6, "h": 6, "texture": "IconButtonGreenSmall", "action": "recruit", "tooltip": "Toggle automatic recruitment.", "hoverable": true, "toggle": true},
+        { "name": "recruitBtn", "zIndex": 3, "x": -1, "y": 20, "w": 6, "h": 6, "texture": "RecruitIcon", "action": "recruit", "tooltip": "mass recruitment mode, allows you to place multiple troops.", "hoverable": true, "toggle": true},
+        { "name": "splitArmiesBtn", "zIndex": 2, "x": 4, "y": 20, "w": 6, "h": 6, "texture": "IconButtonGreenSmall", "action": "splitArmies", "tooltip": "Split the selected army.", "hoverable": true},
+        { "name": "splitArmiesBtn", "zIndex": 3, "x": 4, "y": 20, "w": 6, "h": 6, "texture": "splitArmiesIcon", "action": "splitArmies", "tooltip": "Split the selected army.", "hoverable": true},
+        { "name": "accessBtn", "zIndex": 2, "x": 95, "y": 84, "w": 6, "h": 6, "texture": "IconButtonGreenSmall", "action": "mapModeAccess", "tooltip": "Open accesibility map mode.", "hoverable": true, "toggle": true, "group": "map"},
+        { "name": "accessBtn", "zIndex": 3, "x": 95, "y": 84, "w": 6, "h": 6, "texture": "AccessIcon", "action": "mapModeAccess", "tooltip": "Open accesibility map mode.", "hoverable": true, "toggle": true ,"group": "map"},
+        { "name": "terrainBtn", "zIndex": 2, "x": 95, "y": 90, "w": 6, "h": 6, "texture": "IconButtonGreenSmall", "action": "mapModeTerrain", "tooltip": "Open geografic map mode.", "hoverable": true, "toggle": true, "group": "map"},
+        { "name": "terrainBtn", "zIndex": 3, "x": 95, "y": 90, "w": 6, "h": 6, "texture": "terrainButton", "action": "mapModeTerrain", "tooltip": "Open geografic map mode.", "hoverable": true, "toggle": true,"group": "map" },
+        { "name": "diplomacyBtn", "zIndex": 2, "x": 95, "y": 78, "w": 6, "h": 6, "texture": "IconButtonGreenSmall", "action": "mapModeDiplomacy", "tooltip": "Open diplomatic map mode.", "hoverable": true, "toggle": true, "group": "map"},
+        { "name": "diplomacyBtn", "zIndex": 3, "x": 95, "y": 78, "w": 6, "h": 6, "texture": "diplomacy", "action": "mapModeDiplomacy", "tooltip": "Open diplomatic map mode.", "hoverable": true, "toggle": true,"group": "map" }
       ]
     }
   ]

@@ -256,6 +256,7 @@ inline void parseElement(World& world, const json& e) {
     el.onClick = onClick;
     el.textProvider = textProvider;
     el.font = e.value("font", std::string("default"));
+    el.tooltip = e.value("tooltip", std::string{});
     el.hoverable = e.value("hoverable", false);
     el.toggle = e.value("toggle", false);
     el.hardtoggle = e.value("hardToggle", false);
