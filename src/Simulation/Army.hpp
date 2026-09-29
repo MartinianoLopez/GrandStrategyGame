@@ -98,9 +98,6 @@ inline void tryToRecruitArmy(World& world) {
 
     country->money -= 100;
     recruitArmy(world);
-
-    world.recruitOneUnit = false;
-    unToggleElement(world, "recruitBtn");
 }
 
 inline void recruitArmyInProvince(World& world) {

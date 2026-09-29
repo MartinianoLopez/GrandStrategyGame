@@ -204,7 +204,7 @@ inline void onRightClick(World& world, const SDL_Event& e) {
     world.objectiveProvince = clickedProvince->id;
 
     // ====================== army recruitment =====================
-    if(world.recruitOneUnit == true){
+    if(world.recruitInMass == true){
         tryToRecruitArmy(world);
     }
     // ====================== army movement ========================

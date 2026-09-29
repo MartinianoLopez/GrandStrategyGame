@@ -325,5 +325,5 @@ struct World{
     SDL_Texture* activeDiplomaticMap = nullptr;
     std::string countryoftheAccesibilityMap = "";
 
-    bool recruitOneUnit = false;
+    bool recruitInMass = false;
 };

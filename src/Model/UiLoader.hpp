@@ -124,7 +124,13 @@ inline void registerActions(World& world) {
         };
     };
     world.ui.actions["recruit"] = [](World& w) {
-        w.recruitOneUnit = true;
+        if(w.recruitInMass == true){
+            w.recruitInMass = false;
+        }else{
+            w.recruitInMass = true; 
+        }
+        
+        
     };
     world.ui.actions["declareWar"] = [](World& w) {
         declareWar(w, w.playerCountry, w.selectedCountry);
