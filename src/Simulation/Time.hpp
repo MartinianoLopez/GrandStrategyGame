@@ -5,6 +5,7 @@
 #include "../Model/World.hpp"
 #include "Army.hpp"
 #include "Taxes.hpp"
+#include "../ArtificialIntelligence/AI.hpp"
 
 // ================================
 
@@ -21,6 +22,7 @@ inline std::string dateToString(World& world) {
 
 inline void onNewDay(World& world)   { 
         updateArmyMovement(world);
+        aiDailyUpdate(world);
 }
 
 inline void onNewMonth(World& world) { 

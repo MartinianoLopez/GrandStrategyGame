@@ -12,7 +12,6 @@
 #include <queue>
 #include <unordered_map>
 #include <algorithm>
-#include <iostream>
 
 // ============================================================
 // PATH PLANNING
@@ -84,38 +83,34 @@ inline std::vector<int> calculatePath(World& world, std::string ownerTag, int fr
 // Recruitment
 // ============================================================
 
-inline void recruitArmy(World& world) {
-    Country* country = findCountryByTag(world.countries, world.playerCountry);
-    if (!country) { std::cerr << "ERROR: country not found!\n"; return; }
-    world.armies.emplace_back(world.objectiveProvince, "Recruits", world.playerCountry, 1000, country->color);
+inline void addArmy(World& world, const std::string& ownerTag, int provinceId, int power) {
+    for (auto& army : world.armies) {
+        if (army.position != provinceId || army.owner != ownerTag) continue;
+        army.power += power;
+        return;
+    }
+
+    Country* country = findCountryByTag(world.countries, ownerTag);
+    if (!country) return;
+    world.armies.emplace_back(provinceId, "Recruits", ownerTag, power, country->color);
 }
 
-inline void tryToRecruitArmy(World& world) {
-    Country* country = findCountryByTag(world.countries, world.playerCountry);
-    Province* province = findProvinceById(world.provinces, world.objectiveProvince);
+inline bool recruitArmy(World& world, const std::string& ownerTag, int provinceId) {
+    Country* country = findCountryByTag(world.countries, ownerTag);
+    Province* province = findProvinceById(world.provinces, provinceId);
+    // Comprueba que el pais exista.
+    if (!country) return false;
+    // Comprueba que la provincia de reclutamiento exista.
+    if (!province) return false;
 
-    if (country->tag != province->owner) return;
-    if (country->money < 100) return;  
+    // El reclutamiento pagado solo puede ocurrir en territorio propio.
+    if (province->owner != ownerTag) return false;
+    // Comprueba que el pais pueda pagar el coste del reclutamiento.
+    if (country->money < world.RECRUITMENT_COST) return false;
 
-    country->money -= 100;
-    recruitArmy(world);
-}
-
-inline void recruitArmyInProvince(World& world) {
-    Country* country = findCountryByTag(world.countries, world.playerCountry);
-    Province* province = findProvinceById(world.provinces, world.selectedProvince);
-
-    if (country->tag != province->owner) return;
-    if (country->money < 100) return;  
-
-    country->money -= 100;
-    world.armies.emplace_back(world.selectedProvince, "Recruits", world.playerCountry, 1000, country->color);
-}
-
-inline void recruitArmyWithAmount(World& world, int power){
-    Country* country = findCountryByTag(world.countries, world.playerCountry);
-    if (!country) { std::cerr << "ERROR: country not found!\n"; return; }
-    world.armies.emplace_back(world.objectiveProvince, "Recruits", world.playerCountry, power, country->color);
+    addArmy(world, ownerTag, provinceId, world.RECRUITMENT_POWER);
+    country->money -= world.RECRUITMENT_COST;
+    return true;
 }
 
 // ============================================================
@@ -164,10 +159,10 @@ inline void splitArmies(World& world){
     // don't divide the armies in the hundreds
     int split = (army->power / 2 / 1000) * 1000;
     if (split <= 0) return;
-    // remove the "half"
+    Country* owner = findCountryByTag(world.countries, army->owner);
+    if (!owner) return;
+    world.armies.emplace_back(army->position, "Recruits", army->owner, split, owner->color);
     army->power -= split;
-    // add a new army with that "half"
-    recruitArmyWithAmount(world, split);
 }
 
 inline void scanForEnemies(World& world, Army& army) {

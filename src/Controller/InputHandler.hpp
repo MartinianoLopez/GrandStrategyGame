@@ -214,7 +214,7 @@ inline void onRightClick(World& world, const SDL_Event& e) {
 
     // ====================== army recruitment =====================
     if(world.recruitInMass == true){
-        tryToRecruitArmy(world);
+        recruitArmy(world, world.playerCountry, world.objectiveProvince);
     }
     // ====================== army movement ========================
     if (world.selectedArmies.empty() || world.selectedArmies[0] == nullptr) return;

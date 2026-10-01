@@ -230,6 +230,8 @@ struct World{
     const bool DEBUGGING_MODE = true;
     const int HOT_RELOAD_WAIT_TIME = 500;
     const int ALLIANCE_ACCEPTANCE_RELATION_THRESHOLD = -10;
+    const int RECRUITMENT_COST = 100;
+    const int RECRUITMENT_POWER = 1000;
     
     //Style variables
     const bool FRONTIER_MODE_SMOOTH = true;

@@ -153,7 +153,7 @@ inline void registerActions(World& world) {
         Invest(w, w.playerCountry, w.selectedProvince);
     };
     world.ui.actions["recruitInProvince"] = [](World& w) {
-        recruitArmyInProvince(w);
+        recruitArmy(w, w.playerCountry, w.selectedProvince);
     };
     world.ui.actions["splitArmies"] = [](World& w) {
         splitArmies(w);
