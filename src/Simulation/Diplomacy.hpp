@@ -18,6 +18,10 @@ inline bool isAtWar(const World& world, const std::string& a, const std::string&
     }
     return false;
 }
+inline bool isEnemyProvinceForCountry(const World& world, const Country& country, const Province& province) {
+    // if the country is at war with the controller of that province
+    return isAtWar(world, country.tag, province.controller);
+}
 
 inline std::vector<std::string> getAllies(const Country& c){
     std::vector<std::string> allies;

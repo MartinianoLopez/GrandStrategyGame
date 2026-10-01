@@ -11,7 +11,7 @@ inline void collectTaxes(World& world) {
 
     // calculate taxes
     for (auto& province : world.provinces)
-        if (!province.owner.empty()) taxes[province.owner] += province.localEconomy;
+        if (!province.controller.empty()) taxes[province.controller] += province.localEconomy;
         
     // asign revenew
     for (auto& country : world.countries)

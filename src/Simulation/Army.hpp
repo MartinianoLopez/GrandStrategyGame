@@ -232,10 +232,12 @@ inline void tryOccupyProvince(World& world, Army& army) {
     Province* province = findProvinceById(world.provinces, army.position);
 
     if (!country || !province) return;
+
     // if the province is an enemy province
-    if (isAtWar(world, country->tag, province->owner)){
+    if (isEnemyProvinceForCountry(world, *country, *province)){
         occupyProvince(world, province, country);
     }
+
     // if the province is an own province controlled by an enemy in a war
     if (province->owner == country->tag){
         occupyProvince(world, province, country);
@@ -266,7 +268,6 @@ inline void createArmyMovement(World& world,Army* army, int from, int to) {
 }
 
 inline void updateArmyMovement(World& world) {
-    removeStaleArmyPointers(world); // por que dos veces?
 
     for (auto& army : world.armies) {
         // if army is in final position continue with the next
@@ -274,7 +275,7 @@ inline void updateArmyMovement(World& world) {
         // add movement progress
         army.movementStage += world.armyMovementSpeed;
         // if movement progress not full continue
-        if (army.movementStage >= 100) continue;
+        if (army.movementStage < 100) continue;
             // remove the progress
             army.movementStage -= 100;
             // move the army

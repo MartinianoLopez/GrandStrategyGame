@@ -4,7 +4,7 @@
 #include "../Simulation/Diplomacy.hpp"
 
 #include <algorithm>
-#include <limits>
+#include <random>
 
 // ============================================================
 // RECLUTAMIENTO
@@ -34,39 +34,40 @@ inline void expandMilitary(World& world, Country& country) {
 // INVASION
 // ============================================================
 
-inline bool isEnemyProvinceForCountry(const World& world, const Country& country, const Province& province) {
-    if (province.owner == country.tag && province.controller == country.tag) return false;
+inline int findNearbyEnemyProvinceForArmy(World& world, const Country& country, const Army& army) {
+    const Province* currentProvince = findProvinceById(world.provinces, army.position);
+    if (!currentProvince) return -1;
 
-    const bool ownerIsEnemy = province.controller != "NONE" && province.controller != country.tag && isAtWar(world, country.tag, province.owner);
-    const bool controllerIsEnemy = !province.controller.empty() && province.controller != country.tag && isAtWar(world, country.tag, province.controller);
-
-    return ownerIsEnemy || controllerIsEnemy;
-}
-
-inline int findClosestEnemyProvinceForArmy(World& world, const Country& country, const Army& army) {
-    int bestProvinceId = -1;
-    int bestDistance = std::numeric_limits<int>::max();
+    constexpr std::size_t candidateLimit = 5;
+    std::vector<std::pair<long long, int>> candidates;
 
     for (const auto& province : world.provinces) {
         if (!isEnemyProvinceForCountry(world, country, province)) continue;
 
-        std::vector<int> path = calculatePath(world, country.tag, army.position, province.id);
-        if (path.empty()) continue;
+        const long long dx = province.center.x - currentProvince->center.x;
+        const long long dy = province.center.y - currentProvince->center.y;
+        const long long distanceSquared = dx * dx + dy * dy;
 
-        const int distance = static_cast<int>(path.size());
-        if (distance < bestDistance) {
-            bestDistance = distance;
-            bestProvinceId = province.id;
-        }
+        auto insertionPoint = std::lower_bound(
+            candidates.begin(), candidates.end(), distanceSquared,
+            [](const auto& candidate, long long distance) { return candidate.first < distance; });
+        if (candidates.size() == candidateLimit && insertionPoint == candidates.end()) continue;
+
+        candidates.insert(insertionPoint, {distanceSquared, province.id});
+        if (candidates.size() > candidateLimit) candidates.pop_back();
     }
 
-    return bestProvinceId;
+    if (candidates.empty()) return -1;
+
+    static std::mt19937 randomEngine(std::random_device{}());
+    std::uniform_int_distribution<std::size_t> chooseCandidate(0, candidates.size() - 1);
+    return candidates[chooseCandidate(randomEngine)].second;
 }
 
 inline void orderArmyToAttack(World& world, Country& country, Army& army) {
     if (!army.path.empty() || army.power <= 0) return;
 
-    const int targetProvinceId = findClosestEnemyProvinceForArmy(world, country, army);
+    const int targetProvinceId = findNearbyEnemyProvinceForArmy(world, country, army);
     if (targetProvinceId < 0) return;
 
     createArmyMovement(world, &army, army.position, targetProvinceId);
