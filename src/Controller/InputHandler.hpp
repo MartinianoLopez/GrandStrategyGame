@@ -217,8 +217,15 @@ inline void onRightClick(World& world, const SDL_Event& e) {
         recruitArmy(world, world.playerCountry, world.objectiveProvince);
     }
     // ====================== army movement ========================
-    if (world.selectedArmies.empty() || world.selectedArmies[0] == nullptr) return;
+    if (world.selectedArmies.empty()) return;
     for (Army* army : world.selectedArmies) {
+        if (!army) continue;
+
+        auto it = std::find_if(world.armies.begin(), world.armies.end(),
+            [army](const Army& candidate) { return &candidate == army; }
+        );
+        if (it == world.armies.end()) continue;
+
         createArmyMovement(world, army, army->position, world.objectiveProvince);
     }
 }

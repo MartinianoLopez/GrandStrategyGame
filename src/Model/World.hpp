@@ -106,7 +106,7 @@ struct Province {
     Province(int id, std::string name, std::string owner, SDL_Color color,
              TerrainType terrainType = TerrainType::LAND)
         : id(id), terrainType(terrainType), name(name), owner(owner),
-          controller(""), color(color) {};
+          controller(owner), color(color) {};
 };
 
 struct Army {

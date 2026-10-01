@@ -98,14 +98,16 @@ inline void addArmy(World& world, const std::string& ownerTag, int provinceId, i
 inline bool recruitArmy(World& world, const std::string& ownerTag, int provinceId) {
     Country* country = findCountryByTag(world.countries, ownerTag);
     Province* province = findProvinceById(world.provinces, provinceId);
-    // Comprueba que el pais exista.
+    // Check that the country exists.
     if (!country) return false;
-    // Comprueba que la provincia de reclutamiento exista.
+    // Check that the recruitment province exists.
     if (!province) return false;
 
-    // El reclutamiento pagado solo puede ocurrir en territorio propio.
+    // A country can only recruit on owned territory.
     if (province->owner != ownerTag) return false;
-    // Comprueba que el pais pueda pagar el coste del reclutamiento.
+    // A country can only recruit on controlled territory.
+    if (province->controller != ownerTag) return false;
+    // Check if the country can afford the recruitment cost.
     if (country->money < world.RECRUITMENT_COST) return false;
 
     addArmy(world, ownerTag, provinceId, world.RECRUITMENT_POWER);
@@ -131,6 +133,24 @@ inline void remove0Armies(std::list<Army>& armies) {
         if (it->power == 0) it = armies.erase(it);
         else ++it;
     }
+}
+
+inline void removeStaleArmyPointers(World& world) {
+    world.selectedArmies.erase(
+        std::remove_if(
+            world.selectedArmies.begin(),
+            world.selectedArmies.end(),
+            [&world](Army* army) {
+                if (!army) return true;
+                return std::find_if(
+                    world.armies.begin(),
+                    world.armies.end(),
+                    [army](const Army& candidate) { return &candidate == army; }
+                ) == world.armies.end();
+            }
+        ),
+        world.selectedArmies.end()
+    );
 }
 
 inline void fight(Army& a, Army& b) {
@@ -210,10 +230,17 @@ inline void occupyProvince(World& world, Province* province, Country* country) {
 inline void tryOccupyProvince(World& world, Army& army) {
     Country* country = findCountryByTag(world.countries, army.owner);
     Province* province = findProvinceById(world.provinces, army.position);
-    if (!country || !province) return;
 
-    if (isAtWar(world, country->tag, province->owner))
+    if (!country || !province) return;
+    // if the province is an enemy province
+    if (isAtWar(world, country->tag, province->owner)){
         occupyProvince(world, province, country);
+    }
+    // if the province is an own province controlled by an enemy in a war
+    if (province->owner == country->tag){
+        occupyProvince(world, province, country);
+    }
+        
 }
 
 // ============================================================
@@ -221,7 +248,8 @@ inline void tryOccupyProvince(World& world, Army& army) {
 // ============================================================
 
 inline void moveArmy(World& world, Army& army) {
-    
+    if (army.path.empty()) return;
+
     army.position = army.path.front();
     army.path.erase(army.path.begin());
 
@@ -238,6 +266,8 @@ inline void createArmyMovement(World& world,Army* army, int from, int to) {
 }
 
 inline void updateArmyMovement(World& world) {
+    removeStaleArmyPointers(world); // por que dos veces?
+
     for (auto& army : world.armies) {
         // if army is in final position continue with the next
         if (army.path.empty()) continue;
@@ -252,4 +282,5 @@ inline void updateArmyMovement(World& world) {
     }
     // remove armies with 0 troops
     remove0Armies(world.armies);
+    removeStaleArmyPointers(world);
 }
