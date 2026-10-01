@@ -18,6 +18,11 @@
 
 inline void renderMapModeLayer(World &world) {
 
+  if (world.peaceTreatyDraftOpen) {
+    renderPeaceTreatyMap(world);
+    return;
+  }
+
   switch (world.mapMode) {
   case MapMode::NORMAL:
     renderNormalMap(world);

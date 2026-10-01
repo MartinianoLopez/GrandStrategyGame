@@ -5,6 +5,7 @@
 #include "../Model/World.hpp"
 #include "../utils.hpp"
 #include "../Model/DataProcessing.hpp"
+#include "../View/LabelBuilder.hpp"
 
 // ======================================
 
@@ -118,6 +119,139 @@ inline std::vector<activeWar> getWarsOf(const World& world, const std::string& t
             std::find(w.defenderCountries.begin(), w.defenderCountries.end(), tag) != w.defenderCountries.end())
             wars.push_back(w);
     return wars;
+}
+
+inline bool canDemandProvinceInPeaceTreaty(const World& world, const std::string& player,
+                                            const std::string& target, int provinceId){
+    if (player == "NONE" || target == "NONE" || player == target) return false;
+    const Province* province = findProvinceById(world.provinces, provinceId);
+    if (!province) return false;
+
+    for (const auto& war : world.activeWars) {
+        const auto contains = [](const std::vector<std::string>& countries, const std::string& tag){
+            return std::find(countries.begin(), countries.end(), tag) != countries.end();
+        };
+        const std::vector<std::string>* playerSide = nullptr;
+        const std::vector<std::string>* targetSide = nullptr;
+        if (contains(war.attackerCountries, player) && contains(war.defenderCountries, target)) {
+            playerSide = &war.attackerCountries;
+            targetSide = &war.defenderCountries;
+        } else if (contains(war.defenderCountries, player) && contains(war.attackerCountries, target)) {
+            playerSide = &war.defenderCountries;
+            targetSide = &war.attackerCountries;
+        }
+        if (!playerSide || !contains(*targetSide, province->owner)) continue;
+        return contains(*playerSide, province->controller);
+    }
+    return false;
+}
+
+inline bool canOfferProvinceInPeaceTreaty(const World& world, const std::string& player,
+                                           int provinceId){
+    const Province* province = findProvinceById(world.provinces, provinceId);
+    return province && province->terrainType != TerrainType::OCEAN && province->owner == player;
+}
+
+inline bool offerPeaceTreaty(World& world, const std::string& player, const std::string& target,
+                             const std::vector<int>& demandedProvinces,
+                             const std::vector<int>& offeredProvinces){
+    if (demandedProvinces.empty() && offeredProvinces.empty()) return false;
+    for (int provinceId : demandedProvinces)
+        if (!canDemandProvinceInPeaceTreaty(world, player, target, provinceId)) return false;
+    for (int provinceId : offeredProvinces)
+        if (!canOfferProvinceInPeaceTreaty(world, player, provinceId)) return false;
+
+    auto warIt = std::find_if(world.activeWars.begin(), world.activeWars.end(), [&](const activeWar& war){
+        const auto contains = [](const std::vector<std::string>& countries, const std::string& tag){
+            return std::find(countries.begin(), countries.end(), tag) != countries.end();
+        };
+        return (contains(war.attackerCountries, player) && contains(war.defenderCountries, target)) ||
+               (contains(war.defenderCountries, player) && contains(war.attackerCountries, target));
+    });
+    if (warIt == world.activeWars.end()) return false;
+
+    const std::vector<std::string> attackerCountries = warIt->attackerCountries;
+    const std::vector<std::string> defenderCountries = warIt->defenderCountries;
+    for (int provinceId : demandedProvinces) {
+        Province* province = findProvinceById(world.provinces, provinceId);
+        province->owner = player;
+        province->controller = player;
+    }
+    for (int provinceId : offeredProvinces) {
+        Province* province = findProvinceById(world.provinces, provinceId);
+        province->owner = target;
+        province->controller = target;
+    }
+
+    std::unordered_set<std::string> warParticipants(attackerCountries.begin(), attackerCountries.end());
+    warParticipants.insert(defenderCountries.begin(), defenderCountries.end());
+    if (world.controlSur && world.controlSur->format) SDL_LockSurface(world.controlSur);
+    for (auto& province : world.provinces) {
+        if (!warParticipants.count(province.owner) || province.controller == province.owner) continue;
+        if (!warParticipants.count(province.controller)) continue;
+
+        province.controller = province.owner;
+        Uint32 controlColor = SDL_MapRGBA(world.controlSur->format, 0, 0, 0, 0);
+        if (Country* owner = findCountryByTag(world.countries, province.owner)) {
+            controlColor = SDL_MapRGB(world.controlSur->format, owner->color.r, owner->color.g, owner->color.b);
+        }
+        for (const auto& [x, y] : province.shape) {
+            Uint8* pixel = static_cast<Uint8*>(world.controlSur->pixels)
+                         + y * world.controlSur->pitch
+                         + x * world.controlSur->format->BytesPerPixel;
+            *reinterpret_cast<Uint32*>(pixel) = controlColor;
+        }
+    }
+    if (world.controlSur && world.controlSur->format) SDL_UnlockSurface(world.controlSur);
+
+    if (world.controlSur) {
+        SDL_Texture* updatedControlTexture = surfaceToTexture(world.renderer, world.controlSur);
+        if (updatedControlTexture) {
+            SDL_DestroyTexture(world.controlTex);
+            world.controlTex = updatedControlTexture;
+        }
+    }
+    world.activeWars.erase(warIt);
+
+    SDL_Surface* previousCountryLayer = world.countriesImg;
+    SDL_Texture* previousCountryTexture = world.countriesTex;
+    buildCountriesLayer(world);
+    if (world.countriesImg != previousCountryLayer) {
+        SDL_Texture* updatedCountryTexture = surfaceToTexture(world.renderer, world.countriesImg);
+        if (updatedCountryTexture) {
+            world.countriesTex = updatedCountryTexture;
+            SDL_DestroyTexture(previousCountryTexture);
+            SDL_FreeSurface(previousCountryLayer);
+        } else {
+            SDL_FreeSurface(world.countriesImg);
+            world.countriesImg = previousCountryLayer;
+        }
+    }
+    buildCountryLabels(world);
+    findFrontiersBetweenCountries(world);
+    generateFrontierStyle(world, "country_frontiers_thin", world.countryFrontiers, 1.5f, {0, 0, 0, 255});
+    generateFrontierStyle(world, "country_frontiers_thick", world.countryFrontiers, 2.5f, {0, 0, 0, 255});
+
+    SDL_DestroyTexture(world.activeAccessibilityMap);
+    world.activeAccessibilityMap = nullptr;
+    SDL_DestroyTexture(world.activeDiplomaticMap);
+    world.activeDiplomaticMap = nullptr;
+    world.countryoftheAccesibilityMap.clear();
+
+    for (const auto& attacker : attackerCountries) {
+        for (const auto& defender : defenderCountries) {
+            if (isAtWar(world, attacker, defender)) continue;
+            for (const auto& [countryTag, otherTag] : {std::pair<std::string, std::string>{attacker, defender}, {defender, attacker}}) {
+                Country* country = findCountryByTag(world.countries, countryTag);
+                if (!country) continue;
+                auto& accessible = country->accessibleCountries;
+                accessible.erase(std::remove(accessible.begin(), accessible.end(), otherTag), accessible.end());
+                reloadAccesibilityGraph(world, country);
+            }
+        }
+    }
+
+    return true;
 }
 
 inline void declareWar(World& world, const std::string& attacker, const std::string& defender){

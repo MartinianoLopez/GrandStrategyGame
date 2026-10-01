@@ -32,6 +32,11 @@ enum class MapMode {
     TERRAIN
 };
 
+enum class PeaceTreatyMode {
+    DEMAND,
+    OFFER
+};
+
 
 enum class stateOfRelation { 
     PEACE,
@@ -278,6 +283,17 @@ struct World{
     std::list<Army> armies;
     
     std::list<activeWar> activeWars;
+    bool peaceTreatyDraftOpen = false;
+    std::string peaceTreatyTarget = "NONE";
+    PeaceTreatyMode peaceTreatyMode = PeaceTreatyMode::DEMAND;
+    std::vector<int> peaceTreatyDemands;
+    std::vector<int> peaceTreatyOffers;
+    SDL_Texture* peaceTreatyMap = nullptr;
+    SDL_Surface* peaceTreatyMapSurface = nullptr;
+    std::unordered_map<int, Uint32> peaceTreatyBaseColors;
+    std::unordered_set<int> peaceTreatyRenderedSelections;
+    Uint32 peaceTreatyPlayerColor = 0;
+    Uint32 peaceTreatySelectionColor = 0;
 
 
     std::map<std::pair<uint32_t, uint32_t>, std::vector<std::vector<SDL_FPoint>>> provinceFrontiers;

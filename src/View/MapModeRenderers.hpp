@@ -46,3 +46,13 @@ inline void renderDiplomaticMap(World& world) {
     }
     if (world.activeDiplomaticMap) displayTexture(world, world.activeDiplomaticMap, 245);
 }
+
+inline void renderPeaceTreatyMap(World& world) {
+    if (!world.peaceTreatyMap) {
+        SDL_DestroyTexture(world.peaceTreatyMap);
+        world.peaceTreatyMap = buildPeaceTreatyMap(world);
+    } else {
+        refreshPeaceTreatyDemandColors(world);
+    }
+    displayTexture(world, world.peaceTreatyMap, 255);
+}

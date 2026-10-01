@@ -20,6 +20,14 @@ inline std::string dateToString(World& world) {
     return std::to_string(world.time.date.day) + ' ' + months[world.time.date.month - 1] + ' ' + std::to_string(world.time.date.year);
 }
 
+inline void pauseTime(World& world) {
+    world.time.speed = 0;
+}
+
+inline void setNormalTimeSpeed(World& world) {
+    world.time.speed = 2;
+}
+
 inline void onNewDay(World& world)   { 
         updateArmyMovement(world);
         aiDailyUpdate(world);

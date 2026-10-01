@@ -31,6 +31,20 @@
 
         { "name": "declareWarBtn", "zIndex": 2, "x": 4, "y": 55, "w": 10, "h": 10, "texture": "Button", "font": "fancy", "action": "declareWar", "label": "Declare War", "tooltip": "Declare war on the selected country.", "hoverable": true, "visibleWhen": ["selected_country_is_other_country", "selected_country_is_not_an_enemy", "selected_country_is_not_allied"] },
         { "name": "offerAllianceBtn", "zIndex": 2, "x": 4, "y": 66, "w": 10, "h": 10, "texture": "Button", "font": "fancy", "action": "toggleAlliance", "endpoint": "alliance_button_label", "tooltip": "Offer or break an alliance with the selected country.", "hoverable": true, "visibleWhen": ["selected_country_can_offer_or_break_alliance"] },
+        { "name": "peaceTreatyBtn", "zIndex": 2, "x": 4, "y": 77, "w": 10, "h": 8, "texture": "Button", "font": "fancy", "action": "openPeaceTreaty", "label": "Peace Treaty", "tooltip": "Draft peace terms with this enemy. Only occupied provinces can be demanded.", "hoverable": true, "visibleWhen": ["peace_treaty_can_open"] },
+
+        { "name": "peaceTreatyPanel", "zIndex": 1, "x": -8, "y": 46, "w": 40, "h": 53, "texture": "Panel", "visibleWhen": ["peace_treaty_draft_open"] },
+        { "name": "peaceTreatyTitle", "zIndex": 3, "x": -6, "y": 48, "w": 36, "h": 7, "texture": "timeFrame", "font": "country_large", "endpoint": "peace_treaty_title", "visibleWhen": ["peace_treaty_draft_open"] },
+        { "name": "peacePlayerFlagFrame", "zIndex": 4, "x": 0.5, "y": 57, "w": 17, "h": 13, "texture": "FlagFrameGold", "visibleWhen": ["peace_treaty_draft_open"] },
+        { "name": "peacePlayerFlag", "zIndex": 5, "x": 1.5, "y": 58.5, "w": 15, "h": 10, "texture": "peacePlayerFlag", "visibleWhen": ["peace_treaty_draft_open"] },
+        { "name": "peaceTargetFlagFrame", "zIndex": 4, "x": 7.5, "y": 57, "w": 17, "h": 13, "texture": "FlagFrameGold", "visibleWhen": ["peace_treaty_draft_open"] },
+        { "name": "peaceTargetFlag", "zIndex": 5, "x": 8.5, "y": 58.5, "w": 15, "h": 10, "texture": "peaceTargetFlag", "visibleWhen": ["peace_treaty_draft_open"] },
+
+        { "name": "peaceTreatyDemandModeBtn", "zIndex": 3, "x": 2.5, "y": 72, "w": 10, "h": 5, "texture": "Button", "font": "country_large", "action": "peaceTreatyDemandMode", "label": "Demand", "tooltip": "Click enemy provinces occupied by your side to demand them.", "hoverable": true, "hardToggle": true, "group": "peaceTreatyMode", "visibleWhen": ["peace_treaty_draft_open"] },
+        { "name": "peaceTreatyOfferModeBtn", "zIndex": 3, "x": 11.5, "y": 72, "w": 10, "h": 5, "texture": "Button", "font": "country_large", "action": "peaceTreatyOfferMode", "label": "Offer", "tooltip": "Click your provinces to offer them to the other side.", "hoverable": true, "hardToggle": true, "group": "peaceTreatyMode", "visibleWhen": ["peace_treaty_draft_open"] },
+
+        { "name": "sendPeaceTreatyBtn", "zIndex": 3, "x": 2.5, "y": 90, "w": 10, "h": 5, "texture": "Button", "font": "country_large", "action": "sendPeaceTreaty", "label": "Send", "tooltip": "Apply the selected demands and offers and end this war.", "hoverable": true, "visibleWhen": ["peace_treaty_draft_open", "peace_treaty_has_demands"] },
+        { "name": "cancelPeaceTreatyBtn", "zIndex": 3, "x": 11.5, "y": 90, "w": 10, "h": 5, "texture": "Button", "font": "country_large", "action": "cancelPeaceTreaty", "label": "Cancel", "tooltip": "Discard this peace draft.", "hoverable": true, "visibleWhen": ["peace_treaty_draft_open"] },
 
         { "name": "investBtn", "zIndex": 2, "x": 4, "y": 55, "w": 10, "h": 10, "texture": "Button", "font": "fancy", "action": "investInProvince", "label": "Invest", "tooltip": "Invest in the selected province. -100 coins +1 of money production in the province", "hoverable": true, "visibleWhen": ["selected_country_is_self_country"] },
         { "name": "recluitBtn2", "zIndex": 2, "x": 4, "y": 65, "w": 10, "h": 10, "texture": "Button", "font": "fancy", "action": "recruitInProvince", "label": "Recruit", "tooltip": "Recruit an army in the selected province. -100 coins +1000 power army", "hoverable": true, "visibleWhen": ["selected_country_is_self_country"] },

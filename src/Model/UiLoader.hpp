@@ -27,6 +27,42 @@
 // Hooks 
 // ===============================================================================================================
 
+inline std::vector<std::string> getPeaceTreatySideParticipants(const World& world, bool playerSide) {
+    for (const auto& war : world.activeWars) {
+        const auto contains = [](const std::vector<std::string>& countries, const std::string& tag) {
+            return std::find(countries.begin(), countries.end(), tag) != countries.end();
+        };
+        if (contains(war.attackerCountries, world.playerCountry) && contains(war.defenderCountries, world.peaceTreatyTarget))
+            return playerSide ? war.attackerCountries : war.defenderCountries;
+        if (contains(war.defenderCountries, world.playerCountry) && contains(war.attackerCountries, world.peaceTreatyTarget))
+            return playerSide ? war.defenderCountries : war.attackerCountries;
+    }
+    return {};
+}
+
+inline std::string peaceTreatyParticipantText(const World& world, bool playerSide) {
+    const auto participants = getPeaceTreatySideParticipants(world, playerSide);
+    std::string text;
+    for (const auto& tag : participants) {
+        const Country* country = findCountryByTag(world.countries, tag);
+        if (!text.empty()) text += ", ";
+        text += country ? country->name : tag;
+    }
+    return text;
+}
+
+inline std::string peaceTreatyProvinceText(const World& world, const std::vector<int>& provinceIds) {
+    if (provinceIds.empty()) return "None";
+    std::string text;
+    for (int provinceId : provinceIds) {
+        const Province* province = findProvinceById(world.provinces, provinceId);
+        if (!province) continue;
+        if (!text.empty()) text += ", ";
+        text += province->name;
+    }
+    return text.empty() ? "None" : text;
+}
+
 inline void uiInformation(World& world) {
 
     world.ui.hooks["player_money"] = [](World& w) {
@@ -61,11 +97,39 @@ inline void uiInformation(World& world) {
     world.ui.hooks["alliance_button_label"] = [](World& w) {
         return isAllied(w, w.playerCountry, w.selectedCountry) ? std::string("Break Alliance") : std::string("Offer Alliance");
     };
+
+    world.ui.hooks["peace_treaty_title"] = [](World& w) {
+        return "Peace Treaty";
+    };
+
+    world.ui.hooks["peace_treaty_player_participants"] = [](World& w) {
+        return peaceTreatyParticipantText(w, true);
+    };
+    world.ui.hooks["peace_treaty_target_participants"] = [](World& w) {
+        return peaceTreatyParticipantText(w, false);
+    };
+    world.ui.hooks["peace_treaty_demands"] = [](World& w) {
+        return peaceTreatyProvinceText(w, w.peaceTreatyDemands);
+    };
+    world.ui.hooks["peace_treaty_offers"] = [](World& w) {
+        return peaceTreatyProvinceText(w, w.peaceTreatyOffers);
+    };
 }
 
 // ===============================================================================================================
 // calls
 // ===============================================================================================================
+
+inline void clearPeaceTreatyMap(World& world) {
+    SDL_DestroyTexture(world.peaceTreatyMap);
+    world.peaceTreatyMap = nullptr;
+    SDL_FreeSurface(world.peaceTreatyMapSurface);
+    world.peaceTreatyMapSurface = nullptr;
+    world.peaceTreatyBaseColors.clear();
+    world.peaceTreatyRenderedSelections.clear();
+    world.peaceTreatyPlayerColor = 0;
+    world.peaceTreatySelectionColor = 0;
+}
 
 inline void registerActions(World& world) {
 
@@ -95,10 +159,10 @@ inline void registerActions(World& world) {
     };
 
     world.ui.actions["timeSpeed0"] = [](World& w) {
-        w.time.speed = 0;
+        pauseTime(w);
     };
     world.ui.actions["timeSpeed1"] = [](World& w) {
-        w.time.speed = 2;
+        setNormalTimeSpeed(w);
     };
     world.ui.actions["timeSpeed2"] = [](World& w) {
         w.time.speed = 5;
@@ -149,6 +213,64 @@ inline void registerActions(World& world) {
             offerAlliance(w, w.playerCountry, w.selectedCountry);
         }
     };
+    world.ui.actions["openPeaceTreaty"] = [](World& w) {
+        if (!isAtWar(w, w.playerCountry, w.selectedCountry) || w.playerCountry == w.selectedCountry) return;
+        clearPeaceTreatyMap(w);
+        w.peaceTreatyTarget = w.selectedCountry;
+        w.peaceTreatyDemands.clear();
+        w.peaceTreatyOffers.clear();
+        w.peaceTreatyMode = PeaceTreatyMode::DEMAND;
+        Country* player = findCountryByTag(w.countries, w.playerCountry);
+        Country* target = findCountryByTag(w.countries, w.peaceTreatyTarget);
+        w.ui.Textures["peacePlayerFlag"] = player ? player->flag : nullptr;
+        w.ui.Textures["peaceTargetFlag"] = target ? target->flag : nullptr;
+        w.ui.pressedElements.erase("peaceTreatyOfferModeBtn");
+        w.ui.pressedElements.insert("peaceTreatyDemandModeBtn");
+        w.peaceTreatyDraftOpen = true;
+        pauseTime(w);
+    };
+    world.ui.actions["peaceTreatyDemandMode"] = [](World& w) {
+        if (w.peaceTreatyMode == PeaceTreatyMode::DEMAND) return;
+        w.peaceTreatyMode = PeaceTreatyMode::DEMAND;
+        w.peaceTreatyOffers.clear();
+        w.ui.pressedElements.erase("peaceTreatyOfferModeBtn");
+        clearPeaceTreatyMap(w);
+    };
+    world.ui.actions["peaceTreatyOfferMode"] = [](World& w) {
+        if (w.peaceTreatyMode == PeaceTreatyMode::OFFER) return;
+        w.peaceTreatyMode = PeaceTreatyMode::OFFER;
+        w.peaceTreatyDemands.clear();
+        w.ui.pressedElements.erase("peaceTreatyDemandModeBtn");
+        clearPeaceTreatyMap(w);
+    };
+    world.ui.actions["toggleTreatyProvince"] = [](World& w) {
+        std::vector<int>& provinces = w.peaceTreatyMode == PeaceTreatyMode::DEMAND
+            ? w.peaceTreatyDemands : w.peaceTreatyOffers;
+        const bool valid = w.peaceTreatyMode == PeaceTreatyMode::DEMAND
+            ? canDemandProvinceInPeaceTreaty(w, w.playerCountry, w.peaceTreatyTarget, w.selectedProvince)
+            : canOfferProvinceInPeaceTreaty(w, w.playerCountry, w.selectedProvince);
+        if (!valid) return;
+        auto province = std::find(provinces.begin(), provinces.end(), w.selectedProvince);
+        if (province == provinces.end()) provinces.push_back(w.selectedProvince);
+        else provinces.erase(province);
+    };
+    world.ui.actions["sendPeaceTreaty"] = [](World& w) {
+        if (offerPeaceTreaty(w, w.playerCountry, w.peaceTreatyTarget, w.peaceTreatyDemands, w.peaceTreatyOffers)) {
+            w.peaceTreatyDraftOpen = false;
+            clearPeaceTreatyMap(w);
+            w.peaceTreatyTarget = "NONE";
+            w.peaceTreatyDemands.clear();
+            w.peaceTreatyOffers.clear();
+            setNormalTimeSpeed(w);
+        }
+    };
+    world.ui.actions["cancelPeaceTreaty"] = [](World& w) {
+        w.peaceTreatyDraftOpen = false;
+        clearPeaceTreatyMap(w);
+        w.peaceTreatyTarget = "NONE";
+        w.peaceTreatyDemands.clear();
+        w.peaceTreatyOffers.clear();
+    };
     world.ui.actions["investInProvince"] = [](World& w) {
         Invest(w, w.playerCountry, w.selectedProvince);
     };
@@ -166,15 +288,17 @@ inline void registerUiConditions(World& world) {
     };
 
     world.ui.conditions["selected_country_is_selected"] = [](World& w) {
-        return w.selectedCountry != "NONE";
+        return !w.peaceTreatyDraftOpen && w.selectedCountry != "NONE";
     };
 
     world.ui.conditions["selected_country_is_other_country"] = [](World& w) {
-        return w.selectedCountry != "NONE" &&
+         return !w.peaceTreatyDraftOpen &&
+             w.selectedCountry != "NONE" &&
                w.selectedCountry != w.playerCountry;
     };
     world.ui.conditions["selected_country_is_self_country"] = [](World& w) {
-        return w.selectedCountry != "NONE" &&
+         return !w.peaceTreatyDraftOpen &&
+             w.selectedCountry != "NONE" &&
                w.selectedCountry == w.playerCountry;
     };
 
@@ -191,9 +315,19 @@ inline void registerUiConditions(World& world) {
         return canOfferAlliance(w, w.playerCountry, w.selectedCountry);
     };
     world.ui.conditions["selected_country_can_offer_or_break_alliance"] = [](World& w) {
-        if (w.selectedCountry == "NONE" || w.selectedCountry == w.playerCountry) return false;
+        if (w.peaceTreatyDraftOpen || w.selectedCountry == "NONE" || w.selectedCountry == w.playerCountry) return false;
         return !isAtWar(w, w.playerCountry, w.selectedCountry) &&
                (isAllied(w, w.playerCountry, w.selectedCountry) || canOfferAlliance(w, w.playerCountry, w.selectedCountry));
+    };
+    world.ui.conditions["peace_treaty_can_open"] = [](World& w) {
+        return !w.peaceTreatyDraftOpen && w.selectedCountry != w.playerCountry &&
+               isAtWar(w, w.playerCountry, w.selectedCountry);
+    };
+    world.ui.conditions["peace_treaty_draft_open"] = [](World& w) {
+        return w.peaceTreatyDraftOpen;
+    };
+    world.ui.conditions["peace_treaty_has_demands"] = [](World& w) {
+        return !w.peaceTreatyDemands.empty() || !w.peaceTreatyOffers.empty();
     };
 }
 
@@ -205,7 +339,11 @@ inline void reloadFlagTextures(World& world) {
     for (auto& component : world.ui.uiElements){
         if (component.name == "countryFlagTex") {
             component.texture = world.ui.Textures["selectedCountryFlagTex"];
-        }        
+        } else if (component.name == "peacePlayerFlag") {
+            component.texture = world.ui.Textures["peacePlayerFlag"];
+        } else if (component.name == "peaceTargetFlag") {
+            component.texture = world.ui.Textures["peaceTargetFlag"];
+        }
     }
 }
 

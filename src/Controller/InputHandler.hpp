@@ -177,6 +177,12 @@ inline void onLeftClick(World& world, const SDL_Event& e) {
     } else {
         world.ui.Textures["selectedCountryFlagTex"] = NULL;
     }
+
+    if (world.peaceTreatyDraftOpen) {
+        auto toggleProvince = world.ui.actions.find("toggleTreatyProvince");
+        if (toggleProvince != world.ui.actions.end()) toggleProvince->second(world);
+        return;
+    }
         
 // ====================== army selection ============================================
     if (world.ui.place == MenuPlace::InGame) {
